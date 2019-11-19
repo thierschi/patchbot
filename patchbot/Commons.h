@@ -1,7 +1,38 @@
 #pragma once
-enum class terrain {
-	FLOOR,
-	DANGER,
+
+enum class Terrain {
+	STEEL_PLANKS,
+	PATCHBOT_START,
+	ENEMY_START,
+	ABYSS,
+	WATER,
 	MAIN_SERVER,
-	DOOR
+	ALIEN_GRASS,
+	GRAVEL,
+	SECRET_PASSAGE,
+	MANUAL_DOOR,
+	AUTOMATIC_DOOR,
+	CONCRETE_WALL,
+	ROCK_WALL
+};
+
+enum class Robot {
+	PATCHBOT,
+	BUGGER,
+	PUSHER,
+	DIGGER,
+	SWIMMER,
+	FOLLOWER,
+	HUNTER,
+	SNIFFER
+};
+
+enum class Action {
+	WALK,
+	DIE,
+	WIN,
+	WALK_AND_WAIT,
+	WAIT,
+	OBSTRUCTED,
+	DIG
 };

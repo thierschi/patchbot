@@ -5,18 +5,15 @@ using namespace std;
 
 int main () {
 	cout << "Hello World!\n";
+	
+	Tile tile1 = Tile();
+	Tile tile2 = Tile(Terrain::STEEL_PLANKS);
+	Danger danger1 = Danger(Terrain::ABYSS);
 
-	Tile tile = Tile(terrain::DOOR, true);
-	Tile tile1 = Tile(terrain::FLOOR);
+	cout << (int)tile1.get_terrain() << endl;
+	cout << (int)danger1.get_terrain() << endl;
+	cout << (int)tile1.interact(Robot::PATCHBOT) << endl;
+	cout << (int)danger1.interact(Robot::PATCHBOT) << endl;
 
-	if (tile.get_tile_terrain() == terrain::DOOR) {
-		cout << "There is a door here\n";
-	}
-	else {
-		cout << "there's no door here\n";
-	}
-
-	cout << (int) tile.get_tile_terrain();
-	cout << (int) tile1.get_tile_terrain();
 	return 0;
 }
