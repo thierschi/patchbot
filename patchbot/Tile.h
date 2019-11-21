@@ -75,7 +75,7 @@ public:
 	}
 
 	Action interact(Robot r) {
-		if (r == Robot::SWIMMER) {
+		if (r == Robot::SWIMMER && tile_terrain == Terrain::WATER) {
 			return Action::WALK;
 		}
 		return Action::DIE;
@@ -135,7 +135,7 @@ class Wall : public Tile {
 public:
 	Wall(Terrain t) {
 		if (!IS_ELEMENT_OF(walls, t)) {
-			throw invalid_argument("Terrain missmatch.");
+			throw std::invalid_argument("Terrain missmatch.");
 		}
 		tile_terrain = t;
 	}
