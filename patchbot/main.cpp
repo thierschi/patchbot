@@ -16,18 +16,18 @@ int main () {
 	//tm.i_map.erase(tm.i_map.begin() + 4);
 	//tm.printMap();
 	
-	cout << "Width: " << tm.getWidth() << endl;
-	cout << "Size: " << tm.getSize() << endl;
+	cout << "Width: " << tm.get_width() << endl;
+	cout << "Size: " << tm.get_size() << endl;
 	//tm.setWidth(7);
-	tm.setWidth(10);
-	tm.setHeight(10);
+	tm.set_width(10);
+	tm.set_height(10);
 	cout << "\n\n\n";
-	tm.printMap();
-	cout << "Width: " << tm.getWidth() << endl;
-	cout << "Size: " <<  tm.getSize() << endl;
-	tm.setTile(Door(Terrain::MANUAL_DOOR), 4, 6);
-	tm.printMap();
-	cout << (int) tm.getTile(4, 6).get_terrain() << endl;
+	tm.print_map();
+	cout << "Width: " << tm.get_width() << endl;
+	cout << "Size: " <<  tm.get_size() << endl;
+	tm.set_tile(Door(Terrain::MANUAL_DOOR), 4, 6);
+	tm.print_map();
+	cout << (int) tm.get_tile(4, 6).get_terrain() << endl;
 
 	/*cout << (int)tile1.get_terrain() << endl;
 	cout << (int)danger1.get_terrain() << endl;

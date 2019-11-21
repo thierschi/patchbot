@@ -124,11 +124,15 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Tile.cpp" />
+    <ClCompile Include="Tile_map.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Commons.h" />
     <ClInclude Include="Tile.h" />
+    <ClInclude Include="TileX.h" />
     <ClInclude Include="Tile_map.h" />
+    <ClInclude Include="Tile_mapX.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
