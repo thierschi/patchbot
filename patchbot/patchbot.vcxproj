@@ -124,15 +124,17 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Pb_exceptions.cpp" />
     <ClCompile Include="Tile.cpp" />
     <ClCompile Include="Tile_map.cpp" />
+    <ClCompile Include="txt_handling.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Commons.h" />
+    <ClInclude Include="pb_enums.h" />
+    <ClInclude Include="Pb_exceptions.h" />
     <ClInclude Include="Tile.h" />
-    <ClInclude Include="TileX.h" />
     <ClInclude Include="Tile_map.h" />
-    <ClInclude Include="Tile_mapX.h" />
+    <ClInclude Include="txt_handling.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

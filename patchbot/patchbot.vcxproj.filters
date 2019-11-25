@@ -9,9 +9,8 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    <Filter Include="maps_txt">
+      <UniqueIdentifier>{3cd0b53a-96a7-4d76-8828-641cf739d904}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -24,21 +23,27 @@
     <ClCompile Include="Tile_map.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="txt_handling.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Pb_exceptions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Commons.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TileX.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Tile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Tile_mapX.h">
+    <ClInclude Include="Tile_map.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Tile_map.h">
+    <ClInclude Include="txt_handling.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pb_enums.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Pb_exceptions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
