@@ -1,20 +1,12 @@
 #pragma once
 #include <exception>
-#include <string>
 
-using namespace std;
-
-/*
-	Header file for custom exceptions
-*/
-
-class Map_format_exception : public exception {
+class Map_format_exception : public std::exception {
 private:
-	string message;
+	const char* message;
 
 public:
-	explicit Map_format_exception(const string& m);
+	explicit Map_format_exception(const char* _message);
 	virtual const char* what() const throw();
-	
-};
 
+};

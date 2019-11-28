@@ -1,11 +1,11 @@
-#include "Pb_exceptions.h"
+#include "pb_exceptions.h"
 
-Map_format_exception::Map_format_exception(const string& m)
+Map_format_exception::Map_format_exception(const char* _message)
 {
-	message = m;
+	message = _message;
 }
 
 const char* Map_format_exception::what() const throw()
 {
-	return message.c_str();
+	return message;
 }

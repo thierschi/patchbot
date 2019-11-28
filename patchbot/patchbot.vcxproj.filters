@@ -17,33 +17,24 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Tile.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Tile_map.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="txt_handling.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Pb_exceptions.cpp">
+    <ClCompile Include="pb_map.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pb_exceptions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Tile.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Tile_map.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="txt_handling.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="pb_enums.h">
+    <ClInclude Include="pb_map.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Pb_exceptions.h">
+    <ClInclude Include="pb_exceptions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

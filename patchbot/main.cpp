@@ -1,12 +1,11 @@
-#include <iostream>
-#include "Tile_map.h"
+#include "pb_map.h"
 #include "txt_handling.h"
 
-using namespace std;
+#include <iostream>
 
 int main(int argc, char* argv[]) {
 	if (argc != 3) {
-		cout << "Usage: " << argv[0] << " [Path to input-.txt-file] [path to output-.txt-file]" << endl;
+		std::cout << "Usage: " << argv[0] << " [Path to input-.txt-file] [path to output-.txt-file]" << std::endl;
 		return 0;
 	}
 	const char* i_path = argv[1];
@@ -19,19 +18,19 @@ int main(int argc, char* argv[]) {
 
 	try
 	{
-		cout << "Reading Tile-map from input-file at " << i_path << " ..." << endl;
-		read_map_txt(i_path, map);
-		cout << "Read input-file successfully." << endl;
+		std::cout << "Reading Tile-map from input-file at " << i_path << " ..." << std::endl;
+		pb_input::read_map_txt(i_path, map);
+		std::cout << "Read input-file successfully." << std::endl;
 	}
-	catch (const exception& e)
+	catch (const std::exception& e)
 	{
-		cout << endl << "Exception " << e.what() << endl;
+		std::cout << std::endl << "Exception " << e.what() << std::endl;
 		return 0;
 	}
 
-	cout << endl << "Writing Tile-map to ouput-file at " << o_path << " ..." << endl;
-	write_map_txt(map, o_path);
-	cout << "Wrote ouput-file successfully." << endl << endl;
+	std::cout << std::endl << "Writing Tile-map to ouput-file at " << o_path << " ..." << std::endl;
+	pb_output::write_map_txt(map, o_path);
+	std::cout << "Wrote ouput-file successfully." << std::endl << std::endl;
 
 	return 0;
 }
