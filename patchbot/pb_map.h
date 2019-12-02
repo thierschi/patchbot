@@ -2,10 +2,11 @@
 #include <vector>
 
 /*
-	Enumerations fpr Terrain-types, Robot-types and Action-types
+	Enumerations fpr Terrain-types, 
+	Robot-types and Action-types
 */
 
-enum class Terrain {
+enum class terrain {
 	STEEL_PLANKS = ' ',
 	PATCHBOT_START = 'p',
 	BUGGER_START = '1',
@@ -27,7 +28,7 @@ enum class Terrain {
 	ROCK_WALL = 'M'
 };
 
-enum class Robot {
+enum class robot {
 	PATCHBOT = 'p',
 	BUGGER = '1',
 	PUSHER = '2',
@@ -38,7 +39,7 @@ enum class Robot {
 	SNIFFER = '7'
 };
 
-enum class Action {
+enum class action {
 	WALK,
 	DIE,
 	WIN,
@@ -49,97 +50,105 @@ enum class Action {
 };
 
 /*
-	The tile object is the object that is saved in the tile map so that the tiles can have their own functionality
+	The tile object is the object that 
+	is saved in the tile map so that the 
+	tiles can have their own functionality
 */
-
-class Tile {
+class tile {
 protected:
-	Terrain tile_terrain;
+	terrain tile_terrain;
 
 public:
 	/*
-		Constructor always checks, that passed Terrain-type is suitable for the child class, throws an exception if it is not and sets the tile_terrain after a successfull check
+		Constructor always checks, 
+		that passed Terrain-type is suitable for 
+		the child class, throws an exception if it 
+		is not and sets the tile_terrain after 
+		a successfull check
 	*/
-	Tile(Terrain t = Terrain::STEEL_PLANKS);
+	tile(terrain t = terrain::STEEL_PLANKS);
 
-	Terrain get_terrain() const;
+	terrain get_terrain() const;
 
 	/*
-		Overloaded function intertact has the purpose of providing a uniform way to interact with tiles, so that this method can tell what happens when a robot tries to walk on it / interact with it
+		Overloaded function intertact has the purpose 
+		of providing a uniform way to interact with 
+		tiles, so that this method can tell 
+		what happens when a robot tries 
+		to walk on it / interact with it
 	*/
-	virtual Action interact(Robot r);
+	virtual action interact(robot r);
 };
 
-class Startingpoint : public Tile {
+class startingpoint : public tile {
 public:
-	Startingpoint(Terrain t);
+	startingpoint(terrain t);
 };
 
-class Danger : public Tile {
+class danger : public tile {
 public:
-	Danger(Terrain t);
+	danger(terrain t);
 
-	Action interact(Robot r) override;
+	action interact(robot r) override;
 };
 
-class Obstacle : public Tile {
+class obstacle : public tile {
 public:
-	Obstacle(Terrain t);
+	obstacle(terrain t);
 
-	Action interact(Robot r) override;
+	action interact(robot r) override;
 };
 
-class Door : public Tile {
+class door : public tile {
 protected:
 	bool is_open = false;
 
 public:
-	Door(Terrain t);
+	door(terrain t);
 
-	Action interact(Robot r) override;
+	action interact(robot r) override;
 };
 
-class Wall : public Tile {
+class wall : public tile {
 public:
-	Wall(Terrain t);
+	wall(terrain t);
 
-	Action interact(Robot r) override;
+	action interact(robot r) override;
 };
 
-class Server : public Tile {
+class server : public tile {
 public:
-	Server();
+	server();
 
-	Action interact(Robot r) override;
+	action interact(robot r) override;
 };
 
 /*
-	Tile_map is implemented as one dimensional vector "i_map", where each coordinate-pair x and y can be mapped to its tile with y * width + x.
+	Tile_map is implemented as one dimensional vector 
+	"i_map", where each coordinate-pair x and y can be 
+	mapped to its tile with y * width + x.
 	Coordinates are starting from zero.
 */
-class Tile_map {
+class tile_map {
 protected:
 	int height;
 	int width;
-	std::vector<Tile> i_map;
+	std::vector<tile> i_map;
 
 public:
-	Tile_map(int w = 1, int h = 1);
-
-	// Prints Tile_map to console for debugging
-	void print_map() const;
+	tile_map(int w = 1, int h = 1);
 
 	// Getter :
 
 	int get_size() const;
 	int get_height() const;
 	int get_width() const;
-	Tile get_tile(int x, int y) const;
+	tile get_tile(int x, int y) const;
 
 	//Setter :
 
 	void set_height(int h);
 	void set_width(int w);
-	void set_tile(const Tile& t, int x, int y);
+	void set_tile(const tile& t, int x, int y);
 	void set_tile(char c, int x, int y);
 };

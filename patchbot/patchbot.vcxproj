@@ -125,13 +125,15 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="pb_exceptions.cpp" />
+    <ClCompile Include="pb_img.cpp" />
     <ClCompile Include="pb_map.cpp" />
-    <ClCompile Include="txt_handling.cpp" />
+    <ClCompile Include="pb_io.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pb_exceptions.h" />
+    <ClInclude Include="pb_img.h" />
     <ClInclude Include="pb_map.h" />
-    <ClInclude Include="txt_handling.h" />
+    <ClInclude Include="pb_io.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

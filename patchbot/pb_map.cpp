@@ -9,276 +9,348 @@
 #include <algorithm>
 #include <iterator>
 
-const Terrain dangers[] = {
-	Terrain::ABYSS,
-	Terrain::WATER
+const terrain dangers[] = {
+	terrain::ABYSS,
+	terrain::WATER
 };
 
-const Terrain obstacles[] = {
-	Terrain::ALIEN_GRASS,
-	Terrain::GRAVEL,
-	Terrain::SECRET_PASSAGE
+const terrain obstacles[] = {
+	terrain::ALIEN_GRASS,
+	terrain::GRAVEL,
+	terrain::SECRET_PASSAGE
 };
 
-const Terrain doors[] = {
-	Terrain::MANUAL_DOOR,
-	Terrain::AUTOMATIC_DOOR
+const terrain doors[] = {
+	terrain::MANUAL_DOOR,
+	terrain::AUTOMATIC_DOOR
 };
 
-const Terrain walls[] = {
-	Terrain::CONCRETE_WALL,
-	Terrain::ROCK_WALL
+const terrain walls[] = {
+	terrain::CONCRETE_WALL,
+	terrain::ROCK_WALL
 };
 
-const Robot robots_with_wheels[] = {
-	Robot::PATCHBOT,
-	Robot::PUSHER,
-	Robot::DIGGER,
-	Robot::SWIMMER
+const robot robots_with_wheels[] = {
+	robot::PATCHBOT,
+	robot::PUSHER,
+	robot::DIGGER,
+	robot::SWIMMER
 };
 
-Tile::Tile(Terrain t) {
-	/*
-		Constructor always checks, that passed Terrain-type is suitable for the child class, throws an exception if it is not and sets the tile_terrain after a successfull check
-	*/
-	if (t != Terrain::STEEL_PLANKS)
-		throw std::invalid_argument("Invalid argument passed to constructor of tile: Terrain class missmatch.");
+tile::tile(terrain t) {
+	if (t != terrain::STEEL_PLANKS)
+		throw std::invalid_argument(
+			"Invalid argument passed to "
+			"constructor of tile: "
+			"Terrain class missmatch.");
 	tile_terrain = t;
 }
 
-Terrain Tile::get_terrain() const {
+terrain tile::get_terrain() const {
 	return tile_terrain;
 }
 
-Action Tile::interact(Robot r) {
-	return Action::WALK;
+action tile::interact(robot r) {
+	return action::WALK;
 }
 
-Startingpoint::Startingpoint(Terrain t) {
-	if (t == Terrain::PATCHBOT_START) {
+startingpoint::startingpoint(terrain t) {
+	if (t == terrain::PATCHBOT_START) {
 		tile_terrain = t;
 		return;
 	}
-	if ((char)t < '1' || '7' < (char)t) // Check for the other robots (1-7)
-		throw std::invalid_argument("Invalid argument passed to constructor of tile: Terrain class missmatch.");
+	if ((char)t < '1' || '7' < (char)t) 
+		// Check for the other robots (1-7)
+		throw std::invalid_argument(
+			"Invalid argument passed to "
+			"constructor of tile: "
+			"Terrain class missmatch.");
 	tile_terrain = t;
 }
 
-Danger::Danger(Terrain t) {
-	if (!((std::find(std::begin(dangers), std::end(dangers), t) != std::end(dangers))))
-		throw std::invalid_argument("Invalid argument passed to constructor of tile: Terrain class missmatch.");
+danger::danger(terrain t) {
+	if (!(
+		(std::find(std::begin(dangers),
+			std::end(dangers), 
+			t) 
+			!= std::end(dangers))))
+		throw std::invalid_argument(
+			"Invalid argument passed to "
+			"constructor of tile: "
+			"Terrain class missmatch.");
 	tile_terrain = t;
 }
 
-Action Danger::interact(Robot r) {
-	if (r == Robot::SWIMMER && tile_terrain == Terrain::WATER)
-		return Action::WALK;
-	return Action::DIE;
+action danger::interact(robot r) {
+	if (r == robot::SWIMMER 
+		&& tile_terrain 
+		== terrain::WATER)
+		return action::WALK;
+	return action::DIE;
 }
 
-Obstacle::Obstacle(Terrain t) {
-	if (!((std::find(std::begin(obstacles), std::end(obstacles), t) != std::end(obstacles))))
-		throw std::invalid_argument("Invalid argument passed to constructor of tile: Terrain class missmatch.");
+obstacle::obstacle(terrain t) {
+	if (!((std::find(std::begin(obstacles), 
+		std::end(obstacles), 
+		t) 
+		!= std::end(obstacles))))
+		throw std::invalid_argument(
+			"Invalid argument passed to "
+			"constructor of tile: "
+			"Terrain class missmatch.");
 	tile_terrain = t;
 }
 
-Action Obstacle::interact(Robot r) {
-	if (tile_terrain == Terrain::SECRET_PASSAGE)
-		return (r == Robot::PATCHBOT) ? Action::WALK : Action::OBSTRUCTED;
-	if ((std::find(std::begin(robots_with_wheels), std::end(robots_with_wheels), r) != std::end(robots_with_wheels)))
-		return (tile_terrain == Terrain::ALIEN_GRASS) ? Action::WALK_AND_WAIT : Action::WALK;
-	return (tile_terrain == Terrain::GRAVEL) ? Action::WALK_AND_WAIT : Action::WALK;
+action obstacle::interact(robot r) {
+	if (tile_terrain == terrain::SECRET_PASSAGE)
+		return (r == robot::PATCHBOT) 
+			? action::WALK : action::OBSTRUCTED;
+	if ((std::find(std::begin(robots_with_wheels),
+		std::end(robots_with_wheels), 
+		r) 
+		!= std::end(robots_with_wheels)))
+		return (tile_terrain == terrain::ALIEN_GRASS) 
+		? action::WALK_AND_WAIT : action::WALK;
+	return (tile_terrain == terrain::GRAVEL) 
+		? action::WALK_AND_WAIT : action::WALK;
 }
 
-Door::Door(Terrain t) {
-	if (!(std::find(std::begin(doors), std::end(doors), t) != std::end(doors)))
-		throw std::invalid_argument("Invalid argument passed to constructor of tile: Terrain class missmatch.");
+door::door(terrain t) {
+	if (!(std::find(std::begin(doors),
+		std::end(doors),
+		t) 
+		!= std::end(doors)))
+		throw std::invalid_argument(
+			"Invalid argument passed to "
+			"constructor of tile: "
+			"Terrain class missmatch.");
 	tile_terrain = t;
 }
 
-Action Door::interact(Robot r) {
+action door::interact(robot r) {
 	/*
-		TODO: Door opening and closing methods. Will be implemented in the future.
+		TODO: Door opening and closing methods. 
+		Will be implemented in the future.
 	*/
 	if (is_open)
-		return Action::WALK;
-	if (tile_terrain == Terrain::AUTOMATIC_DOOR) {
-		if (r == Robot::PATCHBOT)
-			return Action::OBSTRUCTED;
+		return action::WALK;
+	if (tile_terrain == terrain::AUTOMATIC_DOOR) {
+		if (r == robot::PATCHBOT)
+			return action::OBSTRUCTED;
 		// open()
-		return Action::WAIT;
+		return action::WAIT;
 	}
 	// open()
-	return Action::WAIT;
+	return action::WAIT;
 }
 
-Wall::Wall(Terrain t) {
-	if (!((std::find(std::begin(walls), std::end(walls), t) != std::end(walls))))
-		throw std::invalid_argument("Invalid argument passed to constructor of tile: Terrain class missmatch.");
+wall::wall(terrain t) {
+	if (!((std::find(std::begin(walls), 
+		std::end(walls), 
+		t) 
+		!= 
+		std::end(walls))))
+		throw std::invalid_argument(
+			"Invalid argument passed to "
+			"constructor of tile: "
+			"Terrain class missmatch.");
 	tile_terrain = t;
 }
 
-Action Wall::interact(Robot r) {
-	if (r != Robot::DIGGER)
-		return Action::OBSTRUCTED;
-	return Action::DIG;
+action wall::interact(robot r) {
+	if (r != robot::DIGGER)
+		return action::OBSTRUCTED;
+	return action::DIG;
 }
 
-Server::Server() {
-	tile_terrain = Terrain::MAIN_SERVER;
+server::server() {
+	tile_terrain = terrain::MAIN_SERVER;
 }
 
-Action Server::interact(Robot r) {
-	if (r == Robot::PATCHBOT)
-		return Action::WIN;
-	return Action::OBSTRUCTED;
+action server::interact(robot r) {
+	if (r == robot::PATCHBOT)
+		return action::WIN;
+	return action::OBSTRUCTED;
 }
 
-Tile_map::Tile_map(int w, int h) {
+tile_map::tile_map(int w, int h) {
 	width = w;
 	height = h;
 
-	i_map.insert(i_map.begin(), get_size(), Tile()); // A new Tile_map is always filled with the standard Tile object more accurate with STEEL_PLANKS
-}
-
-void Tile_map::print_map() const {
-	for (int i = 0; i < get_size(); i++) {
-		std::cout << (char)i_map[i].get_terrain() << " ";
-		if ((i + 1) % width == 0)
-			std::cout << "\n";
-	}
+	/* A new Tile_map is always filled with the standard 
+	Tile object more accurate with STEEL_PLANKS */
+	i_map.insert(i_map.begin(), get_size(), tile());
 }
 
 // Getter
-int Tile_map::get_size() const {
+int tile_map::get_size() const {
 	return width * height;
 }
 
-int Tile_map::get_height() const {
+int tile_map::get_height() const {
 	return height;
 }
 
-int Tile_map::get_width()  const {
+int tile_map::get_width()  const {
 	return width;
 }
 
-Tile Tile_map::get_tile(int x, int y) const {
+tile tile_map::get_tile(int x, int y) const {
 	if (x >= width || y >= height)
-		throw std::invalid_argument("Invalid argument passed to Tile_map: Coordinates out of range.");
+		throw std::invalid_argument(
+			"Invalid argument passed to Tile_map: "
+			"Coordinates out of range.");
 	return i_map[y * width + x];
 }
 
 //Setter
-void Tile_map::set_height(int h) {
-	/*
-		Setting height by either appending width * new-height - old-height tiles or removing width * old-height - new-height tiles from the end
-	*/
+void tile_map::set_height(int h) {
+	/* Setting height by either appending 
+	width * new-height - old-height tiles
+	or removing width * old-height - new-height tiles 
+	from the end */
 	if (h <= 0) {
-		throw std::invalid_argument("Invalid argument passed to Tile_map: Height of tile_map must be 1 or greater.");
+		throw std::invalid_argument(
+			"Invalid argument passed to Tile_map: "
+			"Height of tile_map must be 1 or greater.");
 	}
 	else if (h < height) {
-		i_map.erase(i_map.begin() + h * width, i_map.end());
+		i_map.erase(i_map.begin() + h * width, 
+			i_map.end());
 		height = h;
 	}
 	else if (h > height) {
-		i_map.insert(i_map.end(), (h - height) * width, Tile());
+		i_map.insert(i_map.end(), 
+			(h - height) * width, tile());
 		height = h;
 	}
 }
 
-void Tile_map::set_width(int w) {
+void tile_map::set_width(int w) {
 	/*
-		Setting width by either removing the last new-width - old-with tiles in every section of old-width tiles or adding new-width - old-width new tiles every old-with times.
+		Setting width by either removing the last 
+		new-width - old-with tiles in every section 
+		of old-width tiles or adding 
+		new-width - old-width new tiles 
+		every old-with times.
 		In both cases starting from the back of the map.
 	*/
 	if (w <= 0) {
-		throw std::invalid_argument("Invalid argument passed to Tile_map: Width of tile_map must be 1 or greater.");
+		throw std::invalid_argument(
+			"Invalid argument passed to Tile_map: "
+			"Width of tile_map must be 1 or greater.");
 	}
 	else if (w < width) {
 		for (int i = height; i > 0; i--) {
-			i_map.erase(i_map.begin() + ((i - 1) * width) + w, i_map.begin() + i * width);
+			i_map.erase(i_map.begin() 
+				+ ((i - 1) * width) + w,
+				i_map.begin() + i * width);
 		}
 		width = w;
 	}
 	else if (w > width) {
-		i_map.push_back(Tile());
+		i_map.push_back(tile());
 		for (int i = height; i > 0; i--) {
-			i_map.insert(i_map.begin() + i * width, w - width, Tile());
+			i_map.insert(i_map.begin() + i * width,
+				w - width, tile());
 		}
 		i_map.pop_back();
 		width = w;
 	}
 }
 
-void Tile_map::set_tile(const Tile& t, int x, int y) {
+void tile_map::set_tile(const tile& t, int x, int y) {
 	if (x >= width || y >= height)
-		throw std::invalid_argument("Ínvalid argument passed to Tile_map: Coordinates out of range.");
+		throw std::invalid_argument(
+			"Invalid argument passed to Tile_map: "
+			"Coordinates out of range.");
 	i_map[y * width + x] = t;
 }
 
-void Tile_map::set_tile(char c, int x, int y) {
+void tile_map::set_tile(char c, int x, int y) {
 	if (x >= width || y >= height)
-		throw std::invalid_argument("Ínvalid argument passed to Tile_map: Coordinates out of range.");
+		throw std::invalid_argument(
+			"Invalid argument passed to Tile_map: "
+			"Coordinates out of range.");
 
 	switch (c) {
 	case 'p':
-		i_map[y * width + x] = Startingpoint(Terrain::PATCHBOT_START);
+		i_map[y * width + x] = startingpoint(
+			terrain::PATCHBOT_START);
 		break;
 	case 'P':
-		i_map[y * width + x] = Server();
+		i_map[y * width + x] = server();
 		break;
 	case ' ':
-		i_map[y * width + x] = Tile();
+		i_map[y * width + x] = tile();
 		break;
 	case '#':
-		i_map[y * width + x] = Wall(Terrain::CONCRETE_WALL);
+		i_map[y * width + x] = wall(
+			terrain::CONCRETE_WALL);
 		break;
 	case 'M':
-		i_map[y * width + x] = Wall(Terrain::ROCK_WALL);
+		i_map[y * width + x] = wall(
+			terrain::ROCK_WALL);
 		break;
 	case 'd':
-		i_map[y * width + x] = Door(Terrain::MANUAL_DOOR);
+		i_map[y * width + x] = door(
+			terrain::MANUAL_DOOR);
 		break;
 	case 'D':
-		i_map[y * width + x] = Door(Terrain::AUTOMATIC_DOOR);
+		i_map[y * width + x] = door(
+			terrain::AUTOMATIC_DOOR);
 		break;
 	case 'g':
-		i_map[y * width + x] = Obstacle(Terrain::ALIEN_GRASS);
+		i_map[y * width + x] = obstacle(
+			terrain::ALIEN_GRASS);
 		break;
 	case '.':
-		i_map[y * width + x] = Obstacle(Terrain::GRAVEL);
+		i_map[y * width + x] = obstacle(
+			terrain::GRAVEL);
 		break;
 	case 'x':
-		i_map[y * width + x] = Obstacle(Terrain::SECRET_PASSAGE);
+		i_map[y * width + x] = obstacle(
+			terrain::SECRET_PASSAGE);
 		break;
 	case 'O':
-		i_map[y * width + x] = Danger(Terrain::ABYSS);
+		i_map[y * width + x] = danger(
+			terrain::ABYSS);
 		break;
 	case '~':
-		i_map[y * width + x] = Danger(Terrain::WATER);
+		i_map[y * width + x] = danger(
+			terrain::WATER);
 		break;
 	case '1':
-		i_map[y * width + x] = Startingpoint(Terrain::BUGGER_START);
+		i_map[y * width + x] = startingpoint(
+			terrain::BUGGER_START);
 		break;
 	case '2':
-		i_map[y * width + x] = Startingpoint(Terrain::PUSHER_START);
+		i_map[y * width + x] = startingpoint(
+			terrain::PUSHER_START);
 		break;
 	case '3':
-		i_map[y * width + x] = Startingpoint(Terrain::DIGGER_START);
+		i_map[y * width + x] = startingpoint(
+			terrain::DIGGER_START);
 		break;
 	case '4':
-		i_map[y * width + x] = Startingpoint(Terrain::SWIMMER_START);
+		i_map[y * width + x] = startingpoint(
+			terrain::SWIMMER_START);
 		break;
 	case '5':
-		i_map[y * width + x] = Startingpoint(Terrain::FOLLOWER_START);
+		i_map[y * width + x] = startingpoint(
+			terrain::FOLLOWER_START);
 		break;
 	case '6':
-		i_map[y * width + x] = Startingpoint(Terrain::HUNTER_START);
+		i_map[y * width + x] = startingpoint(
+			terrain::HUNTER_START);
 		break;
 	case '7':
-		i_map[y * width + x] = Startingpoint(Terrain::SNIFFER_START);
+		i_map[y * width + x] = startingpoint(
+			terrain::SNIFFER_START);
 		break;
 	default:
-		throw Map_format_exception("Map-format-exception: Unknown character in map.");
+		throw map_format_exception(
+			"Map-format-exception: "
+			"Unknown character in map.");
 	}
 }
