@@ -10,13 +10,12 @@
 #include <string>
 #include <memory>
 
-tile_map pb_input::read_map_txt(const char*& path) {
+tile_map pb_input::read_map_txt(const std::string& path) {
 	std::ifstream map_txt;
 	map_txt.open(path, std::ios_base::in);
 	if (!map_txt.is_open())
 		throw std::invalid_argument(
-			"Could not open file: "
-			"Check if path is valid.");
+			"Could not open file: Check if path is valid.");
 
 	std::string map_size[2];
 	getline(map_txt, map_size[0]);
@@ -27,12 +26,9 @@ tile_map pb_input::read_map_txt(const char*& path) {
 			if (c == 0)
 				break;
 			if (c < 48 || c > 57)
-				/* Checks that given map_sizes 
-				are numerical */
-				throw map_format_exception(
-					"Map-format-exception: "
-					"Map's width and height "
-					"must be numerical.");
+				// Checks that given map_sizes are numerical
+				throw map_format_exception("Map-format-exception: "
+					"Map's width and height must be numerical.");
 		}
 	}
 
@@ -41,12 +37,9 @@ tile_map pb_input::read_map_txt(const char*& path) {
 	const int height = atoi(map_size[1].c_str());
 
 	if (height <= 0 || width <= 0)
-		/* Checks that map's width 
-		and height is at least 1 */
-		throw map_format_exception(
-			"Map-format-exception: "
-			"Map's width and height must "
-			"be greater than zero.");
+		// Checks that map's width and height is at least 1
+		throw map_format_exception("Map-format-exception: "
+			"Map's width and height must be greater than zero.");
 
 	// Init map and set the Tile_map's width and height
 	tile_map t_map = tile_map();
@@ -54,47 +47,35 @@ tile_map pb_input::read_map_txt(const char*& path) {
 	t_map.set_height(height);
 	
 	//dyn_array map_line = dyn_array(width + 1);
-	std::unique_ptr<char[]> map_line = 
-		std::make_unique<char[]>(width + 1);
+	std::unique_ptr<char[]> map_line = std::make_unique<char[]>(width + 1);
 	bool has_start = false;
 	bool has_end = false;
 
 	for (int i = 0; i < height; i++) {
 		if (map_txt.eof())
-			/* Checks for too few lines, 
-			by reading End_of_file(eof) bit */
-			throw map_format_exception(
-				"Map-format-exception: "
+			// Checks for too few lines, by reading End_of_file(eof) bit
+			throw map_format_exception("Map-format-exception: "
 				"Map has fewer lines than specified.");
 
 		map_txt.getline(map_line.get(), width + 1);
 		
 		if (map_txt.fail()) 
-			/* Checks for too long lines, 
-			by reading failbit */
-			throw map_format_exception(
-				"Map-format-exception: "
-				"A line in the map is longer "
-				"than specified.");
+			// Checks for too long lines, by reading failbit
+			throw map_format_exception("Map-format-exception: "
+				"A line in the map is longer than specified.");
 
 		for (int j = 0; j < width; j++) {
 			if (map_line[j] == 0)
-				/* Checks for too short lines, 
-				by checking for null terminator */
-				throw map_format_exception(
-					"Map-format-exception: "
-					"A line in the map is shorter "
-					"than specified.");
+				// Checks for too short lines, by checking for null terminator
+				throw map_format_exception("Map-format-exception: "
+					"A line in the map is shorter than specified.");
 			if (map_line[j] == 'P')
 				has_end = true;
 			if (map_line[j] == 'p') {
 				if (has_start)
-					/* Checks if there was already a 
-					starting point for Patchbot */
-					throw map_format_exception(
-						"Map-format-exception: "
-						"The map must only have one "
-						"startingpoint for PATCHBOT");
+					// Checks if there was already a starting point for Patchbot
+					throw map_format_exception("Map-format-exception: "
+						"The map must only have one startingpoint for PATCHBOT");
 				has_start = true;
 			}
 			t_map.set_tile(map_line[j], j, i);
@@ -119,7 +100,7 @@ tile_map pb_input::read_map_txt(const char*& path) {
 	return t_map;
 }
 
-tga pb_input::read_tga_img(const char*& path) {
+tga pb_input::read_tga_img(const std::string& path) {
 	std::ifstream img_file;
 	img_file.open(path, std::ios_base::in 
 		| std::ios_base::binary);
@@ -134,8 +115,8 @@ tga pb_input::read_tga_img(const char*& path) {
 	return img;
 }
 
-void pb_output::write_map_txt(const tile_map& t_map, 
-	const char*& path) {
+void pb_output::write_map_txt(const std::string& path,
+	const tile_map& t_map) {
 	std::ofstream map_txt;
 	map_txt.open(path, std::ios_base::out);
 	if (!map_txt.is_open())
@@ -171,7 +152,7 @@ void pb_output::print_map(const tile_map& t_map) {
 	}
 }
 
-void pb_output::write_tga_img(const char*& path, 
+void pb_output::write_tga_img(const std::string& path, 
 	tga& img) {
 	std::ofstream img_file;
 	img_file.open(path, std::ios_base::out 

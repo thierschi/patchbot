@@ -37,13 +37,14 @@ const robot robots_with_wheels[] = {
 	robot::SWIMMER
 };
 
-tile::tile(terrain t) {
+tile::tile(terrain t) :
+	tile_terrain(t)
+{
 	if (t != terrain::STEEL_PLANKS)
 		throw std::invalid_argument(
 			"Invalid argument passed to "
 			"constructor of tile: "
 			"Terrain class missmatch.");
-	tile_terrain = t;
 }
 
 terrain tile::get_terrain() const {
@@ -54,7 +55,9 @@ action tile::interact(robot r) {
 	return action::WALK;
 }
 
-startingpoint::startingpoint(terrain t) {
+startingpoint::startingpoint(terrain t) :
+	starting((robot)t)
+{
 	if (t == terrain::PATCHBOT_START) {
 		tile_terrain = t;
 		return;
@@ -68,7 +71,8 @@ startingpoint::startingpoint(terrain t) {
 	tile_terrain = t;
 }
 
-danger::danger(terrain t) {
+danger::danger(terrain t)
+{
 	if (!(
 		(std::find(std::begin(dangers),
 			std::end(dangers), 
@@ -173,13 +177,13 @@ action server::interact(robot r) {
 	return action::OBSTRUCTED;
 }
 
-tile_map::tile_map(int w, int h) {
-	width = w;
-	height = h;
-
+tile_map::tile_map(int _width, int _height) :
+	width(_width),
+	height(_height)
+{
 	/* A new Tile_map is always filled with the standard 
 	Tile object more accurate with STEEL_PLANKS */
-	i_map.insert(i_map.begin(), get_size(), tile());
+	i_map.insert(i_map.begin(), _width * _height, tile());
 }
 
 // Getter

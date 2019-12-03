@@ -53,20 +53,17 @@ public:
 	int data_size;
 
 	tga(
-		const tga_header &_header, 
-		const std::vector<rgba_pixel> &_pixel);
+		 tga_header&&_header, std::vector<rgba_pixel>&&_pixel);
 
 	/*
-		Returns smart ptr to char array which holds the
-		binary data for the tga image that can be written
-		into a file.
+		Returns smart ptr to char array which holds the binary data for the 
+		tga image that can be written into a file.
 	*/
-	std::unique_ptr<char[]> get_raw_data();
+	std::unique_ptr<char[]> get_raw_data() const;
 	
 	/*
-		Takes an open file (ifstream binary) as an argument
-		and creats a tga object from the binary data in the
-		file and returns that object
+		Takes an open file (ifstream binary) as an argument and creats a tga 
+		object from the binary data in the file and returns that object
 	*/
 	static tga load_file(std::ifstream &file);
 };

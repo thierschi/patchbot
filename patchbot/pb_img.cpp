@@ -2,8 +2,9 @@
 
 #include <stdexcept>
 
-img_exception::img_exception(const char* _message) {
-	message = _message;
+img_exception::img_exception(const char* _message) :
+	message(_message)
+{
 }
 
 const char* img_exception::what() const throw() {
@@ -11,39 +12,34 @@ const char* img_exception::what() const throw() {
 }
 
 rgba_pixel::rgba_pixel(
-	char _red, 
+	char _red,
 	char _green,
 	char _blue,
-	char _alpha) {
-	red = _red;
-	green = _green;
-	blue = _blue;
-	alpha = _alpha;
+	char _alpha) :
+	red(_red),
+	green(_green),
+	blue(_blue),
+	alpha(_alpha) 
+{
 }
 
-tga::tga(const tga_header& _header,
-	const std::vector <rgba_pixel>& _pixel) {
+tga::tga(tga_header&& _header,
+	std::vector <rgba_pixel>&& _pixel) :
+	header(_header),
+	pixel(_pixel),
+	data_size(_pixel.size() * 4)
+{
 	if (_header.img_width * _header.img_height
 		!= _pixel.size())
-		throw std::invalid_argument("Cannot construct "
-			"tga image class: "
+		throw std::invalid_argument("Cannot construct tga image class: "
 			"Pixel vector's size does not match "
 			"width * height specified in header.");
-	
-	/*
-		Calculate data_size:
-			Number of pixels times 4B per pixel
-	*/
-	data_size = _pixel.size() * 4;
-	header = _header;
-	pixel = _pixel;
 }
 
-std::unique_ptr<char[]> tga::get_raw_data() {
+std::unique_ptr<char[]> tga::get_raw_data() const {
 	// 44 is the size of header (18) and footer (26)
 	int size = 44 + data_size;
-	std::unique_ptr<char[]> raw_data =
-		std::make_unique<char[]>(size);
+	std::unique_ptr<char[]> raw_data = std::make_unique<char[]>(size);
 
 	/*
 		Convert header
@@ -161,20 +157,16 @@ tga tga::load_file(std::ifstream& file) {
 		+ header.img_width * header.img_height
 		* (header.pixel_depth / 8);
 	if (file_size < min_file_size)
-		throw img_exception("TGA image corrupted:"
-			"File is too short.");
+		throw img_exception("TGA image corrupted: File is too short.");
 
 	// Skip ID if present
 	if (header.id_length != 0) {
-		char* skip = new char[header.id_length];
-		file.read(skip, header.id_length);
-		delete[] skip;
+		file.ignore(header.id_length);
 	}
 
-	int img_data_size = header.img_width *
-		header.img_height *
+	int img_data_size = header.img_width * header.img_height *
 		(header.pixel_depth / 8);
-	std::unique_ptr<char[]> pixel_raw_data =
+	std::unique_ptr<char[]> pixel_raw_data = 
 		std::make_unique<char[]>(img_data_size);
 
 	file.read(pixel_raw_data.get(), img_data_size);
@@ -196,5 +188,5 @@ tga tga::load_file(std::ifstream& file) {
 		));
 	}
 
-	return tga(header, pixel_data);
+	return tga(std::move(header), std::move(pixel_data));
 }

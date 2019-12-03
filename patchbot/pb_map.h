@@ -2,10 +2,8 @@
 #include <vector>
 
 /*
-	Enumerations fpr Terrain-types, 
-	Robot-types and Action-types
+	Enumerations fpr Terrain-types, Robot-types and Action-types
 */
-
 enum class terrain {
 	STEEL_PLANKS = ' ',
 	PATCHBOT_START = 'p',
@@ -50,8 +48,7 @@ enum class action {
 };
 
 /*
-	The tile object is the object that 
-	is saved in the tile map so that the 
+	The tile object is the object that is saved in the tile map so that the 
 	tiles can have their own functionality
 */
 class tile {
@@ -60,28 +57,25 @@ protected:
 
 public:
 	/*
-		Constructor always checks, 
-		that passed Terrain-type is suitable for 
-		the child class, throws an exception if it 
-		is not and sets the tile_terrain after 
-		a successfull check
+		Constructor always checks, that passed Terrain-type is suitable for the 
+		child class, throws an exception if it is not and sets the tile_terrain 
+		after a successfull check
 	*/
 	tile(terrain t = terrain::STEEL_PLANKS);
 
 	terrain get_terrain() const;
 
 	/*
-		Overloaded function intertact has the purpose 
-		of providing a uniform way to interact with 
-		tiles, so that this method can tell 
-		what happens when a robot tries 
-		to walk on it / interact with it
+		Overloaded function intertact has the purpose of providing a uniform way
+		to interact with tiles, so that this method can tell what happens when 
+		a robot tries to walk on it / interact with it
 	*/
 	virtual action interact(robot r);
 };
 
 class startingpoint : public tile {
 public:
+	robot starting;
 	startingpoint(terrain t);
 };
 
@@ -124,9 +118,8 @@ public:
 };
 
 /*
-	Tile_map is implemented as one dimensional vector 
-	"i_map", where each coordinate-pair x and y can be 
-	mapped to its tile with y * width + x.
+	Tile_map is implemented as one dimensional vector  "i_map", where each 
+	coordinate-pair x and y can be mapped to its tile with y * width + x.
 	Coordinates are starting from zero.
 */
 class tile_map {
