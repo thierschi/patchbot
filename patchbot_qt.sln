@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29613.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "patchbot_qt", "patchbot_qt.vcxproj", "{EC1BBDB3-E3EF-3696-A7FE-C231CCEA70E2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EC1BBDB3-E3EF-3696-A7FE-C231CCEA70E2}.Debug|x64.ActiveCfg = Debug|x64
+		{EC1BBDB3-E3EF-3696-A7FE-C231CCEA70E2}.Debug|x64.Build.0 = Debug|x64
+		{EC1BBDB3-E3EF-3696-A7FE-C231CCEA70E2}.Release|x64.ActiveCfg = Release|x64
+		{EC1BBDB3-E3EF-3696-A7FE-C231CCEA70E2}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {FA8A0B11-EACE-442D-9D55-DF4FCC564A50}
+	EndGlobalSection
+EndGlobal
