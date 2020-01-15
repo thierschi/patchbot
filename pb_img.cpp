@@ -24,13 +24,13 @@ rgba_pixel::rgba_pixel(
 }
 
 tga::tga(tga_header&& _header,
-	std::vector <rgba_pixel>&& _pixel) :
+	std::vector <rgba_pixel>&& _pixel_map) :
 	header(_header),
-	pixel(_pixel),
-	data_size(_pixel.size() * 4)
+	pixel_map(_pixel_map),
+	data_size(_pixel_map.size() * 4)
 {
 	if (_header.img_width * _header.img_height
-		!= _pixel.size())
+		!= _pixel_map.size())
 		throw std::invalid_argument("Cannot construct tga image class: "
 			"Pixel vector's size does not match "
 			"width * height specified in header.");
@@ -73,7 +73,7 @@ std::unique_ptr<char[]> tga::get_raw_data() const {
 
 	// Store binary image data
 	int b = 18;
-	for (rgba_pixel p : pixel) {
+	for (rgba_pixel p : pixel_map) {
 		// Convert from rgba_pixels back to chars
 		raw_data[b] = p.blue;
 		raw_data[b + 1] = p.green;
@@ -189,4 +189,16 @@ tga tga::load_file(std::ifstream& file) {
 	}
 
 	return tga(std::move(header), std::move(pixel_data));
+}
+
+rgba_pixel tga::get_pixel(int x, int y) const {
+	if (x >= header.img_width || y >= header.img_height)
+		throw std::invalid_argument("Invalid argument passed to tga: Coordinates out of range.");
+	return pixel_map[y * header.img_width + x];
+}
+
+void tga::set_pixel(const rgba_pixel& pixel, int x, int y) {
+	if (x >= header.img_width || y >= header.img_height)
+		throw std::invalid_argument("Invalid argument passed to tga: Coordinates out of range.");
+	pixel_map[y * header.img_width + x] = pixel;
 }

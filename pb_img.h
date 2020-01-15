@@ -45,7 +45,7 @@ public:
 class tga {
 private:
 	tga_header header;
-	std::vector<rgba_pixel> pixel;
+	std::vector<rgba_pixel> pixel_map;
 
 public:
 	/*
@@ -54,7 +54,7 @@ public:
 	int data_size;
 
 	tga(
-		tga_header&& _header, std::vector<rgba_pixel>&& _pixel);
+		tga_header&& _header, std::vector<rgba_pixel>&& _pixel_map);
 
 	/*
 		Returns smart ptr to char array which holds the binary data for the
@@ -67,4 +67,7 @@ public:
 		object from the binary data in the file and returns that object
 	*/
 	static tga load_file(std::ifstream& file);
+
+	rgba_pixel get_pixel(int x, int y) const;
+	void set_pixel(const rgba_pixel& pixel, int x, int y);
 };

@@ -27,7 +27,7 @@ enum class terrain {
 	ROCK_WALL = 'M'
 };
 
-enum class robot {
+enum class robot_type {
 	PATCHBOT = 'p',
 	BUGGER = '1',
 	PUSHER = '2',
@@ -35,7 +35,8 @@ enum class robot {
 	SWIMMER = '4',
 	FOLLOWER = '5',
 	HUNTER = '6',
-	SNIFFER = '7'
+	SNIFFER = '7',
+	NONE = '0'
 };
 
 enum class action {
@@ -46,6 +47,45 @@ enum class action {
 	WAIT,
 	OBSTRUCTED,
 	DIG
+};
+
+/*
+	Class robot exists so that one can save a alive state (is_dad) for each 
+	robot.
+*/
+class robot {
+public:
+	robot_type type;
+	bool is_dead;
+
+	robot(robot_type _type = robot_type::NONE, bool _is_dead = false);
+};
+
+/*
+	Robot_map is implemented as one dimensional vector  "__robot_map", where 
+	each coordinate-pair x and y can be mapped to its tile with y * width + x.
+	Coordinates are starting from zero.
+*/
+class robot_map {
+protected:
+	int height;
+	int width;
+	bool has_pb;
+	std::vector<robot> __robot_map;
+
+public:
+	robot_map(int _width = 1, int height = 1);
+
+	// Getter
+	int get_size() const;
+	int get_height() const;
+	int get_width() const;
+	robot get_robot(int x, int y) const;
+
+	// Setter
+	void set_height(int _height);
+	void set_width(int _width);
+	void set_robot(const robot& _robot, int x, int y);
 };
 
 /*
@@ -71,12 +111,12 @@ public:
 		to interact with tiles, so that this method can tell what happens when
 		a robot tries to walk on it / interact with it
 	*/
-	virtual action interact(robot r);
+	virtual action interact(robot_type r);
 };
 
 class startingpoint : public tile {
 public:
-	robot starting;
+	robot_type starting;
 	startingpoint(terrain t);
 };
 
@@ -84,14 +124,14 @@ class danger : public tile {
 public:
 	danger(terrain t);
 
-	action interact(robot r) override;
+	action interact(robot_type r) override;
 };
 
 class obstacle : public tile {
 public:
 	obstacle(terrain t);
 
-	action interact(robot r) override;
+	action interact(robot_type r) override;
 };
 
 class door : public tile {
@@ -101,21 +141,21 @@ protected:
 public:
 	door(terrain t);
 
-	action interact(robot r) override;
+	action interact(robot_type r) override;
 };
 
 class wall : public tile {
 public:
 	wall(terrain t);
 
-	action interact(robot r) override;
+	action interact(robot_type r) override;
 };
 
 class server : public tile {
 public:
 	server();
 
-	action interact(robot r) override;
+	action interact(robot_type r) override;
 };
 
 /*
@@ -127,16 +167,20 @@ class tile_map {
 protected:
 	int height;
 	int width;
+	bool has_pb_start;
+	robot_map __robot_map;
 	std::vector<tile> i_map;
 
 public:
-	tile_map(int w = 1, int h = 1);
+
+	tile_map(int _width = 1, int _height = 1);
 
 	// Getter :
 
 	int get_size() const;
 	int get_height() const;
 	int get_width() const;
+	robot_map get_robot_map() const;
 	tile get_tile(int x, int y) const;
 
 	//Setter :
@@ -144,5 +188,6 @@ public:
 	void set_height(int h);
 	void set_width(int w);
 	void set_tile(const tile& t, int x, int y);
+	void set_tile(const startingpoint& t, int x, int y);
 	void set_tile(char c, int x, int y);
 };

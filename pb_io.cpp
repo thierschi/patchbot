@@ -8,7 +8,6 @@
 #include <algorithm>
 #include <iterator>
 #include <string>
-#include <memory>
 
 tile_map pb_input::read_map_txt(const std::string& path) {
 	std::ifstream map_txt;
@@ -142,11 +141,28 @@ void pb_output::print_map(const tile_map& t_map) {
 	int w = t_map.get_width();
 	int h = t_map.get_height();
 
+
 	for (int i = 0; i < h; i++) {
 		for (int j = 0; j < w; j++) {
 			std::cout << (char)t_map
 				.get_tile(j, i)
 				.get_terrain();
+		}
+		std::cout << std::endl;
+	}
+}
+
+void pb_output::print_map(const robot_map& r_map)
+{
+	int w = r_map.get_width();
+	int h = r_map.get_height();
+
+
+	for (int i = 0; i < h; i++) {
+		for (int j = 0; j < w; j++) {
+			std::cout << (char)r_map
+				.get_robot(j, i)
+				.type;
 		}
 		std::cout << std::endl;
 	}

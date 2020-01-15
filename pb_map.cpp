@@ -30,12 +30,107 @@ const terrain walls[] = {
 	terrain::ROCK_WALL
 };
 
-const robot robots_with_wheels[] = {
-	robot::PATCHBOT,
-	robot::PUSHER,
-	robot::DIGGER,
-	robot::SWIMMER
+const robot_type robots_with_wheels[] = {
+	robot_type::PATCHBOT,
+	robot_type::PUSHER,
+	robot_type::DIGGER,
+	robot_type::SWIMMER
 };
+
+robot::robot(robot_type _type, bool _is_dead) :
+	type(_type),
+	is_dead(_is_dead) 
+{};
+
+robot_map::robot_map(int _width, int _height) :
+	width(_width),
+	height(_height),
+	has_pb(false)
+{
+	/*
+		A new robot_map is always filled with robot_type NONE.
+	*/
+	__robot_map.insert(__robot_map.begin(), width * height, robot());
+}
+
+int robot_map::get_size() const {
+	return width * height;
+}
+
+int robot_map::get_height() const {
+	return height;
+}
+
+int robot_map::get_width() const {
+	return width;
+}
+
+robot robot_map::get_robot(int x, int y) const {
+	if (x >= width || y >= height)
+		throw std::invalid_argument("Invalid argument passed to to robot_map: "
+			"Coordinates out of range.");
+	return __robot_map[y * width + x];
+}
+
+void robot_map::set_height(int _height) {
+	/* Setting height by either appending
+	width * new-height - old-height tiles
+	or removing width * old-height - new-height tiles
+	from the end */
+	if (_height <= 0)
+		throw std::invalid_argument("Invalid argument passed to robot_map: "
+			"Height of robot_map must be 1 or greater.");
+	else if (_height < height) {
+		__robot_map.erase(__robot_map.begin() + _height * width, 
+			__robot_map.end());
+		height = _height;
+	}
+	else if (_height > height) {
+		__robot_map.insert(__robot_map.end(), (_height - height) * width, 
+			robot());
+		height = _height;
+	}
+}
+
+void robot_map::set_width(int _width) {
+	/*
+		Setting width by either removing the last
+		new-width - old-with tiles in every section
+		of old-width tiles or adding
+		new-width - old-width new tiles
+		every old-with times.
+		In both cases starting from the back of the map.
+	*/
+	if (_width <= 0)
+		throw std::invalid_argument("Invalid argument passed to robot_map: "
+			"Width of robot_map must be 1 or greater.");
+	else if (_width < width) {
+		for (int i = height; i > 0; i--)
+			__robot_map.erase(__robot_map.begin() + ((i - 1) * width) + _width, 
+				__robot_map.begin() + i * width);
+		width = _width;
+	}
+	else if (_width > width) {
+		__robot_map.push_back(robot());
+		for (int i = height; i > 0; i--)
+			__robot_map.insert(__robot_map.begin() + i * width, _width - width, 
+				robot());
+		__robot_map.pop_back();
+		width = _width;
+	}
+}
+
+void robot_map::set_robot(const robot& _robot, int x, int y) {
+	if (x >= width || y >= height)
+		throw std::invalid_argument("Invalid argument passed to to robot_map: "
+			"Coordinates out of range.");
+	if (_robot.type == robot_type::PATCHBOT && has_pb) 
+		throw std::invalid_argument(
+			"Invalid argument passed to robot_map: "
+			"This robot_map already has a patchbot.");
+	__robot_map[y * width + x] = _robot;
+	has_pb = (_robot.type == robot_type::PATCHBOT) ? true : has_pb;
+}
 
 tile::tile(terrain t) :
 	tile_terrain(t)
@@ -51,12 +146,12 @@ terrain tile::get_terrain() const {
 	return tile_terrain;
 }
 
-action tile::interact(robot r) {
+action tile::interact(robot_type r) {
 	return action::WALK;
 }
 
 startingpoint::startingpoint(terrain t) :
-	starting((robot)t)
+	starting((robot_type)t)
 {
 	if (t == terrain::PATCHBOT_START) {
 		tile_terrain = t;
@@ -85,8 +180,8 @@ danger::danger(terrain t)
 	tile_terrain = t;
 }
 
-action danger::interact(robot r) {
-	if (r == robot::SWIMMER
+action danger::interact(robot_type r) {
+	if (r == robot_type::SWIMMER
 		&& tile_terrain
 		== terrain::WATER)
 		return action::WALK;
@@ -105,9 +200,9 @@ obstacle::obstacle(terrain t) {
 	tile_terrain = t;
 }
 
-action obstacle::interact(robot r) {
+action obstacle::interact(robot_type r) {
 	if (tile_terrain == terrain::SECRET_PASSAGE)
-		return (r == robot::PATCHBOT)
+		return (r == robot_type::PATCHBOT)
 		? action::WALK : action::OBSTRUCTED;
 	if ((std::find(std::begin(robots_with_wheels),
 		std::end(robots_with_wheels),
@@ -131,7 +226,7 @@ door::door(terrain t) {
 	tile_terrain = t;
 }
 
-action door::interact(robot r) {
+action door::interact(robot_type r) {
 	/*
 		TODO: Door opening and closing methods.
 		Will be implemented in the future.
@@ -139,7 +234,7 @@ action door::interact(robot r) {
 	if (is_open)
 		return action::WALK;
 	if (tile_terrain == terrain::AUTOMATIC_DOOR) {
-		if (r == robot::PATCHBOT)
+		if (r == robot_type::PATCHBOT)
 			return action::OBSTRUCTED;
 		// open()
 		return action::WAIT;
@@ -161,8 +256,8 @@ wall::wall(terrain t) {
 	tile_terrain = t;
 }
 
-action wall::interact(robot r) {
-	if (r != robot::DIGGER)
+action wall::interact(robot_type r) {
+	if (r != robot_type::DIGGER)
 		return action::OBSTRUCTED;
 	return action::DIG;
 }
@@ -171,15 +266,17 @@ server::server() {
 	tile_terrain = terrain::MAIN_SERVER;
 }
 
-action server::interact(robot r) {
-	if (r == robot::PATCHBOT)
+action server::interact(robot_type r) {
+	if (r == robot_type::PATCHBOT)
 		return action::WIN;
 	return action::OBSTRUCTED;
 }
 
 tile_map::tile_map(int _width, int _height) :
 	width(_width),
-	height(_height)
+	height(_height),
+	has_pb_start(false),
+	__robot_map(robot_map(_width, _height))
 {
 	/* A new Tile_map is always filled with the standard
 	Tile object more accurate with STEEL_PLANKS */
@@ -197,6 +294,11 @@ int tile_map::get_height() const {
 
 int tile_map::get_width()  const {
 	return width;
+}
+
+robot_map tile_map::get_robot_map() const
+{
+	return __robot_map;
 }
 
 tile tile_map::get_tile(int x, int y) const {
@@ -228,6 +330,7 @@ void tile_map::set_height(int h) {
 			(h - height) * width, tile());
 		height = h;
 	}
+	__robot_map.set_height(h);
 }
 
 void tile_map::set_width(int w) {
@@ -261,6 +364,7 @@ void tile_map::set_width(int w) {
 		i_map.pop_back();
 		width = w;
 	}
+	__robot_map.set_width(w);
 }
 
 void tile_map::set_tile(const tile& t, int x, int y) {
@@ -269,6 +373,22 @@ void tile_map::set_tile(const tile& t, int x, int y) {
 			"Invalid argument passed to Tile_map: "
 			"Coordinates out of range.");
 	i_map[y * width + x] = t;
+	
+}
+
+void tile_map::set_tile(const startingpoint& t, int x, int y) {
+	if (x >= width || y >= height)
+		throw std::invalid_argument(
+			"Invalid argument passed to Tile_map: "
+			"Coordinates out of range.");
+	if (t.starting == robot_type::PATCHBOT && has_pb_start)
+		throw std::invalid_argument(
+			"Invalid argument passed to Tile_map: "
+			"This map already has a startingpoint for patchbot.");
+
+	i_map[y * width + x] = t;
+	__robot_map.set_robot(robot(t.starting), x, y);
+	has_pb_start = (t.starting == robot_type::PATCHBOT) ? true : has_pb_start;
 }
 
 void tile_map::set_tile(char c, int x, int y) {
@@ -279,8 +399,14 @@ void tile_map::set_tile(char c, int x, int y) {
 
 	switch (c) {
 	case 'p':
+		if (has_pb_start)
+			throw std::invalid_argument(
+				"Invalid argument passed to Tile_map: "
+				"This map already has a startingpoint for patchbot.");
 		i_map[y * width + x] = startingpoint(
 			terrain::PATCHBOT_START);
+		__robot_map.set_robot(robot(robot_type::PATCHBOT), x, y);
+		has_pb_start = true;
 		break;
 	case 'P':
 		i_map[y * width + x] = server();
@@ -327,30 +453,37 @@ void tile_map::set_tile(char c, int x, int y) {
 	case '1':
 		i_map[y * width + x] = startingpoint(
 			terrain::BUGGER_START);
+		__robot_map.set_robot(robot(robot_type::BUGGER), x, y);
 		break;
 	case '2':
 		i_map[y * width + x] = startingpoint(
 			terrain::PUSHER_START);
+		__robot_map.set_robot(robot(robot_type::PUSHER), x, y);
 		break;
 	case '3':
 		i_map[y * width + x] = startingpoint(
 			terrain::DIGGER_START);
+		__robot_map.set_robot(robot(robot_type::DIGGER), x, y);
 		break;
 	case '4':
 		i_map[y * width + x] = startingpoint(
 			terrain::SWIMMER_START);
+		__robot_map.set_robot(robot(robot_type::SWIMMER), x, y);
 		break;
 	case '5':
 		i_map[y * width + x] = startingpoint(
 			terrain::FOLLOWER_START);
+		__robot_map.set_robot(robot(robot_type::FOLLOWER), x, y);
 		break;
 	case '6':
 		i_map[y * width + x] = startingpoint(
 			terrain::HUNTER_START);
+		__robot_map.set_robot(robot(robot_type::HUNTER), x, y);
 		break;
 	case '7':
 		i_map[y * width + x] = startingpoint(
 			terrain::SNIFFER_START);
+		__robot_map.set_robot(robot(robot_type::SNIFFER), x, y);
 		break;
 	default:
 		throw map_format_exception(

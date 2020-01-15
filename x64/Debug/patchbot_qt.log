@@ -1,2 +1,7 @@
-﻿  pb_map.cpp
-D:\university\patchbot\patchbot_qt\pb_map.cpp(54,29): warning C4100: 'r': unreferenced formal parameter
+﻿  main.cpp
+  pb_io.cpp
+  pb_map.cpp
+D:\university\patchbot\patchbot\pb_map.cpp(149,34): warning C4100: 'r': unreferenced formal parameter
+D:\university\patchbot\patchbot\main.cpp(8,26): warning C4100: 'argv': unreferenced formal parameter
+D:\university\patchbot\patchbot\main.cpp(8,14): warning C4100: 'argc': unreferenced formal parameter
+  patchbot_qt.vcxproj -> D:\university\patchbot\patchbot\debug\patchbot_qt.exe
