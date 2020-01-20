@@ -1,0 +1,9 @@
+.vs/
+txt/
+x64/
+debug/
+release/ 
+umgebungen/
+roboter/
+pfeile/
+logfile.txt

@@ -5,11 +5,12 @@
 
 #include <string>
 #include <fstream>
+#include <memory>
 
 class pb_input {
 public:
 	static tile_map read_map_txt(const std::string& path);
-	static tga read_tga_img(const std::string& path);
+	static std::unique_ptr<tga> read_tga_img(const std::string& path);
 };
 
 class pb_output {

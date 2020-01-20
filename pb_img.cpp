@@ -1,6 +1,9 @@
 #include "pb_img.h"
+#include "pb_io.h"
 
 #include <stdexcept>
+#include <math.h>
+#include <iostream>
 
 img_exception::img_exception(const char* _message) :
 	message(_message)
@@ -21,6 +24,128 @@ rgba_pixel::rgba_pixel(
 	blue(_blue),
 	alpha(_alpha)
 {
+}
+
+void rgba_pixel::overlay_pixel(const rgba_pixel& pixel)
+{
+	/*
+		https://en.wikipedia.org/wiki/Alpha_compositing
+	*/
+
+	// Alpha
+	double alpha_p = alpha / 255.0;
+	double o_alpha_p = pixel.alpha / 255.0;
+	double new_alpha = o_alpha_p + (1 - o_alpha_p) * alpha_p;
+	alpha = floor(new_alpha * 255.0);
+
+	// Red
+	double red_p = red / 255.0;
+	double o_red_p = pixel.red / 255.0;
+	red = floor(
+		(
+			(1 / new_alpha) * 
+			(o_alpha_p * o_red_p + (1 - o_alpha_p) * alpha_p * red_p)
+		) * 255.0
+	);
+
+	// Green
+	double green_p = green / 255.0;
+	double o_green_p = pixel.green / 255.0;
+	green = floor(
+		(
+			(1 / new_alpha) *
+			(o_alpha_p * o_green_p + (1 - o_alpha_p) * alpha_p * green_p)
+		) * 255.0
+	);
+
+	// Blue
+	double blue_p = blue / 255.0;
+	double o_blue_p = pixel.blue / 255.0;
+	blue = floor(
+		(
+			(1 / new_alpha) *
+			(o_alpha_p * o_blue_p + (1 - o_alpha_p) * alpha_p * blue_p)
+		) * 255.0
+	);
+}
+	
+void rgba_pixel::underlay_pixel(const rgba_pixel& pixel)
+{
+	/*
+		https://en.wikipedia.org/wiki/Alpha_compositing
+	*/
+
+	// Alpha
+	double alpha_p = pixel.alpha / 255.0;
+	double o_alpha_p = alpha / 255.0;
+	double new_alpha = o_alpha_p + (1 - o_alpha_p) * alpha_p;
+	alpha = floor(new_alpha * 255.0);
+
+	// Red
+	double red_p = pixel.red / 255.0;
+	double o_red_p = red / 255.0;
+	red = floor(
+		(
+		(1 / new_alpha) *
+			(o_alpha_p * o_red_p + (1 - o_alpha_p) * alpha_p * red_p)
+		) * 255.0
+	);
+
+	// Green
+	double green_p = pixel.green / 255.0;
+	double o_green_p = green / 255.0;
+	green = floor(
+		(
+		(1 / new_alpha) *
+			(o_alpha_p * o_green_p + (1 - o_alpha_p) * alpha_p * green_p)
+		) * 255.0
+	);
+
+	// Blue
+	double blue_p = pixel.blue / 255.0;
+	double o_blue_p = blue / 255.0;
+	blue = floor(
+		(
+		(1 / new_alpha) *
+			(o_alpha_p * o_blue_p + (1 - o_alpha_p) * alpha_p * blue_p)
+		) * 255.0
+	);
+}
+
+rgba_pixel rgba_pixel::blend(const rgba_pixel& overlay_pixel, 
+	const rgba_pixel& underlay_pixel)
+{
+	/*
+		https://en.wikipedia.org/wiki/Alpha_compositing
+	*/
+
+	// Alpha
+	double alpha_p = underlay_pixel.alpha / 255.0;
+	double o_alpha_p = overlay_pixel.alpha / 255.0;
+	double new_alpha = o_alpha_p + (1 - o_alpha_p) * alpha_p;
+
+	// Red
+	double red_p = underlay_pixel.red / 255.0;
+	double o_red_p = overlay_pixel.red / 255.0;
+	double red = (1 / new_alpha) *
+		(o_alpha_p * o_red_p + (1 - o_alpha_p) * alpha_p * red_p);
+
+	// Green
+	double green_p = underlay_pixel.green / 255.0;
+	double o_green_p = overlay_pixel.green / 255.0;
+	double green = (1 / new_alpha) *
+		(o_alpha_p * o_green_p + (1 - o_alpha_p) * alpha_p * green_p);
+
+	// Blue
+	double blue_p = underlay_pixel.blue / 255.0;
+	double o_blue_p = overlay_pixel.blue / 255.0;
+	double blue = (1 / new_alpha) *
+		(o_alpha_p * o_blue_p + (1 - o_alpha_p) * alpha_p * blue_p);
+
+	return rgba_pixel(floor(red * 255.0), 
+		floor(green * 255.0), 
+		floor(blue * 255.0), 
+		floor(new_alpha * 255.0));
 }
 
 tga::tga(tga_header&& _header,
@@ -98,7 +223,7 @@ std::unique_ptr<char[]> tga::get_raw_data() const {
 	return raw_data;
 }
 
-tga tga::load_file(std::ifstream& file) {
+std::unique_ptr<tga> tga::load_file(std::ifstream& file) {
 	if (!file.is_open())
 		throw std::invalid_argument(
 			"Image file exception: File was not opened.");
@@ -188,17 +313,171 @@ tga tga::load_file(std::ifstream& file) {
 		));
 	}
 
-	return tga(std::move(header), std::move(pixel_data));
+	return std::make_unique<tga>(std::move(header), std::move(pixel_data));
 }
 
 rgba_pixel tga::get_pixel(int x, int y) const {
 	if (x >= header.img_width || y >= header.img_height)
-		throw std::invalid_argument("Invalid argument passed to tga: Coordinates out of range.");
+		throw std::invalid_argument("Invalid argument passed to tga: "
+			"Coordinates out of range.");
 	return pixel_map[y * header.img_width + x];
 }
 
 void tga::set_pixel(const rgba_pixel& pixel, int x, int y) {
 	if (x >= header.img_width || y >= header.img_height)
-		throw std::invalid_argument("Invalid argument passed to tga: Coordinates out of range.");
+		throw std::invalid_argument("Invalid argument passed to tga: "
+			"Coordinates out of range.");
 	pixel_map[y * header.img_width + x] = pixel;
+}
+
+img_resources::img_resources(const std::string& _path, 
+	const std::string& _tile_folder, const std::string& _robot_folder) :
+	path(_path),
+	tile_folder(_tile_folder),
+	robot_folder(_robot_folder)
+{
+	if (path.back() == '\\') path.pop_back();
+	if (tile_folder.back() == '\\') tile_folder.pop_back();
+	if (tile_folder.front() == '\\') tile_folder.erase(tile_folder.begin());
+	if (robot_folder.back() == '\\') robot_folder.pop_back();
+	if (robot_folder.front() == '\\') robot_folder.erase(tile_folder.begin());
+
+	std::string path_tiles = path + '\\' + tile_folder;
+	boden = pb_input::read_tga_img(path_tiles 
+		+ "\\boden.tga");
+	boden_start_gegner = pb_input::read_tga_img(path_tiles 
+		+ "\\boden_start_gegner.tga");
+	boden_start_patchbot = pb_input::read_tga_img(path_tiles 
+		+ "\\boden_start_patchbot.tga");
+	gefahr_abgrund = pb_input::read_tga_img(path_tiles 
+		+ "\\gefahr_abgrund.tga");
+	gefahr_wasser = pb_input::read_tga_img(path_tiles 
+		+ "\\gefahr_wasser.tga");
+	hauptserver = pb_input::read_tga_img(path_tiles 
+		+ "\\hauptserver.tga");
+	hindernis_aliengras = pb_input::read_tga_img(path_tiles 
+		+ "\\hindernis_aliengras.tga");
+	hindernis_geheimgang = pb_input::read_tga_img(path_tiles 
+		+ "\\hindernis_geheimgang.tga");
+	hindernis_schotter = pb_input::read_tga_img(path_tiles 
+		+ "\\hindernis_schotter.tga");
+	tuer_automatisch_geschlossen = pb_input::read_tga_img(path_tiles 
+		+ "\\tuer_automatisch_geschlossen.tga");
+	tuer_automatisch_offen = pb_input::read_tga_img(path_tiles 
+		+ "\\tuer_automatisch_offen.tga");
+	tuer_manuell_geschlossen = pb_input::read_tga_img(path_tiles 
+		+ "\\tuer_manuell_geschlossen.tga");
+	tuer_manuell_offen = pb_input::read_tga_img(path_tiles 
+		+ "\\tuer_manuell_offen.tga");
+	wand_beton = pb_input::read_tga_img(path_tiles 
+		+ "\\wand_beton.tga");
+	wand_fels = pb_input::read_tga_img(path_tiles 
+		+ "\\wand_fels.tga");
+
+	std::string path_robots = path + '\\' + robot_folder;
+	dead = pb_input::read_tga_img(path_robots + "\\dead.tga");
+	patchbot = pb_input::read_tga_img(path_robots + "\\patchbot.tga");
+	typ1_bugger = pb_input::read_tga_img(path_robots + "\\typ1_bugger.tga");
+	typ2_pusher = pb_input::read_tga_img(path_robots + "\\typ2_pusher.tga");
+	typ3_digger = pb_input::read_tga_img(path_robots + "\\typ3_digger.tga");
+	typ4_swimmer = pb_input::read_tga_img(path_robots + "\\typ4_swimmer.tga");
+	typ5_follower = pb_input::read_tga_img(path_robots + "\\typ5_follower.tga");
+	typ6_hunter = pb_input::read_tga_img(path_robots + "\\typ6_hunter.tga");
+	typ7_sniffer = pb_input::read_tga_img(path_robots + "\\typ7_sniffer.tga");
+}
+
+std::shared_ptr<tga> img_resources::get_tga(tile _tile) const {
+	switch (_tile.get_terrain()) {
+	case(terrain::STEEL_PLANKS):
+		return boden;
+		break;
+	case(terrain::BUGGER_START):
+	case(terrain::PUSHER_START):
+	case(terrain::DIGGER_START):
+	case(terrain::SWIMMER_START):
+	case(terrain::FOLLOWER_START):
+	case(terrain::HUNTER_START):
+	case(terrain::SNIFFER_START):
+		return boden_start_gegner;
+		break;
+	case(terrain::PATCHBOT_START):
+		return boden_start_patchbot;
+		break;
+	case(terrain::ABYSS):
+		return gefahr_abgrund;
+		break;
+	case(terrain::WATER):
+		return gefahr_wasser;
+		break;
+	case(terrain::MAIN_SERVER):
+		return hauptserver;
+		break;
+	case(terrain::ALIEN_GRASS):
+		return hindernis_aliengras;
+		break;
+	case(terrain::SECRET_PASSAGE):
+		return hindernis_geheimgang;
+		break;
+	case(terrain::GRAVEL):
+		return hindernis_schotter;
+		break;
+	case(terrain::AUTOMATIC_DOOR):
+		if (_tile.get_is_open())
+			return tuer_automatisch_offen;
+		else
+			return tuer_automatisch_geschlossen;
+		break;
+	case(terrain::MANUAL_DOOR):
+		if (_tile.get_is_open())
+			return tuer_manuell_offen;
+		else
+			return tuer_manuell_geschlossen;
+		break;
+	case(terrain::CONCRETE_WALL):
+		return wand_beton;
+		break;
+	case(terrain::ROCK_WALL):
+		return wand_fels;
+		break;
+	default:
+		std::cout << (char)_tile.get_terrain() << "\n\n";
+		throw std::invalid_argument("Resource exception: "
+			"No resource available for given tile.");
+		break;
+	}
+}
+
+std::shared_ptr<tga> img_resources::get_tga(robot _robot) const {
+	if (_robot.is_dead)
+		return dead;
+	switch (_robot.type) {
+	case(robot_type::PATCHBOT):
+		return patchbot;
+		break;
+	case(robot_type::BUGGER):
+		return typ1_bugger;
+		break;
+	case(robot_type::PUSHER):
+		return typ2_pusher;
+		break;
+	case(robot_type::DIGGER):
+		return typ3_digger;
+		break;
+	case(robot_type::SWIMMER):
+		return typ4_swimmer;
+		break;
+	case(robot_type::FOLLOWER):
+		return typ5_follower;
+		break;
+	case(robot_type::HUNTER):
+		return typ6_hunter;
+		break;
+	case(robot_type::SNIFFER):
+		return typ7_sniffer;
+		break;
+	default:
+		throw std::invalid_argument("Resource exception:"
+			"No resource available for given robot.");
+		break;
+	}
 }

@@ -19,6 +19,7 @@
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QPushButton>
+#include <QtWidgets/QScrollArea>
 #include <QtWidgets/QScrollBar>
 #include <QtWidgets/QSpacerItem>
 #include <QtWidgets/QVBoxLayout>
@@ -35,9 +36,11 @@ public:
     QGridLayout *gridLayout;
     QLabel *colonie_label;
     QGridLayout *map;
-    QScrollBar *map_v_scroll;
+    QScrollArea *map_scrollArea;
+    QWidget *map_scrollAreaWidgetContents;
     QLabel *map_placeholder;
-    QScrollBar *map_h_scroll;
+    QScrollBar *map_v_scrollbar;
+    QScrollBar *map_h_scrollbar;
     QGroupBox *controls_box;
     QWidget *horizontalLayoutWidget;
     QHBoxLayout *change_colonie;
@@ -73,12 +76,13 @@ public:
     {
         if (main_window->objectName().isEmpty())
             main_window->setObjectName(QString::fromUtf8("main_window"));
-        main_window->resize(820, 550);
+        main_window->resize(795, 489);
         QSizePolicy sizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(main_window->sizePolicy().hasHeightForWidth());
         main_window->setSizePolicy(sizePolicy);
+        main_window->setContextMenuPolicy(Qt::NoContextMenu);
         centralwidget = new QWidget(main_window);
         centralwidget->setObjectName(QString::fromUtf8("centralwidget"));
         gridLayout_2 = new QGridLayout(centralwidget);
@@ -103,31 +107,50 @@ public:
         map->setSpacing(0);
         map->setObjectName(QString::fromUtf8("map"));
         map->setSizeConstraint(QLayout::SetDefaultConstraint);
-        map_v_scroll = new QScrollBar(map_group);
-        map_v_scroll->setObjectName(QString::fromUtf8("map_v_scroll"));
-        map_v_scroll->setOrientation(Qt::Vertical);
-
-        map->addWidget(map_v_scroll, 0, 1, 1, 1);
-
-        map_placeholder = new QLabel(map_group);
+        map_scrollArea = new QScrollArea(map_group);
+        map_scrollArea->setObjectName(QString::fromUtf8("map_scrollArea"));
+        map_scrollArea->setMouseTracking(false);
+        map_scrollArea->setTabletTracking(false);
+        map_scrollArea->setFocusPolicy(Qt::NoFocus);
+        map_scrollArea->setFrameShadow(QFrame::Sunken);
+        map_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        map_scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        map_scrollArea->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
+        map_scrollArea->setWidgetResizable(true);
+        map_scrollAreaWidgetContents = new QWidget();
+        map_scrollAreaWidgetContents->setObjectName(QString::fromUtf8("map_scrollAreaWidgetContents"));
+        map_scrollAreaWidgetContents->setGeometry(QRect(0, 0, 501, 421));
+        map_scrollAreaWidgetContents->setFocusPolicy(Qt::NoFocus);
+        map_placeholder = new QLabel(map_scrollAreaWidgetContents);
         map_placeholder->setObjectName(QString::fromUtf8("map_placeholder"));
+        map_placeholder->setGeometry(QRect(0, 0, 541, 501));
         QSizePolicy sizePolicy1(QSizePolicy::Expanding, QSizePolicy::Expanding);
         sizePolicy1.setHorizontalStretch(0);
         sizePolicy1.setVerticalStretch(0);
         sizePolicy1.setHeightForWidth(map_placeholder->sizePolicy().hasHeightForWidth());
         map_placeholder->setSizePolicy(sizePolicy1);
+        map_placeholder->setFocusPolicy(Qt::NoFocus);
         map_placeholder->setStyleSheet(QString::fromUtf8("background: white;\n"
 ""));
-        map_placeholder->setAlignment(Qt::AlignCenter);
-        map_placeholder->setMargin(-5);
+        map_placeholder->setAlignment(Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop);
+        map_placeholder->setMargin(0);
+        map_scrollArea->setWidget(map_scrollAreaWidgetContents);
 
-        map->addWidget(map_placeholder, 0, 0, 1, 1);
+        map->addWidget(map_scrollArea, 0, 0, 1, 1);
 
-        map_h_scroll = new QScrollBar(map_group);
-        map_h_scroll->setObjectName(QString::fromUtf8("map_h_scroll"));
-        map_h_scroll->setOrientation(Qt::Horizontal);
+        map_v_scrollbar = new QScrollBar(map_group);
+        map_v_scrollbar->setObjectName(QString::fromUtf8("map_v_scrollbar"));
+        map_v_scrollbar->setFocusPolicy(Qt::WheelFocus);
+        map_v_scrollbar->setOrientation(Qt::Vertical);
 
-        map->addWidget(map_h_scroll, 1, 0, 1, 1);
+        map->addWidget(map_v_scrollbar, 0, 1, 1, 1);
+
+        map_h_scrollbar = new QScrollBar(map_group);
+        map_h_scrollbar->setObjectName(QString::fromUtf8("map_h_scrollbar"));
+        map_h_scrollbar->setFocusPolicy(Qt::WheelFocus);
+        map_h_scrollbar->setOrientation(Qt::Horizontal);
+
+        map->addWidget(map_h_scrollbar, 1, 0, 1, 1);
 
 
         gridLayout->addLayout(map, 1, 0, 1, 1);
@@ -328,9 +351,9 @@ public:
 
     void retranslateUi(QMainWindow *main_window)
     {
-        main_window->setWindowTitle(QApplication::translate("main_window", " PATCHBOT", nullptr));
+        main_window->setWindowTitle(QApplication::translate("main_window", " Patchbot - The game", nullptr));
         colonie_label->setText(QApplication::translate("main_window", "Aktuelle Kolonie: Lithium-Stollen 13-A", nullptr));
-        map_placeholder->setText(QApplication::translate("main_window", "Umgebungskarte", nullptr));
+        map_placeholder->setText(QString());
         controls_box->setTitle(QString());
         change_colonie_button->setText(QApplication::translate("main_window", "Andere Kolonie...", nullptr));
         program->setTitle(QString());

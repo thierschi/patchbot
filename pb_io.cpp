@@ -8,13 +8,15 @@
 #include <algorithm>
 #include <iterator>
 #include <string>
+#include <memory>
+#include <stdlib.h>
 
 tile_map pb_input::read_map_txt(const std::string& path) {
 	std::ifstream map_txt;
 	map_txt.open(path, std::ios_base::in);
 	if (!map_txt.is_open())
 		throw std::invalid_argument(
-			"Could not open file: Check if path is valid.");
+			"Could not open file " + path + ": Check if path is valid.");
 
 	std::string map_size[2];
 	getline(map_txt, map_size[0]);
@@ -25,7 +27,7 @@ tile_map pb_input::read_map_txt(const std::string& path) {
 			if (c == 0)
 				break;
 			if (c < 48 || c > 57)
-				// Checks that given map_sizes are numerical
+					// Checks that given map_sizes are numerical
 				throw map_format_exception("Map-format-exception: "
 					"Map's width and height must be numerical.");
 		}
@@ -41,7 +43,14 @@ tile_map pb_input::read_map_txt(const std::string& path) {
 			"Map's width and height must be greater than zero.");
 
 	// Init map and set the Tile_map's width and height
-	tile_map t_map = tile_map();
+	std::string name = "";
+	for (int i = path.length() - 4; i >= 0; i--) {
+		// Get filename
+		if (path[i - 1] == '\\'	|| path[i - 1] == '/')
+			break;
+		name = path[i - 1] + name;
+	}
+	tile_map t_map = tile_map(name);
 	t_map.set_width(width);
 	t_map.set_height(height);
 
@@ -99,16 +108,15 @@ tile_map pb_input::read_map_txt(const std::string& path) {
 	return t_map;
 }
 
-tga pb_input::read_tga_img(const std::string& path) {
+std::unique_ptr<tga> pb_input::read_tga_img(const std::string& path) {
 	std::ifstream img_file;
 	img_file.open(path, std::ios_base::in
 		| std::ios_base::binary);
 	if (!img_file.is_open())
 		throw std::invalid_argument(
-			"Could not open file: "
-			"Check if path is valid.");
+			"Could not open file " + path + ": Check if path is valid.");
 
-	tga img = tga::load_file(img_file);
+	std::unique_ptr<tga> img = tga::load_file(img_file);
 
 	img_file.close();
 	return img;
@@ -120,8 +128,7 @@ void pb_output::write_map_txt(const std::string& path,
 	map_txt.open(path, std::ios_base::out);
 	if (!map_txt.is_open())
 		throw std::invalid_argument(
-			"Could not open file: "
-			"Check if path is valid.");
+			"Could not open file " + path + ": Check if path is valid.");
 
 	map_txt << t_map.get_width()
 		<< std::endl
@@ -175,8 +182,7 @@ void pb_output::write_tga_img(const std::string& path,
 		| std::ios_base::binary);
 	if (!img_file.is_open())
 		throw std::invalid_argument(
-			"Could not open file: "
-			"Check if path is valid.");
+			"Could not open file " + path + ": Check if path is valid.");
 
 	img_file.write(img.get_raw_data().get(),
 		img.data_size + 44);

@@ -1,6 +1,7 @@
 #pragma once
 #pragma once
 #include <vector>
+#include <string>
 
 /*
 	Enumerations fpr Terrain-types, Robot-types and Action-types
@@ -71,7 +72,7 @@ protected:
 	int height;
 	int width;
 	bool has_pb;
-	std::vector<robot> __robot_map;
+	std::vector<robot> robots;
 
 public:
 	robot_map(int _width = 1, int height = 1);
@@ -94,6 +95,7 @@ public:
 */
 class tile {
 protected:
+	bool is_open; // Only for doors
 	terrain tile_terrain;
 
 public:
@@ -112,6 +114,7 @@ public:
 		a robot tries to walk on it / interact with it
 	*/
 	virtual action interact(robot_type r);
+	bool get_is_open() const;
 };
 
 class startingpoint : public tile {
@@ -135,9 +138,6 @@ public:
 };
 
 class door : public tile {
-protected:
-	bool is_open = false;
-
 public:
 	door(terrain t);
 
@@ -168,19 +168,19 @@ protected:
 	int height;
 	int width;
 	bool has_pb_start;
-	robot_map __robot_map;
 	std::vector<tile> i_map;
 
 public:
+	std::string name;
+	robot_map robots;
 
-	tile_map(int _width = 1, int _height = 1);
+	tile_map(std::string _name = "No name.", int _width = 1, int _height = 1);
 
 	// Getter :
 
 	int get_size() const;
 	int get_height() const;
 	int get_width() const;
-	robot_map get_robot_map() const;
 	tile get_tile(int x, int y) const;
 
 	//Setter :
