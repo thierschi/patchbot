@@ -6,6 +6,7 @@
 #include <exception>
 #include <string>
 #include <memory>
+#include <unordered_map>
 
 class img_exception : public std::exception {
 private:
@@ -81,11 +82,57 @@ public:
 		Takes an open file (ifstream binary) as an argument and creats a tga
 		object from the binary data in the file and returns that object
 	*/
-	static std::unique_ptr<tga> load_file(std::ifstream& file);
+	static tga load_file(std::ifstream& file);
 
 	rgba_pixel get_pixel(int x, int y) const;
 	void set_pixel(const rgba_pixel& pixel, int x, int y);
 };
+
+//class img_resources {
+//protected:
+//	std::string path;
+//	std::string tile_folder;
+//	std::string robot_folder;
+//
+//	// Umgebungen
+//	std::shared_ptr<tga> boden;
+//	std::shared_ptr<tga> boden_start_gegner;
+//	std::shared_ptr<tga> boden_start_patchbot;
+//	std::shared_ptr<tga> gefahr_abgrund;
+//	std::shared_ptr<tga> gefahr_wasser;
+//	std::shared_ptr<tga> hauptserver;
+//	std::shared_ptr<tga> hindernis_aliengras;
+//	std::shared_ptr<tga> hindernis_geheimgang;
+//	std::shared_ptr<tga> hindernis_schotter;
+//	std::shared_ptr<tga> tuer_automatisch_geschlossen;
+//	std::shared_ptr<tga> tuer_automatisch_offen;
+//	std::shared_ptr<tga> tuer_manuell_geschlossen;
+//	std::shared_ptr<tga> tuer_manuell_offen;
+//	std::shared_ptr<tga> wand_beton;
+//	std::shared_ptr<tga> wand_fels;
+//
+//	// Roboter
+//	std::shared_ptr<tga> dead;
+//	std::shared_ptr<tga> patchbot;
+//	std::shared_ptr<tga> typ1_bugger;
+//	std::shared_ptr<tga> typ2_pusher;
+//	std::shared_ptr<tga> typ3_digger;
+//	std::shared_ptr<tga> typ4_swimmer;
+//	std::shared_ptr<tga> typ5_follower;
+//	std::shared_ptr<tga> typ6_hunter;
+//	std::shared_ptr<tga> typ7_sniffer;
+//
+//public:
+//	img_resources(const std::string& _path, 
+//		const std::string& _tile_folder = "umgebungen",
+//		const std::string& _robot_folder = "roboter");
+//
+//	/*
+//		get_tga() returns a ptr to the suiting image object
+//	*/
+//	std::shared_ptr<tga> get_tga(tile _tile) const;
+//	std::shared_ptr<tga> get_tga(robot _robot) const;
+//};
 
 class img_resources {
 protected:
@@ -93,42 +140,11 @@ protected:
 	std::string tile_folder;
 	std::string robot_folder;
 
-	// Umgebungen
-	std::shared_ptr<tga> boden;
-	std::shared_ptr<tga> boden_start_gegner;
-	std::shared_ptr<tga> boden_start_patchbot;
-	std::shared_ptr<tga> gefahr_abgrund;
-	std::shared_ptr<tga> gefahr_wasser;
-	std::shared_ptr<tga> hauptserver;
-	std::shared_ptr<tga> hindernis_aliengras;
-	std::shared_ptr<tga> hindernis_geheimgang;
-	std::shared_ptr<tga> hindernis_schotter;
-	std::shared_ptr<tga> tuer_automatisch_geschlossen;
-	std::shared_ptr<tga> tuer_automatisch_offen;
-	std::shared_ptr<tga> tuer_manuell_geschlossen;
-	std::shared_ptr<tga> tuer_manuell_offen;
-	std::shared_ptr<tga> wand_beton;
-	std::shared_ptr<tga> wand_fels;
-
-	// Roboter
-	std::shared_ptr<tga> dead;
-	std::shared_ptr<tga> patchbot;
-	std::shared_ptr<tga> typ1_bugger;
-	std::shared_ptr<tga> typ2_pusher;
-	std::shared_ptr<tga> typ3_digger;
-	std::shared_ptr<tga> typ4_swimmer;
-	std::shared_ptr<tga> typ5_follower;
-	std::shared_ptr<tga> typ6_hunter;
-	std::shared_ptr<tga> typ7_sniffer;
-
 public:
-	img_resources(const std::string& _path, 
+	std::unordered_map<terrain, tga> get_terrain;
+	std::unordered_map<robot_type, tga> get_robot;
+
+	img_resources(const std::string& _path,
 		const std::string& _tile_folder = "umgebungen",
 		const std::string& _robot_folder = "roboter");
-
-	/*
-		get_tga() returns a ptr to the suiting image object
-	*/
-	std::shared_ptr<tga> get_tga(tile _tile) const;
-	std::shared_ptr<tga> get_tga(robot _robot) const;
 };

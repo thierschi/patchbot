@@ -159,20 +159,20 @@ bool tile::get_is_open() const
 }
 
 
-startingpoint::startingpoint(terrain t) :
-	starting((robot_type)t)
+startingpoint::startingpoint(robot_type r) :
+	starting(r)
 {
-	if (t == terrain::PATCHBOT_START) {
-		tile_terrain = t;
+	if (r == robot_type::PATCHBOT) {
+		tile_terrain = terrain::PATCHBOT_START;
 		return;
 	}
-	if ((char)t < '1' || '7' < (char)t)
+	if ((char)r < '1' || '7' < (char)r)
 		// Check for the other robots (1-7)
 		throw std::invalid_argument(
 			"Invalid argument passed to "
 			"constructor of tile: "
 			"Terrain class missmatch.");
-	tile_terrain = t;
+	tile_terrain = terrain::ENEMY_START;
 }
 
 danger::danger(terrain t)
@@ -409,7 +409,7 @@ void tile_map::set_tile(char c, int x, int y) {
 				"Invalid argument passed to Tile_map: "
 				"This map already has a startingpoint for patchbot.");
 		i_map[y * width + x] = startingpoint(
-			terrain::PATCHBOT_START);
+			(robot_type)c);
 		robots.set_robot(robot(robot_type::PATCHBOT), x, y);
 		has_pb_start = true;
 		break;
@@ -456,39 +456,14 @@ void tile_map::set_tile(char c, int x, int y) {
 			terrain::WATER);
 		break;
 	case '1':
-		i_map[y * width + x] = startingpoint(
-			terrain::BUGGER_START);
-		robots.set_robot(robot(robot_type::BUGGER), x, y);
-		break;
 	case '2':
-		i_map[y * width + x] = startingpoint(
-			terrain::PUSHER_START);
-		robots.set_robot(robot(robot_type::PUSHER), x, y);
-		break;
 	case '3':
-		i_map[y * width + x] = startingpoint(
-			terrain::DIGGER_START);
-		robots.set_robot(robot(robot_type::DIGGER), x, y);
-		break;
 	case '4':
-		i_map[y * width + x] = startingpoint(
-			terrain::SWIMMER_START);
-		robots.set_robot(robot(robot_type::SWIMMER), x, y);
-		break;
 	case '5':
-		i_map[y * width + x] = startingpoint(
-			terrain::FOLLOWER_START);
-		robots.set_robot(robot(robot_type::FOLLOWER), x, y);
-		break;
 	case '6':
-		i_map[y * width + x] = startingpoint(
-			terrain::HUNTER_START);
-		robots.set_robot(robot(robot_type::HUNTER), x, y);
-		break;
 	case '7':
-		i_map[y * width + x] = startingpoint(
-			terrain::SNIFFER_START);
-		robots.set_robot(robot(robot_type::SNIFFER), x, y);
+		i_map[y * width + x] = startingpoint((robot_type)c);
+		robots.set_robot(robot((robot_type)c), x, y);
 		break;
 	default:
 		throw map_format_exception(

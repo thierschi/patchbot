@@ -108,7 +108,7 @@ tile_map pb_input::read_map_txt(const std::string& path) {
 	return t_map;
 }
 
-std::unique_ptr<tga> pb_input::read_tga_img(const std::string& path) {
+tga pb_input::read_tga_img(const std::string& path) {
 	std::ifstream img_file;
 	img_file.open(path, std::ios_base::in
 		| std::ios_base::binary);
@@ -116,7 +116,7 @@ std::unique_ptr<tga> pb_input::read_tga_img(const std::string& path) {
 		throw std::invalid_argument(
 			"Could not open file " + path + ": Check if path is valid.");
 
-	std::unique_ptr<tga> img = tga::load_file(img_file);
+	tga img = tga::load_file(img_file);
 
 	img_file.close();
 	return img;
@@ -151,9 +151,9 @@ void pb_output::print_map(const tile_map& t_map) {
 
 	for (int i = 0; i < h; i++) {
 		for (int j = 0; j < w; j++) {
-			std::cout << (char)t_map
-				.get_tile(j, i)
-				.get_terrain();
+			std::cout << ((char)t_map.get_tile(j, i).get_terrain() == 'e') ? 
+				(char)t_map.get_tile(j, i).get_terrain() : 
+				(char)t_map.robots.get_robot(i, j).type;
 		}
 		std::cout << std::endl;
 	}

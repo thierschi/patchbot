@@ -28,7 +28,7 @@ main_window::main_window(QWidget* parent,
     try {
         map = pb_input::read_map_txt(".\\txt\\hunted.txt");
     }
-    catch (std::exception e) {
+    catch (std::exception& e) {
         QMessageBox::about(this, "Fehler", e.what());
     }
     ui->setupUi(this);
@@ -99,39 +99,39 @@ void main_window::resizeEvent(QResizeEvent* event)
 int main_window::get_full_width_px() const
 {
     return map.get_width() 
-        * resources.get_tga(map.get_tile(0, 0))->header.img_width;
+        * resources.get_terrain.at(map.get_tile(0, 0).get_terrain()).header.img_width;
 }
 
 int main_window::get_full_height_px() const
 {
     return map.get_height() 
-        * resources.get_tga(map.get_tile(0, 0))->header.img_height;
+        * resources.get_terrain.at(map.get_tile(0, 0).get_terrain()).header.img_height;
 }
 
 void main_window::render_pixel(int x, int y)
 {
     /* Calc corresponding tile to coords*/
-    int map_x = floor((x + padding_left) / resources.get_tga(map.get_tile(0, 0))
-        ->header.img_width);
-    int map_y = floor((y + padding_top) / resources.get_tga(map.get_tile(0, 0))
-        ->header.img_height);
+    int map_x = floor((x + padding_left) / resources.get_terrain.at(
+        map.get_tile(0, 0).get_terrain()).header.img_width);
+    int map_y = floor((y + padding_top) / resources.get_terrain.at(
+        map.get_tile(0, 0).get_terrain()).header.img_height);
     /* Calc corresponding pixel of a tga tile image to coords */
-    int pixel_x = (x + padding_left) % resources.get_tga(map.get_tile(0, 0))
-        ->header.img_width;
-    int pixel_y = (y + padding_top) % resources.get_tga(map.get_tile(0, 0))
-        ->header.img_height;
+    int pixel_x = (x + padding_left) % resources.get_terrain.at(
+        map.get_tile(0, 0).get_terrain()).header.img_width;
+    int pixel_y = (y + padding_top) % resources.get_terrain.at(
+        map.get_tile(0, 0).get_terrain()).header.img_height;
 
-    rgba_pixel pixel = resources.get_tga((
-        map.get_tile(map_x, map_y)
-        ))->get_pixel(pixel_x, resources.get_tga(map.get_tile(0, 0))
-            ->header.img_height - 1 - pixel_y);
+    rgba_pixel pixel = resources.get_terrain.at((
+        map.get_tile(map_x, map_y).get_terrain()
+        )).get_pixel(pixel_x, resources.get_terrain.at(
+            map.get_tile(0, 0).get_terrain()).header.img_height - 1 - pixel_y);
 
     /* Blend pixel of robot on top, if robot is present on field */
     if (map.robots.get_robot(map_x, map_y).type != robot_type::NONE)
-        pixel.overlay_pixel(resources.get_tga(
-            map.robots.get_robot(map_x, map_y)
-        )->get_pixel(pixel_x, resources.get_tga(map.get_tile(0, 0))
-            ->header.img_height - 1 - pixel_y));
+        pixel.overlay_pixel(resources.get_robot.at(
+            map.robots.get_robot(map_x, map_y).type
+        ).get_pixel(pixel_x, resources.get_terrain.at(map.get_tile(0, 0).get_terrain())
+            .header.img_height - 1 - pixel_y));
 
     qimg.setPixel(x, y, qRgba(
         pixel.red,
@@ -197,7 +197,7 @@ void main_window::on_change_colonie_button_clicked()
     try {
         map = pb_input::read_map_txt(file_name.toLocal8Bit().constData());
     }
-    catch (std::exception e) {
+    catch (std::exception &e) {
         QMessageBox::about(this, "Fehler", e.what());
         return;
     }

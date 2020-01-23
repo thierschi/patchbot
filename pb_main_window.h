@@ -18,10 +18,10 @@ public:
     tile_map map;
     QImage qimg;
 
-    main_window(QWidget *parent = 0, 
+    main_window(QWidget* parent = 0,
         const std::string& path_to_resources = ".");
     ~main_window();
-  
+
     void resizeEvent(QResizeEvent* event);
 
     /* Getter */
@@ -58,6 +58,6 @@ private:
     int padding_top;
     int padding_left;
 
-    Ui::main_window *ui;
+    Ui::main_window* ui;
 };
 #endif // MAIN_WINDOW_H

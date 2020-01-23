@@ -9,13 +9,14 @@
 enum class terrain {
 	STEEL_PLANKS = ' ',
 	PATCHBOT_START = 'p',
-	BUGGER_START = '1',
+	ENEMY_START = 'e',
+	/*BUGGER_START = '1',
 	PUSHER_START = '2',
 	DIGGER_START = '3',
 	SWIMMER_START = '4',
 	FOLLOWER_START = '5',
 	HUNTER_START = '6',
-	SNIFFER_START = '7',
+	SNIFFER_START = '7',*/
 	ABYSS = 'O',
 	WATER = '~',
 	MAIN_SERVER = 'P',
@@ -23,7 +24,9 @@ enum class terrain {
 	GRAVEL = '.',
 	SECRET_PASSAGE = 'x',
 	MANUAL_DOOR = 'd',
+	MANUAL_DOOR_OPEN,
 	AUTOMATIC_DOOR = 'D',
+	AUTOMATIC_DOOR_OPEN,
 	CONCRETE_WALL = '#',
 	ROCK_WALL = 'M'
 };
@@ -37,7 +40,8 @@ enum class robot_type {
 	FOLLOWER = '5',
 	HUNTER = '6',
 	SNIFFER = '7',
-	NONE = '0'
+	NONE = '0',
+	DEAD = 'X'
 };
 
 enum class action {
@@ -120,7 +124,7 @@ public:
 class startingpoint : public tile {
 public:
 	robot_type starting;
-	startingpoint(terrain t);
+	startingpoint(robot_type t);
 };
 
 class danger : public tile {
@@ -177,7 +181,6 @@ public:
 	tile_map(std::string _name = "No name.", int _width = 1, int _height = 1);
 
 	// Getter :
-
 	int get_size() const;
 	int get_height() const;
 	int get_width() const;

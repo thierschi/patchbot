@@ -223,7 +223,7 @@ std::unique_ptr<char[]> tga::get_raw_data() const {
 	return raw_data;
 }
 
-std::unique_ptr<tga> tga::load_file(std::ifstream& file) {
+tga tga::load_file(std::ifstream& file) {
 	if (!file.is_open())
 		throw std::invalid_argument(
 			"Image file exception: File was not opened.");
@@ -313,7 +313,7 @@ std::unique_ptr<tga> tga::load_file(std::ifstream& file) {
 		));
 	}
 
-	return std::make_unique<tga>(std::move(header), std::move(pixel_data));
+	return tga(std::move(header), std::move(pixel_data));
 }
 
 rgba_pixel tga::get_pixel(int x, int y) const {
@@ -343,141 +343,54 @@ img_resources::img_resources(const std::string& _path,
 	if (robot_folder.front() == '\\') robot_folder.erase(tile_folder.begin());
 
 	std::string path_tiles = path + '\\' + tile_folder;
-	boden = pb_input::read_tga_img(path_tiles 
-		+ "\\boden.tga");
-	boden_start_gegner = pb_input::read_tga_img(path_tiles 
-		+ "\\boden_start_gegner.tga");
-	boden_start_patchbot = pb_input::read_tga_img(path_tiles 
-		+ "\\boden_start_patchbot.tga");
-	gefahr_abgrund = pb_input::read_tga_img(path_tiles 
-		+ "\\gefahr_abgrund.tga");
-	gefahr_wasser = pb_input::read_tga_img(path_tiles 
-		+ "\\gefahr_wasser.tga");
-	hauptserver = pb_input::read_tga_img(path_tiles 
-		+ "\\hauptserver.tga");
-	hindernis_aliengras = pb_input::read_tga_img(path_tiles 
-		+ "\\hindernis_aliengras.tga");
-	hindernis_geheimgang = pb_input::read_tga_img(path_tiles 
-		+ "\\hindernis_geheimgang.tga");
-	hindernis_schotter = pb_input::read_tga_img(path_tiles 
-		+ "\\hindernis_schotter.tga");
-	tuer_automatisch_geschlossen = pb_input::read_tga_img(path_tiles 
-		+ "\\tuer_automatisch_geschlossen.tga");
-	tuer_automatisch_offen = pb_input::read_tga_img(path_tiles 
-		+ "\\tuer_automatisch_offen.tga");
-	tuer_manuell_geschlossen = pb_input::read_tga_img(path_tiles 
-		+ "\\tuer_manuell_geschlossen.tga");
-	tuer_manuell_offen = pb_input::read_tga_img(path_tiles 
-		+ "\\tuer_manuell_offen.tga");
-	wand_beton = pb_input::read_tga_img(path_tiles 
-		+ "\\wand_beton.tga");
-	wand_fels = pb_input::read_tga_img(path_tiles 
-		+ "\\wand_fels.tga");
+	get_terrain.insert(std::pair<terrain, tga>(terrain::STEEL_PLANKS,
+		pb_input::read_tga_img(path_tiles + "\\boden.tga")));
+	get_terrain.insert(std::pair<terrain, tga>(terrain::PATCHBOT_START,
+		pb_input::read_tga_img(path_tiles + "\\boden_start_patchbot.tga")));
+	get_terrain.insert(std::pair<terrain, tga>(terrain::ENEMY_START, 
+		pb_input::read_tga_img(path_tiles + "\\boden_start_gegner.tga")));
+	get_terrain.insert(std::pair<terrain, tga>(terrain::ABYSS, 
+		pb_input::read_tga_img(path_tiles + "\\gefahr_abgrund.tga")));
+	get_terrain.insert(std::pair<terrain, tga>(terrain::WATER, 
+		pb_input::read_tga_img(path_tiles + "\\gefahr_wasser.tga")));
+	get_terrain.insert(std::pair<terrain, tga>(terrain::MAIN_SERVER, 
+		pb_input::read_tga_img(path_tiles + "\\hauptserver.tga")));
+	get_terrain.insert(std::pair<terrain, tga>(terrain::ALIEN_GRASS, 
+		pb_input::read_tga_img(path_tiles + "\\hindernis_aliengras.tga")));
+	get_terrain.insert(std::pair<terrain, tga>(terrain::SECRET_PASSAGE,
+		pb_input::read_tga_img(path_tiles + "\\hindernis_geheimgang.tga")));
+	get_terrain.insert(std::pair<terrain, tga>(terrain::GRAVEL, 
+		pb_input::read_tga_img(path_tiles + "\\hindernis_schotter.tga")));
+	get_terrain.insert(std::pair<terrain, tga>(terrain::AUTOMATIC_DOOR,
+		pb_input::read_tga_img(path_tiles + "\\tuer_automatisch_geschlossen.tga")));
+	get_terrain.insert(std::pair<terrain, tga>(terrain::AUTOMATIC_DOOR_OPEN, 
+		pb_input::read_tga_img(path_tiles + "\\tuer_automatisch_offen.tga")));
+	get_terrain.insert(std::pair<terrain, tga>(terrain::MANUAL_DOOR, 
+		pb_input::read_tga_img(path_tiles + "\\tuer_manuell_geschlossen.tga")));
+	get_terrain.insert(std::pair<terrain, tga>(terrain::MANUAL_DOOR_OPEN, 
+		pb_input::read_tga_img(path_tiles + "\\tuer_manuell_offen.tga")));
+	get_terrain.insert(std::pair<terrain, tga>(terrain::CONCRETE_WALL,
+		pb_input::read_tga_img(path_tiles + "\\wand_beton.tga")));
+	get_terrain.insert(std::pair<terrain, tga>(terrain::ROCK_WALL, 
+		pb_input::read_tga_img(path_tiles + "\\wand_fels.tga")));
 
 	std::string path_robots = path + '\\' + robot_folder;
-	dead = pb_input::read_tga_img(path_robots + "\\dead.tga");
-	patchbot = pb_input::read_tga_img(path_robots + "\\patchbot.tga");
-	typ1_bugger = pb_input::read_tga_img(path_robots + "\\typ1_bugger.tga");
-	typ2_pusher = pb_input::read_tga_img(path_robots + "\\typ2_pusher.tga");
-	typ3_digger = pb_input::read_tga_img(path_robots + "\\typ3_digger.tga");
-	typ4_swimmer = pb_input::read_tga_img(path_robots + "\\typ4_swimmer.tga");
-	typ5_follower = pb_input::read_tga_img(path_robots + "\\typ5_follower.tga");
-	typ6_hunter = pb_input::read_tga_img(path_robots + "\\typ6_hunter.tga");
-	typ7_sniffer = pb_input::read_tga_img(path_robots + "\\typ7_sniffer.tga");
-}
-
-std::shared_ptr<tga> img_resources::get_tga(tile _tile) const {
-	switch (_tile.get_terrain()) {
-	case(terrain::STEEL_PLANKS):
-		return boden;
-		break;
-	case(terrain::BUGGER_START):
-	case(terrain::PUSHER_START):
-	case(terrain::DIGGER_START):
-	case(terrain::SWIMMER_START):
-	case(terrain::FOLLOWER_START):
-	case(terrain::HUNTER_START):
-	case(terrain::SNIFFER_START):
-		return boden_start_gegner;
-		break;
-	case(terrain::PATCHBOT_START):
-		return boden_start_patchbot;
-		break;
-	case(terrain::ABYSS):
-		return gefahr_abgrund;
-		break;
-	case(terrain::WATER):
-		return gefahr_wasser;
-		break;
-	case(terrain::MAIN_SERVER):
-		return hauptserver;
-		break;
-	case(terrain::ALIEN_GRASS):
-		return hindernis_aliengras;
-		break;
-	case(terrain::SECRET_PASSAGE):
-		return hindernis_geheimgang;
-		break;
-	case(terrain::GRAVEL):
-		return hindernis_schotter;
-		break;
-	case(terrain::AUTOMATIC_DOOR):
-		if (_tile.get_is_open())
-			return tuer_automatisch_offen;
-		else
-			return tuer_automatisch_geschlossen;
-		break;
-	case(terrain::MANUAL_DOOR):
-		if (_tile.get_is_open())
-			return tuer_manuell_offen;
-		else
-			return tuer_manuell_geschlossen;
-		break;
-	case(terrain::CONCRETE_WALL):
-		return wand_beton;
-		break;
-	case(terrain::ROCK_WALL):
-		return wand_fels;
-		break;
-	default:
-		std::cout << (char)_tile.get_terrain() << "\n\n";
-		throw std::invalid_argument("Resource exception: "
-			"No resource available for given tile.");
-		break;
-	}
-}
-
-std::shared_ptr<tga> img_resources::get_tga(robot _robot) const {
-	if (_robot.is_dead)
-		return dead;
-	switch (_robot.type) {
-	case(robot_type::PATCHBOT):
-		return patchbot;
-		break;
-	case(robot_type::BUGGER):
-		return typ1_bugger;
-		break;
-	case(robot_type::PUSHER):
-		return typ2_pusher;
-		break;
-	case(robot_type::DIGGER):
-		return typ3_digger;
-		break;
-	case(robot_type::SWIMMER):
-		return typ4_swimmer;
-		break;
-	case(robot_type::FOLLOWER):
-		return typ5_follower;
-		break;
-	case(robot_type::HUNTER):
-		return typ6_hunter;
-		break;
-	case(robot_type::SNIFFER):
-		return typ7_sniffer;
-		break;
-	default:
-		throw std::invalid_argument("Resource exception:"
-			"No resource available for given robot.");
-		break;
-	}
+	get_robot.insert(std::pair<robot_type, tga>(robot_type::DEAD, 
+		pb_input::read_tga_img(path_robots + "\\dead.tga")));
+	get_robot.insert(std::pair<robot_type, tga>(robot_type::PATCHBOT, 
+		pb_input::read_tga_img(path_robots + "\\patchbot.tga")));
+	get_robot.insert(std::pair<robot_type, tga>(robot_type::BUGGER, 
+		pb_input::read_tga_img(path_robots + "\\typ1_bugger.tga")));
+	get_robot.insert(std::pair<robot_type, tga>(robot_type::PUSHER,
+		pb_input::read_tga_img(path_robots + "\\typ2_pusher.tga")));
+	get_robot.insert(std::pair<robot_type, tga>(robot_type::DIGGER, 
+		pb_input::read_tga_img(path_robots + "\\typ3_digger.tga")));
+	get_robot.insert(std::pair<robot_type, tga>(robot_type::SWIMMER,
+		pb_input::read_tga_img(path_robots + "\\typ4_swimmer.tga")));
+	get_robot.insert(std::pair<robot_type, tga>(robot_type::FOLLOWER, 
+		pb_input::read_tga_img(path_robots + "\\typ5_follower.tga")));
+	get_robot.insert(std::pair<robot_type, tga>(robot_type::HUNTER,
+		pb_input::read_tga_img(path_robots + "\\typ6_hunter.tga")));
+	get_robot.insert(std::pair<robot_type, tga>(robot_type::SNIFFER, 
+		pb_input::read_tga_img(path_robots + "\\typ7_sniffer.tga")));
 }
