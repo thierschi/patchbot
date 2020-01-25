@@ -55,9 +55,15 @@
     <ClCompile Include="pb_map.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="pb_rendering_engine.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="pb_main_window.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="pb_rendering_engine.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

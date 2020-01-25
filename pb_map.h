@@ -2,6 +2,7 @@
 #pragma once
 #include <vector>
 #include <string>
+#include <unordered_map>
 
 /*
 	Enumerations fpr Terrain-types, Robot-types and Action-types
@@ -77,6 +78,7 @@ protected:
 	int width;
 	bool has_pb;
 	std::vector<robot> robots;
+	std::unordered_map<int, bool> graves;
 
 public:
 	robot_map(int _width = 1, int height = 1);
@@ -86,11 +88,13 @@ public:
 	int get_height() const;
 	int get_width() const;
 	robot get_robot(int x, int y) const;
+	bool is_grave(int x, int y) const;
 
 	// Setter
 	void set_height(int _height);
 	void set_width(int _width);
 	void set_robot(const robot& _robot, int x, int y);
+	void set_robot_dead(int x, int y);
 };
 
 /*

@@ -74,6 +74,13 @@ robot robot_map::get_robot(int x, int y) const {
 	return robots[y * width + x];
 }
 
+bool robot_map::is_grave(int x, int y) const
+{
+	if (graves.find(y * width + x) == graves.end())
+		return false;
+	return true;
+}
+
 void robot_map::set_height(int _height) {
 	/* Setting height by either appending
 	width * new-height - old-height tiles
@@ -132,6 +139,18 @@ void robot_map::set_robot(const robot& _robot, int x, int y) {
 			"This robot_map already has a patchbot.");
 	robots[y * width + x] = _robot;
 	has_pb = (_robot.type == robot_type::PATCHBOT) ? true : has_pb;
+}
+
+void robot_map::set_robot_dead(int x, int y)
+{
+	if (x >= width || y >= height)
+		throw std::invalid_argument("Invalid argument passed to to robot_map: "
+			"Coordinates out of range.");
+	if (robots[y * width + x].type == robot_type::NONE)
+		throw std::invalid_argument("Invalid argument passed to to robot_map: "
+			"Can't mark non existing robot as dead.");
+	robots[y * width + x].is_dead == true;
+	graves.insert(std::pair<int, bool>(y * width + x, true));
 }
 
 tile::tile(terrain t) :
