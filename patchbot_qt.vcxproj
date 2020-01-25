@@ -193,6 +193,7 @@
     <ClCompile Include="pb_io.cpp" />
     <ClCompile Include="pb_main_window.cpp" />
     <ClCompile Include="pb_map.cpp" />
+    <ClCompile Include="pb_rendering_engine.cpp" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="pb_main_window.h">
@@ -225,6 +226,7 @@
     <ClInclude Include="pb_img.h" />
     <ClInclude Include="pb_io.h" />
     <ClInclude Include="pb_map.h" />
+    <QtMoc Include="pb_rendering_engine.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

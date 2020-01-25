@@ -1,8 +1,12 @@
- #pragma once
 #pragma once
+#include "pb_map.h"
+
 #include <vector>
 #include <fstream>
 #include <exception>
+#include <string>
+#include <memory>
+#include <unordered_map>
 
 class img_exception : public std::exception {
 private:
@@ -40,21 +44,33 @@ public:
 		char _g = 0,
 		char _b = 0,
 		char _a = 0);
+
+	/* Blends given pixel over this pixel*/
+	void overlay_pixel(const rgba_pixel& pixel);
+
+	/* Blends this pixle over the given one*/
+	void underlay_pixel(const rgba_pixel& pixel);
+
+	/* Blends overlay pixel over underlay_pixel and returns resulting pixel */
+	static rgba_pixel blend(const rgba_pixel& overlay_pixel, 
+		const rgba_pixel& underlay_pixel);
+
 };
 
 class tga {
 private:
-	tga_header header;
-	std::vector<rgba_pixel> pixel;
+	std::vector<rgba_pixel> pixel_map;
 
 public:
+	tga_header header;
+
 	/*
 		data_size holds the size of the image data in byte
 	*/
 	int data_size;
 
 	tga(
-		tga_header&& _header, std::vector<rgba_pixel>&& _pixel);
+		tga_header&& _header, std::vector<rgba_pixel>&& _pixel_map);
 
 	/*
 		Returns smart ptr to char array which holds the binary data for the
@@ -67,4 +83,68 @@ public:
 		object from the binary data in the file and returns that object
 	*/
 	static tga load_file(std::ifstream& file);
+
+	rgba_pixel get_pixel(int x, int y) const;
+	void set_pixel(const rgba_pixel& pixel, int x, int y);
+};
+
+//class img_resources {
+//protected:
+//	std::string path;
+//	std::string tile_folder;
+//	std::string robot_folder;
+//
+//	// Umgebungen
+//	std::shared_ptr<tga> boden;
+//	std::shared_ptr<tga> boden_start_gegner;
+//	std::shared_ptr<tga> boden_start_patchbot;
+//	std::shared_ptr<tga> gefahr_abgrund;
+//	std::shared_ptr<tga> gefahr_wasser;
+//	std::shared_ptr<tga> hauptserver;
+//	std::shared_ptr<tga> hindernis_aliengras;
+//	std::shared_ptr<tga> hindernis_geheimgang;
+//	std::shared_ptr<tga> hindernis_schotter;
+//	std::shared_ptr<tga> tuer_automatisch_geschlossen;
+//	std::shared_ptr<tga> tuer_automatisch_offen;
+//	std::shared_ptr<tga> tuer_manuell_geschlossen;
+//	std::shared_ptr<tga> tuer_manuell_offen;
+//	std::shared_ptr<tga> wand_beton;
+//	std::shared_ptr<tga> wand_fels;
+//
+//	// Roboter
+//	std::shared_ptr<tga> dead;
+//	std::shared_ptr<tga> patchbot;
+//	std::shared_ptr<tga> typ1_bugger;
+//	std::shared_ptr<tga> typ2_pusher;
+//	std::shared_ptr<tga> typ3_digger;
+//	std::shared_ptr<tga> typ4_swimmer;
+//	std::shared_ptr<tga> typ5_follower;
+//	std::shared_ptr<tga> typ6_hunter;
+//	std::shared_ptr<tga> typ7_sniffer;
+//
+//public:
+//	img_resources(const std::string& _path, 
+//		const std::string& _tile_folder = "umgebungen",
+//		const std::string& _robot_folder = "roboter");
+//
+//	/*
+//		get_tga() returns a ptr to the suiting image object
+//	*/
+//	std::shared_ptr<tga> get_tga(tile _tile) const;
+//	std::shared_ptr<tga> get_tga(robot _robot) const;
+//};
+
+class img_resources {
+protected:
+	std::string path;
+	std::string tile_folder;
+	std::string robot_folder;
+
+public:
+	std::unordered_map<terrain, tga> get_terrain;
+	std::unordered_map<robot_type, tga> get_robot;
+
+	img_resources(const std::string& _path,
+		const std::string& _tile_folder = "umgebungen",
+		const std::string& _robot_folder = "roboter");
 };

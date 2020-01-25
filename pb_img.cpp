@@ -1,6 +1,9 @@
 #include "pb_img.h"
+#include "pb_io.h"
 
 #include <stdexcept>
+#include <math.h>
+#include <iostream>
 
 img_exception::img_exception(const char* _message) :
 	message(_message)
@@ -23,14 +26,136 @@ rgba_pixel::rgba_pixel(
 {
 }
 
+void rgba_pixel::overlay_pixel(const rgba_pixel& pixel)
+{
+	/*
+		https://en.wikipedia.org/wiki/Alpha_compositing
+	*/
+
+	// Alpha
+	double alpha_p = alpha / 255.0;
+	double o_alpha_p = pixel.alpha / 255.0;
+	double new_alpha = o_alpha_p + (1 - o_alpha_p) * alpha_p;
+	alpha = floor(new_alpha * 255.0);
+
+	// Red
+	double red_p = red / 255.0;
+	double o_red_p = pixel.red / 255.0;
+	red = floor(
+		(
+			(1 / new_alpha) * 
+			(o_alpha_p * o_red_p + (1 - o_alpha_p) * alpha_p * red_p)
+		) * 255.0
+	);
+
+	// Green
+	double green_p = green / 255.0;
+	double o_green_p = pixel.green / 255.0;
+	green = floor(
+		(
+			(1 / new_alpha) *
+			(o_alpha_p * o_green_p + (1 - o_alpha_p) * alpha_p * green_p)
+		) * 255.0
+	);
+
+	// Blue
+	double blue_p = blue / 255.0;
+	double o_blue_p = pixel.blue / 255.0;
+	blue = floor(
+		(
+			(1 / new_alpha) *
+			(o_alpha_p * o_blue_p + (1 - o_alpha_p) * alpha_p * blue_p)
+		) * 255.0
+	);
+}
+	
+void rgba_pixel::underlay_pixel(const rgba_pixel& pixel)
+{
+	/*
+		https://en.wikipedia.org/wiki/Alpha_compositing
+	*/
+
+	// Alpha
+	double alpha_p = pixel.alpha / 255.0;
+	double o_alpha_p = alpha / 255.0;
+	double new_alpha = o_alpha_p + (1 - o_alpha_p) * alpha_p;
+	alpha = floor(new_alpha * 255.0);
+
+	// Red
+	double red_p = pixel.red / 255.0;
+	double o_red_p = red / 255.0;
+	red = floor(
+		(
+		(1 / new_alpha) *
+			(o_alpha_p * o_red_p + (1 - o_alpha_p) * alpha_p * red_p)
+		) * 255.0
+	);
+
+	// Green
+	double green_p = pixel.green / 255.0;
+	double o_green_p = green / 255.0;
+	green = floor(
+		(
+		(1 / new_alpha) *
+			(o_alpha_p * o_green_p + (1 - o_alpha_p) * alpha_p * green_p)
+		) * 255.0
+	);
+
+	// Blue
+	double blue_p = pixel.blue / 255.0;
+	double o_blue_p = blue / 255.0;
+	blue = floor(
+		(
+		(1 / new_alpha) *
+			(o_alpha_p * o_blue_p + (1 - o_alpha_p) * alpha_p * blue_p)
+		) * 255.0
+	);
+}
+
+rgba_pixel rgba_pixel::blend(const rgba_pixel& overlay_pixel, 
+	const rgba_pixel& underlay_pixel)
+{
+	/*
+		https://en.wikipedia.org/wiki/Alpha_compositing
+	*/
+
+	// Alpha
+	double alpha_p = underlay_pixel.alpha / 255.0;
+	double o_alpha_p = overlay_pixel.alpha / 255.0;
+	double new_alpha = o_alpha_p + (1 - o_alpha_p) * alpha_p;
+
+	// Red
+	double red_p = underlay_pixel.red / 255.0;
+	double o_red_p = overlay_pixel.red / 255.0;
+	double red = (1 / new_alpha) *
+		(o_alpha_p * o_red_p + (1 - o_alpha_p) * alpha_p * red_p);
+
+	// Green
+	double green_p = underlay_pixel.green / 255.0;
+	double o_green_p = overlay_pixel.green / 255.0;
+	double green = (1 / new_alpha) *
+		(o_alpha_p * o_green_p + (1 - o_alpha_p) * alpha_p * green_p);
+
+	// Blue
+	double blue_p = underlay_pixel.blue / 255.0;
+	double o_blue_p = overlay_pixel.blue / 255.0;
+	double blue = (1 / new_alpha) *
+		(o_alpha_p * o_blue_p + (1 - o_alpha_p) * alpha_p * blue_p);
+
+	return rgba_pixel(floor(red * 255.0), 
+		floor(green * 255.0), 
+		floor(blue * 255.0), 
+		floor(new_alpha * 255.0));
+}
+
 tga::tga(tga_header&& _header,
-	std::vector <rgba_pixel>&& _pixel) :
+	std::vector <rgba_pixel>&& _pixel_map) :
 	header(_header),
-	pixel(_pixel),
-	data_size(_pixel.size() * 4)
+	pixel_map(_pixel_map),
+	data_size(_pixel_map.size() * 4)
 {
 	if (_header.img_width * _header.img_height
-		!= _pixel.size())
+		!= _pixel_map.size())
 		throw std::invalid_argument("Cannot construct tga image class: "
 			"Pixel vector's size does not match "
 			"width * height specified in header.");
@@ -73,7 +198,7 @@ std::unique_ptr<char[]> tga::get_raw_data() const {
 
 	// Store binary image data
 	int b = 18;
-	for (rgba_pixel p : pixel) {
+	for (rgba_pixel p : pixel_map) {
 		// Convert from rgba_pixels back to chars
 		raw_data[b] = p.blue;
 		raw_data[b + 1] = p.green;
@@ -189,4 +314,83 @@ tga tga::load_file(std::ifstream& file) {
 	}
 
 	return tga(std::move(header), std::move(pixel_data));
+}
+
+rgba_pixel tga::get_pixel(int x, int y) const {
+	if (x >= header.img_width || y >= header.img_height)
+		throw std::invalid_argument("Invalid argument passed to tga: "
+			"Coordinates out of range.");
+	return pixel_map[y * header.img_width + x];
+}
+
+void tga::set_pixel(const rgba_pixel& pixel, int x, int y) {
+	if (x >= header.img_width || y >= header.img_height)
+		throw std::invalid_argument("Invalid argument passed to tga: "
+			"Coordinates out of range.");
+	pixel_map[y * header.img_width + x] = pixel;
+}
+
+img_resources::img_resources(const std::string& _path, 
+	const std::string& _tile_folder, const std::string& _robot_folder) :
+	path(_path),
+	tile_folder(_tile_folder),
+	robot_folder(_robot_folder)
+{
+	if (path.back() == '\\') path.pop_back();
+	if (tile_folder.back() == '\\') tile_folder.pop_back();
+	if (tile_folder.front() == '\\') tile_folder.erase(tile_folder.begin());
+	if (robot_folder.back() == '\\') robot_folder.pop_back();
+	if (robot_folder.front() == '\\') robot_folder.erase(tile_folder.begin());
+
+	std::string path_tiles = path + '\\' + tile_folder;
+	get_terrain.insert(std::pair<terrain, tga>(terrain::STEEL_PLANKS,
+		pb_input::read_tga_img(path_tiles + "\\boden.tga")));
+	get_terrain.insert(std::pair<terrain, tga>(terrain::PATCHBOT_START,
+		pb_input::read_tga_img(path_tiles + "\\boden_start_patchbot.tga")));
+	get_terrain.insert(std::pair<terrain, tga>(terrain::ENEMY_START, 
+		pb_input::read_tga_img(path_tiles + "\\boden_start_gegner.tga")));
+	get_terrain.insert(std::pair<terrain, tga>(terrain::ABYSS, 
+		pb_input::read_tga_img(path_tiles + "\\gefahr_abgrund.tga")));
+	get_terrain.insert(std::pair<terrain, tga>(terrain::WATER, 
+		pb_input::read_tga_img(path_tiles + "\\gefahr_wasser.tga")));
+	get_terrain.insert(std::pair<terrain, tga>(terrain::MAIN_SERVER, 
+		pb_input::read_tga_img(path_tiles + "\\hauptserver.tga")));
+	get_terrain.insert(std::pair<terrain, tga>(terrain::ALIEN_GRASS, 
+		pb_input::read_tga_img(path_tiles + "\\hindernis_aliengras.tga")));
+	get_terrain.insert(std::pair<terrain, tga>(terrain::SECRET_PASSAGE,
+		pb_input::read_tga_img(path_tiles + "\\hindernis_geheimgang.tga")));
+	get_terrain.insert(std::pair<terrain, tga>(terrain::GRAVEL, 
+		pb_input::read_tga_img(path_tiles + "\\hindernis_schotter.tga")));
+	get_terrain.insert(std::pair<terrain, tga>(terrain::AUTOMATIC_DOOR,
+		pb_input::read_tga_img(path_tiles + "\\tuer_automatisch_geschlossen.tga")));
+	get_terrain.insert(std::pair<terrain, tga>(terrain::AUTOMATIC_DOOR_OPEN, 
+		pb_input::read_tga_img(path_tiles + "\\tuer_automatisch_offen.tga")));
+	get_terrain.insert(std::pair<terrain, tga>(terrain::MANUAL_DOOR, 
+		pb_input::read_tga_img(path_tiles + "\\tuer_manuell_geschlossen.tga")));
+	get_terrain.insert(std::pair<terrain, tga>(terrain::MANUAL_DOOR_OPEN, 
+		pb_input::read_tga_img(path_tiles + "\\tuer_manuell_offen.tga")));
+	get_terrain.insert(std::pair<terrain, tga>(terrain::CONCRETE_WALL,
+		pb_input::read_tga_img(path_tiles + "\\wand_beton.tga")));
+	get_terrain.insert(std::pair<terrain, tga>(terrain::ROCK_WALL, 
+		pb_input::read_tga_img(path_tiles + "\\wand_fels.tga")));
+
+	std::string path_robots = path + '\\' + robot_folder;
+	get_robot.insert(std::pair<robot_type, tga>(robot_type::DEAD, 
+		pb_input::read_tga_img(path_robots + "\\dead.tga")));
+	get_robot.insert(std::pair<robot_type, tga>(robot_type::PATCHBOT, 
+		pb_input::read_tga_img(path_robots + "\\patchbot.tga")));
+	get_robot.insert(std::pair<robot_type, tga>(robot_type::BUGGER, 
+		pb_input::read_tga_img(path_robots + "\\typ1_bugger.tga")));
+	get_robot.insert(std::pair<robot_type, tga>(robot_type::PUSHER,
+		pb_input::read_tga_img(path_robots + "\\typ2_pusher.tga")));
+	get_robot.insert(std::pair<robot_type, tga>(robot_type::DIGGER, 
+		pb_input::read_tga_img(path_robots + "\\typ3_digger.tga")));
+	get_robot.insert(std::pair<robot_type, tga>(robot_type::SWIMMER,
+		pb_input::read_tga_img(path_robots + "\\typ4_swimmer.tga")));
+	get_robot.insert(std::pair<robot_type, tga>(robot_type::FOLLOWER, 
+		pb_input::read_tga_img(path_robots + "\\typ5_follower.tga")));
+	get_robot.insert(std::pair<robot_type, tga>(robot_type::HUNTER,
+		pb_input::read_tga_img(path_robots + "\\typ6_hunter.tga")));
+	get_robot.insert(std::pair<robot_type, tga>(robot_type::SNIFFER, 
+		pb_input::read_tga_img(path_robots + "\\typ7_sniffer.tga")));
 }
