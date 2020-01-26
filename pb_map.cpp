@@ -39,6 +39,12 @@ const robot_type robots_with_wheels[] = {
 	robot_type::SWIMMER
 };
 
+coords::coords(int _x, int _y) :
+	x(_x),
+	y(_y)
+{
+}
+
 robot::robot(robot_type _type, bool _is_dead) :
 	type(_type),
 	is_dead(_is_dead) 
@@ -79,6 +85,14 @@ bool robot_map::is_grave(int x, int y) const
 	if (graves.find(y * width + x) == graves.end())
 		return false;
 	return true;
+}
+
+coords robot_map::get_robots_location(robot_type type)
+{
+	if(robots_locations.find(type) == robots_locations.end())
+		throw std::invalid_argument("Invalid argument passed to robot_map: "
+			"Passed robot does not exist.");
+	return robots_locations.at(type);
 }
 
 void robot_map::set_height(int _height) {
@@ -139,9 +153,10 @@ void robot_map::set_robot(const robot& _robot, int x, int y) {
 			"This robot_map already has a patchbot.");
 	robots[y * width + x] = _robot;
 	has_pb = (_robot.type == robot_type::PATCHBOT) ? true : has_pb;
+	robots_locations[_robot.type] = coords(x, y);
 }
 
-void robot_map::set_robot_dead(int x, int y)
+void robot_map::set_robots_grave(int x, int y)
 {
 	if (x >= width || y >= height)
 		throw std::invalid_argument("Invalid argument passed to to robot_map: "
@@ -149,7 +164,7 @@ void robot_map::set_robot_dead(int x, int y)
 	if (robots[y * width + x].type == robot_type::NONE)
 		throw std::invalid_argument("Invalid argument passed to to robot_map: "
 			"Can't mark non existing robot as dead.");
-	robots[y * width + x].is_dead == true;
+	robots[y * width + x].is_dead = true;
 	graves.insert(std::pair<int, bool>(y * width + x, true));
 }
 

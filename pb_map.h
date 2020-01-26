@@ -55,6 +55,13 @@ enum class action {
 	DIG
 };
 
+class coords {
+public:
+	int x, y;
+	
+	coords(int x = 0, int y = 0);
+};
+
 /*
 	Class robot exists so that one can save a alive state (is_dad) for each 
 	robot.
@@ -79,6 +86,7 @@ protected:
 	bool has_pb;
 	std::vector<robot> robots;
 	std::unordered_map<int, bool> graves;
+	std::unordered_map<robot_type, coords> robots_locations;
 
 public:
 	robot_map(int _width = 1, int height = 1);
@@ -89,12 +97,13 @@ public:
 	int get_width() const;
 	robot get_robot(int x, int y) const;
 	bool is_grave(int x, int y) const;
+	coords get_robots_location(robot_type type);
 
 	// Setter
 	void set_height(int _height);
 	void set_width(int _width);
 	void set_robot(const robot& _robot, int x, int y);
-	void set_robot_dead(int x, int y);
+	void set_robots_grave(int x, int y);
 };
 
 /*

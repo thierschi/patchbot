@@ -58,12 +58,24 @@
     <ClCompile Include="pb_rendering_engine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="pb_controls.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pb_game_logic.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="pb_main_window.h">
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="pb_rendering_engine.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="pb_controls.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="pb_game_logic.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

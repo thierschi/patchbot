@@ -15,6 +15,7 @@ class rendering_engine : public QObject
 public:
 	img_resources resources;
 	QImage qimg;
+	bool game_is_on;
 
 	rendering_engine(main_window* _parent,
 		const std::string& path_to_resources = ".");
@@ -24,10 +25,11 @@ public:
 	int get_full_height_px();
 
 	void render_pixel(int x, int y);
-	void connect_to_main_window();
+	void connect_to_parent();
 
 public slots:
 	void initial_render();
+	void refresh_render();
 	void on_window_resized(const QScrollArea& resizee);
 	void on_vertical_scroll(int value);
 	void on_horizontal_scroll(int value);

@@ -270,7 +270,7 @@
           <height>101</height>
          </rect>
         </property>
-        <layout class="QVBoxLayout" name="prg_contorl">
+        <layout class="QVBoxLayout" name="instruction_contorl">
          <property name="spacing">
           <number>0</number>
          </property>
@@ -281,7 +281,7 @@
           <number>2</number>
          </property>
          <item>
-          <widget class="QComboBox" name="prg_control_dropdown">
+          <widget class="QComboBox" name="instruction_control_dropdown">
            <property name="minimumSize">
             <size>
              <width>0</width>
@@ -293,7 +293,57 @@
            </property>
            <item>
             <property name="text">
-             <string>Dropdown</string>
+             <string>Bis Hindernis</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>1x</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>2x</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>3x</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>4x</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>5x</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>6x</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>7x</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>8x</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>9x</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>10x</string>
             </property>
            </item>
           </widget>
@@ -312,17 +362,20 @@
           </spacer>
          </item>
          <item>
-          <widget class="QLineEdit" name="prg_control_edit">
+          <widget class="QLineEdit" name="instruction_edit">
            <property name="text">
-            <string>Textfeld</string>
+            <string/>
            </property>
            <property name="readOnly">
             <bool>true</bool>
            </property>
+           <property name="clearButtonEnabled">
+            <bool>false</bool>
+           </property>
           </widget>
          </item>
          <item>
-          <widget class="QScrollBar" name="prg_control_h_scroll">
+          <widget class="QScrollBar" name="instruction_control_h_scroll">
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
            </property>
@@ -347,7 +400,7 @@
           <number>4</number>
          </property>
          <item row="1" column="0">
-          <widget class="QPushButton" name="prg_arrow_left_btn">
+          <widget class="QPushButton" name="instruction_arrow_left_btn">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
              <horstretch>0</horstretch>
@@ -377,7 +430,7 @@
           </widget>
          </item>
          <item row="2" column="1">
-          <widget class="QPushButton" name="prg_arrow_down_btn">
+          <widget class="QPushButton" name="instruction_arrow_down_btn">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
              <horstretch>0</horstretch>
@@ -407,7 +460,7 @@
           </widget>
          </item>
          <item row="1" column="2">
-          <widget class="QPushButton" name="prg_arrow_right_btn">
+          <widget class="QPushButton" name="instruction_arrow_right_btn">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
              <horstretch>0</horstretch>
@@ -437,7 +490,7 @@
           </widget>
          </item>
          <item row="1" column="1">
-          <widget class="QPushButton" name="prg_arrow_center_btn">
+          <widget class="QPushButton" name="instruction_arrow_center_btn">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
              <horstretch>0</horstretch>
@@ -469,7 +522,7 @@
           </widget>
          </item>
          <item row="0" column="2">
-          <widget class="QPushButton" name="prg_arrow_back_btn">
+          <widget class="QPushButton" name="instruction_arrow_back_btn">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
              <horstretch>0</horstretch>
@@ -499,7 +552,7 @@
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="QPushButton" name="prg_arrow_up_btn">
+          <widget class="QPushButton" name="instruction_arrow_up_btn">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
              <horstretch>0</horstretch>
@@ -593,6 +646,9 @@
          </item>
          <item row="1" column="1">
           <widget class="QPushButton" name="m_c_auto_btn">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="text">
             <string>Automatik</string>
            </property>
@@ -600,6 +656,9 @@
          </item>
          <item row="1" column="0">
           <widget class="QPushButton" name="m_c_step_btn">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="text">
             <string>Einzelschritt</string>
            </property>
@@ -607,6 +666,9 @@
          </item>
          <item row="0" column="1">
           <widget class="QPushButton" name="m_c_cancel_btn">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="text">
             <string>Abbruch</string>
            </property>
@@ -614,6 +676,9 @@
          </item>
          <item row="2" column="1">
           <widget class="QPushButton" name="m_c_stop_btn">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="text">
             <string>Anhalten</string>
            </property>

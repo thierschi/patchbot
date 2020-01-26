@@ -12,9 +12,10 @@ rendering_engine::rendering_engine(main_window* _parent,
     h_value_before_scroll(0),
     padding_top(0),
     padding_left(0),
-    parent(_parent)
+    parent(_parent),
+    game_is_on(false)
 {
-    connect_to_main_window();
+    connect_to_parent();
 }
 
 int rendering_engine::get_full_width_px()
@@ -47,19 +48,21 @@ void rendering_engine::render_pixel(int x, int y)
         )).get_pixel(pixel_x, resources.get_terrain.at(
             parent->map.get_tile(0, 0).get_terrain()).header.img_height - 1 - pixel_y);
 
-    /* Blend pixel of robot on top, if robot is present on field */
-    if (parent->map.robots.get_robot(map_x, map_y).type != robot_type::NONE)
-        pixel.overlay_pixel(resources.get_robot.at(
-            parent->map.robots.get_robot(map_x, map_y).type)
-            .get_pixel(pixel_x, resources.get_terrain.at(
-            parent->map.get_tile(0, 0).get_terrain())
-            .header.img_height - 1 - pixel_y));
+    if (game_is_on) {
+        /* Blend pixel of robot on top, if robot is present on field */
+        if (parent->map.robots.get_robot(map_x, map_y).type != robot_type::NONE)
+            pixel.overlay_pixel(resources.get_robot.at(
+                parent->map.robots.get_robot(map_x, map_y).type)
+                .get_pixel(pixel_x, resources.get_terrain.at(
+                    parent->map.get_tile(0, 0).get_terrain())
+                    .header.img_height - 1 - pixel_y));
 
-    if (parent->map.robots.is_grave(map_x, map_y))
-        pixel.underlay_pixel(resources.get_robot.at(robot_type::DEAD)
-            .get_pixel(pixel_x, resources.get_terrain.at(
-                parent->map.get_tile(0, 0).get_terrain())
-                .header.img_height - 1 - pixel_y));
+        if (parent->map.robots.is_grave(map_x, map_y))
+            pixel.underlay_pixel(resources.get_robot.at(robot_type::DEAD)
+                .get_pixel(pixel_x, resources.get_terrain.at(
+                    parent->map.get_tile(0, 0).get_terrain())
+                    .header.img_height - 1 - pixel_y));
+    }
 
     qimg.setPixel(x, y, qRgba(
         pixel.red,
@@ -69,7 +72,7 @@ void rendering_engine::render_pixel(int x, int y)
     ));
 }
 
-void rendering_engine::connect_to_main_window()
+void rendering_engine::connect_to_parent()
 {
     /* Connect the parents singals to this' slot */
     QObject::connect(parent, &main_window::do_initial_render,
@@ -81,7 +84,6 @@ void rendering_engine::connect_to_main_window()
     QObject::connect(parent, &main_window::h_scroll,
         this, &rendering_engine::on_horizontal_scroll);
 }
-
 
 void rendering_engine::initial_render()
 {
@@ -124,6 +126,18 @@ void rendering_engine::initial_render()
     /* Signal that initial rendering is complete so that resizing
     and scrolling works */
     initial_render_complete = true;
+}
+
+void rendering_engine::refresh_render()
+{
+    for (int y = padding_top; y < qimg.height() + padding_top; y++) {
+        for (int x = padding_left; x < qimg.width() + padding_left; x++) {
+            // Render whole visible part of map
+            render_pixel(x, y);
+        }
+    }
+
+    parent->map_placeholder_set_pixmap(QPixmap::fromImage(qimg));
 }
 
 void rendering_engine::on_window_resized(const QScrollArea& resizee)

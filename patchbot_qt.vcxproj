@@ -187,7 +187,9 @@
     </QtUic>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="pb_game_logic.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="pb_controls.cpp" />
     <ClCompile Include="pb_exceptions.cpp" />
     <ClCompile Include="pb_img.cpp" />
     <ClCompile Include="pb_io.cpp" />
@@ -222,7 +224,9 @@
     </QtUic>
   </ItemGroup>
   <ItemGroup>
+    <QtMoc Include="pb_controls.h" />
     <ClInclude Include="pb_exceptions.h" />
+    <QtMoc Include="pb_game_logic.h" />
     <ClInclude Include="pb_img.h" />
     <ClInclude Include="pb_io.h" />
     <ClInclude Include="pb_map.h" />

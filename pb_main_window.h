@@ -6,6 +6,24 @@
 #include <QScrollBar>
 #include <QScrollArea>
 
+enum class instruction_type {
+    UP = 'U',
+    DOWN = 'D',
+    LEFT = 'L',
+    RIGHT = 'R',
+    WAIT = 'W', 
+    DEL
+};
+
+class instruction {
+public:
+    instruction_type type;
+    /* If 0: Until obstruction */
+    int amount;
+
+    instruction(instruction_type _type, int _amount);
+};
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class main_window; }
 QT_END_NAMESPACE
@@ -32,17 +50,28 @@ public:
     void adjust_scrollbars();
     void refresh_colonie_label();
     void set_resource_size(int width, int height);
+    void adjust_instruction_edit_scrollbar();
+    void add_to_instruction_line_edit(const instruction& _instruction);
+    void del_in_instruction_line_edit(int number_of_deletes);
+    void activate_instruction_btns();
+    void deactivate_instruction_btns();
+    void activate_mission_control_btns(bool auto_mode = false);
+    void deactivate_mission_control_btns(bool auto_mode = false);
+
+    void reset();
 
 public slots:
     /* Slots for buttons */
     void on_change_colonie_button_clicked();
 
-    void on_prg_arrow_up_btn_clicked();
-    void on_prg_arrow_back_btn_clicked();
-    void on_prg_arrow_left_btn_clicked();
-    void on_prg_arrow_center_btn_clicked();
-    void on_prg_arrow_right_btn_clicked();
-    void on_prg_arrow_down_btn_clicked();
+    // Instructions
+    void on_instruction_arrow_up_btn_clicked();
+    void on_instruction_arrow_back_btn_clicked();
+    void on_instruction_arrow_left_btn_clicked();
+    void on_instruction_arrow_center_btn_clicked();
+    void on_instruction_arrow_right_btn_clicked();
+    void on_instruction_arrow_down_btn_clicked();
+
     void on_m_c_start_btn_clicked();
     void on_m_c_cancel_btn_clicked();
     void on_m_c_step_btn_clicked();
@@ -52,6 +81,7 @@ public slots:
     /* Slots for scrollbars */
     void on_map_h_scrollbar_valueChanged(int value);
     void on_map_v_scrollbar_valueChanged(int value);
+    void on_instruction_control_h_scroll_valueChanged(int value);
 
 signals:
     void do_initial_render();
@@ -59,8 +89,18 @@ signals:
     void v_scroll(int value);
     void h_scroll(int value);
 
+    void new_instruction(const instruction& _instruction);
+    void reset_instructions(bool kepp_instrucions);
+
+    void start_game();
+    void single_step();
+    void automatic_stepping();
+    void stop_automatic_stepping();
+    void cancel_game();
+
 protected:
     int resource_width;
     int resource_height;
+    std::string map_path;
 };
 #endif // MAIN_WINDOW_H

@@ -49,19 +49,19 @@ public:
     QGroupBox *program;
     QLabel *program_label;
     QWidget *verticalLayoutWidget_2;
-    QVBoxLayout *prg_contorl;
-    QComboBox *prg_control_dropdown;
+    QVBoxLayout *instruction_contorl;
+    QComboBox *instruction_control_dropdown;
     QSpacerItem *verticalSpacer;
-    QLineEdit *prg_control_edit;
-    QScrollBar *prg_control_h_scroll;
+    QLineEdit *instruction_edit;
+    QScrollBar *instruction_control_h_scroll;
     QWidget *gridLayoutWidget_2;
     QGridLayout *prg_arrow_btns;
-    QPushButton *prg_arrow_left_btn;
-    QPushButton *prg_arrow_down_btn;
-    QPushButton *prg_arrow_right_btn;
-    QPushButton *prg_arrow_center_btn;
-    QPushButton *prg_arrow_back_btn;
-    QPushButton *prg_arrow_up_btn;
+    QPushButton *instruction_arrow_left_btn;
+    QPushButton *instruction_arrow_down_btn;
+    QPushButton *instruction_arrow_right_btn;
+    QPushButton *instruction_arrow_center_btn;
+    QPushButton *instruction_arrow_back_btn;
+    QPushButton *instruction_arrow_up_btn;
     QGroupBox *mission_control;
     QLabel *m_c_label;
     QWidget *gridLayoutWidget_3;
@@ -198,33 +198,44 @@ public:
         verticalLayoutWidget_2 = new QWidget(program);
         verticalLayoutWidget_2->setObjectName(QString::fromUtf8("verticalLayoutWidget_2"));
         verticalLayoutWidget_2->setGeometry(QRect(120, 30, 101, 101));
-        prg_contorl = new QVBoxLayout(verticalLayoutWidget_2);
-        prg_contorl->setSpacing(0);
-        prg_contorl->setObjectName(QString::fromUtf8("prg_contorl"));
-        prg_contorl->setContentsMargins(0, 2, 0, 0);
-        prg_control_dropdown = new QComboBox(verticalLayoutWidget_2);
-        prg_control_dropdown->addItem(QString());
-        prg_control_dropdown->setObjectName(QString::fromUtf8("prg_control_dropdown"));
-        prg_control_dropdown->setMinimumSize(QSize(0, 27));
-        prg_control_dropdown->setEditable(false);
+        instruction_contorl = new QVBoxLayout(verticalLayoutWidget_2);
+        instruction_contorl->setSpacing(0);
+        instruction_contorl->setObjectName(QString::fromUtf8("instruction_contorl"));
+        instruction_contorl->setContentsMargins(0, 2, 0, 0);
+        instruction_control_dropdown = new QComboBox(verticalLayoutWidget_2);
+        instruction_control_dropdown->addItem(QString());
+        instruction_control_dropdown->addItem(QString());
+        instruction_control_dropdown->addItem(QString());
+        instruction_control_dropdown->addItem(QString());
+        instruction_control_dropdown->addItem(QString());
+        instruction_control_dropdown->addItem(QString());
+        instruction_control_dropdown->addItem(QString());
+        instruction_control_dropdown->addItem(QString());
+        instruction_control_dropdown->addItem(QString());
+        instruction_control_dropdown->addItem(QString());
+        instruction_control_dropdown->addItem(QString());
+        instruction_control_dropdown->setObjectName(QString::fromUtf8("instruction_control_dropdown"));
+        instruction_control_dropdown->setMinimumSize(QSize(0, 27));
+        instruction_control_dropdown->setEditable(false);
 
-        prg_contorl->addWidget(prg_control_dropdown);
+        instruction_contorl->addWidget(instruction_control_dropdown);
 
         verticalSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
 
-        prg_contorl->addItem(verticalSpacer);
+        instruction_contorl->addItem(verticalSpacer);
 
-        prg_control_edit = new QLineEdit(verticalLayoutWidget_2);
-        prg_control_edit->setObjectName(QString::fromUtf8("prg_control_edit"));
-        prg_control_edit->setReadOnly(true);
+        instruction_edit = new QLineEdit(verticalLayoutWidget_2);
+        instruction_edit->setObjectName(QString::fromUtf8("instruction_edit"));
+        instruction_edit->setReadOnly(true);
+        instruction_edit->setClearButtonEnabled(false);
 
-        prg_contorl->addWidget(prg_control_edit);
+        instruction_contorl->addWidget(instruction_edit);
 
-        prg_control_h_scroll = new QScrollBar(verticalLayoutWidget_2);
-        prg_control_h_scroll->setObjectName(QString::fromUtf8("prg_control_h_scroll"));
-        prg_control_h_scroll->setOrientation(Qt::Horizontal);
+        instruction_control_h_scroll = new QScrollBar(verticalLayoutWidget_2);
+        instruction_control_h_scroll->setObjectName(QString::fromUtf8("instruction_control_h_scroll"));
+        instruction_control_h_scroll->setOrientation(Qt::Horizontal);
 
-        prg_contorl->addWidget(prg_control_h_scroll);
+        instruction_contorl->addWidget(instruction_control_h_scroll);
 
         gridLayoutWidget_2 = new QWidget(program);
         gridLayoutWidget_2->setObjectName(QString::fromUtf8("gridLayoutWidget_2"));
@@ -234,71 +245,71 @@ public:
         prg_arrow_btns->setObjectName(QString::fromUtf8("prg_arrow_btns"));
         prg_arrow_btns->setSizeConstraint(QLayout::SetDefaultConstraint);
         prg_arrow_btns->setContentsMargins(0, 0, 0, 0);
-        prg_arrow_left_btn = new QPushButton(gridLayoutWidget_2);
-        prg_arrow_left_btn->setObjectName(QString::fromUtf8("prg_arrow_left_btn"));
-        sizePolicy.setHeightForWidth(prg_arrow_left_btn->sizePolicy().hasHeightForWidth());
-        prg_arrow_left_btn->setSizePolicy(sizePolicy);
-        prg_arrow_left_btn->setMinimumSize(QSize(30, 30));
-        prg_arrow_left_btn->setMaximumSize(QSize(30, 30));
+        instruction_arrow_left_btn = new QPushButton(gridLayoutWidget_2);
+        instruction_arrow_left_btn->setObjectName(QString::fromUtf8("instruction_arrow_left_btn"));
+        sizePolicy.setHeightForWidth(instruction_arrow_left_btn->sizePolicy().hasHeightForWidth());
+        instruction_arrow_left_btn->setSizePolicy(sizePolicy);
+        instruction_arrow_left_btn->setMinimumSize(QSize(30, 30));
+        instruction_arrow_left_btn->setMaximumSize(QSize(30, 30));
         QFont font;
         font.setPointSize(11);
-        prg_arrow_left_btn->setFont(font);
+        instruction_arrow_left_btn->setFont(font);
 
-        prg_arrow_btns->addWidget(prg_arrow_left_btn, 1, 0, 1, 1);
+        prg_arrow_btns->addWidget(instruction_arrow_left_btn, 1, 0, 1, 1);
 
-        prg_arrow_down_btn = new QPushButton(gridLayoutWidget_2);
-        prg_arrow_down_btn->setObjectName(QString::fromUtf8("prg_arrow_down_btn"));
-        sizePolicy.setHeightForWidth(prg_arrow_down_btn->sizePolicy().hasHeightForWidth());
-        prg_arrow_down_btn->setSizePolicy(sizePolicy);
-        prg_arrow_down_btn->setMinimumSize(QSize(30, 30));
-        prg_arrow_down_btn->setMaximumSize(QSize(30, 30));
-        prg_arrow_down_btn->setFont(font);
+        instruction_arrow_down_btn = new QPushButton(gridLayoutWidget_2);
+        instruction_arrow_down_btn->setObjectName(QString::fromUtf8("instruction_arrow_down_btn"));
+        sizePolicy.setHeightForWidth(instruction_arrow_down_btn->sizePolicy().hasHeightForWidth());
+        instruction_arrow_down_btn->setSizePolicy(sizePolicy);
+        instruction_arrow_down_btn->setMinimumSize(QSize(30, 30));
+        instruction_arrow_down_btn->setMaximumSize(QSize(30, 30));
+        instruction_arrow_down_btn->setFont(font);
 
-        prg_arrow_btns->addWidget(prg_arrow_down_btn, 2, 1, 1, 1);
+        prg_arrow_btns->addWidget(instruction_arrow_down_btn, 2, 1, 1, 1);
 
-        prg_arrow_right_btn = new QPushButton(gridLayoutWidget_2);
-        prg_arrow_right_btn->setObjectName(QString::fromUtf8("prg_arrow_right_btn"));
-        sizePolicy.setHeightForWidth(prg_arrow_right_btn->sizePolicy().hasHeightForWidth());
-        prg_arrow_right_btn->setSizePolicy(sizePolicy);
-        prg_arrow_right_btn->setMinimumSize(QSize(30, 30));
-        prg_arrow_right_btn->setMaximumSize(QSize(30, 30));
-        prg_arrow_right_btn->setFont(font);
+        instruction_arrow_right_btn = new QPushButton(gridLayoutWidget_2);
+        instruction_arrow_right_btn->setObjectName(QString::fromUtf8("instruction_arrow_right_btn"));
+        sizePolicy.setHeightForWidth(instruction_arrow_right_btn->sizePolicy().hasHeightForWidth());
+        instruction_arrow_right_btn->setSizePolicy(sizePolicy);
+        instruction_arrow_right_btn->setMinimumSize(QSize(30, 30));
+        instruction_arrow_right_btn->setMaximumSize(QSize(30, 30));
+        instruction_arrow_right_btn->setFont(font);
 
-        prg_arrow_btns->addWidget(prg_arrow_right_btn, 1, 2, 1, 1);
+        prg_arrow_btns->addWidget(instruction_arrow_right_btn, 1, 2, 1, 1);
 
-        prg_arrow_center_btn = new QPushButton(gridLayoutWidget_2);
-        prg_arrow_center_btn->setObjectName(QString::fromUtf8("prg_arrow_center_btn"));
-        sizePolicy.setHeightForWidth(prg_arrow_center_btn->sizePolicy().hasHeightForWidth());
-        prg_arrow_center_btn->setSizePolicy(sizePolicy);
-        prg_arrow_center_btn->setMinimumSize(QSize(30, 30));
-        prg_arrow_center_btn->setMaximumSize(QSize(30, 30));
+        instruction_arrow_center_btn = new QPushButton(gridLayoutWidget_2);
+        instruction_arrow_center_btn->setObjectName(QString::fromUtf8("instruction_arrow_center_btn"));
+        sizePolicy.setHeightForWidth(instruction_arrow_center_btn->sizePolicy().hasHeightForWidth());
+        instruction_arrow_center_btn->setSizePolicy(sizePolicy);
+        instruction_arrow_center_btn->setMinimumSize(QSize(30, 30));
+        instruction_arrow_center_btn->setMaximumSize(QSize(30, 30));
         QFont font1;
         font1.setPointSize(20);
         font1.setBold(false);
         font1.setWeight(50);
-        prg_arrow_center_btn->setFont(font1);
+        instruction_arrow_center_btn->setFont(font1);
 
-        prg_arrow_btns->addWidget(prg_arrow_center_btn, 1, 1, 1, 1);
+        prg_arrow_btns->addWidget(instruction_arrow_center_btn, 1, 1, 1, 1);
 
-        prg_arrow_back_btn = new QPushButton(gridLayoutWidget_2);
-        prg_arrow_back_btn->setObjectName(QString::fromUtf8("prg_arrow_back_btn"));
-        sizePolicy.setHeightForWidth(prg_arrow_back_btn->sizePolicy().hasHeightForWidth());
-        prg_arrow_back_btn->setSizePolicy(sizePolicy);
-        prg_arrow_back_btn->setMinimumSize(QSize(30, 30));
-        prg_arrow_back_btn->setMaximumSize(QSize(30, 30));
-        prg_arrow_back_btn->setFont(font);
+        instruction_arrow_back_btn = new QPushButton(gridLayoutWidget_2);
+        instruction_arrow_back_btn->setObjectName(QString::fromUtf8("instruction_arrow_back_btn"));
+        sizePolicy.setHeightForWidth(instruction_arrow_back_btn->sizePolicy().hasHeightForWidth());
+        instruction_arrow_back_btn->setSizePolicy(sizePolicy);
+        instruction_arrow_back_btn->setMinimumSize(QSize(30, 30));
+        instruction_arrow_back_btn->setMaximumSize(QSize(30, 30));
+        instruction_arrow_back_btn->setFont(font);
 
-        prg_arrow_btns->addWidget(prg_arrow_back_btn, 0, 2, 1, 1);
+        prg_arrow_btns->addWidget(instruction_arrow_back_btn, 0, 2, 1, 1);
 
-        prg_arrow_up_btn = new QPushButton(gridLayoutWidget_2);
-        prg_arrow_up_btn->setObjectName(QString::fromUtf8("prg_arrow_up_btn"));
-        sizePolicy.setHeightForWidth(prg_arrow_up_btn->sizePolicy().hasHeightForWidth());
-        prg_arrow_up_btn->setSizePolicy(sizePolicy);
-        prg_arrow_up_btn->setMinimumSize(QSize(30, 30));
-        prg_arrow_up_btn->setMaximumSize(QSize(30, 30));
-        prg_arrow_up_btn->setFont(font);
+        instruction_arrow_up_btn = new QPushButton(gridLayoutWidget_2);
+        instruction_arrow_up_btn->setObjectName(QString::fromUtf8("instruction_arrow_up_btn"));
+        sizePolicy.setHeightForWidth(instruction_arrow_up_btn->sizePolicy().hasHeightForWidth());
+        instruction_arrow_up_btn->setSizePolicy(sizePolicy);
+        instruction_arrow_up_btn->setMinimumSize(QSize(30, 30));
+        instruction_arrow_up_btn->setMaximumSize(QSize(30, 30));
+        instruction_arrow_up_btn->setFont(font);
 
-        prg_arrow_btns->addWidget(prg_arrow_up_btn, 0, 1, 1, 1);
+        prg_arrow_btns->addWidget(instruction_arrow_up_btn, 0, 1, 1, 1);
 
         mission_control = new QGroupBox(controls_box);
         mission_control->setObjectName(QString::fromUtf8("mission_control"));
@@ -321,21 +332,25 @@ public:
 
         m_c_auto_btn = new QPushButton(gridLayoutWidget_3);
         m_c_auto_btn->setObjectName(QString::fromUtf8("m_c_auto_btn"));
+        m_c_auto_btn->setEnabled(false);
 
         m_c_btns->addWidget(m_c_auto_btn, 1, 1, 1, 1);
 
         m_c_step_btn = new QPushButton(gridLayoutWidget_3);
         m_c_step_btn->setObjectName(QString::fromUtf8("m_c_step_btn"));
+        m_c_step_btn->setEnabled(false);
 
         m_c_btns->addWidget(m_c_step_btn, 1, 0, 1, 1);
 
         m_c_cancel_btn = new QPushButton(gridLayoutWidget_3);
         m_c_cancel_btn->setObjectName(QString::fromUtf8("m_c_cancel_btn"));
+        m_c_cancel_btn->setEnabled(false);
 
         m_c_btns->addWidget(m_c_cancel_btn, 0, 1, 1, 1);
 
         m_c_stop_btn = new QPushButton(gridLayoutWidget_3);
         m_c_stop_btn->setObjectName(QString::fromUtf8("m_c_stop_btn"));
+        m_c_stop_btn->setEnabled(false);
 
         m_c_btns->addWidget(m_c_stop_btn, 2, 1, 1, 1);
 
@@ -358,15 +373,25 @@ public:
         change_colonie_button->setText(QApplication::translate("main_window", "Andere Kolonie...", nullptr));
         program->setTitle(QString());
         program_label->setText(QApplication::translate("main_window", "Programmieren", nullptr));
-        prg_control_dropdown->setItemText(0, QApplication::translate("main_window", "Dropdown", nullptr));
+        instruction_control_dropdown->setItemText(0, QApplication::translate("main_window", "Bis Hindernis", nullptr));
+        instruction_control_dropdown->setItemText(1, QApplication::translate("main_window", "1x", nullptr));
+        instruction_control_dropdown->setItemText(2, QApplication::translate("main_window", "2x", nullptr));
+        instruction_control_dropdown->setItemText(3, QApplication::translate("main_window", "3x", nullptr));
+        instruction_control_dropdown->setItemText(4, QApplication::translate("main_window", "4x", nullptr));
+        instruction_control_dropdown->setItemText(5, QApplication::translate("main_window", "5x", nullptr));
+        instruction_control_dropdown->setItemText(6, QApplication::translate("main_window", "6x", nullptr));
+        instruction_control_dropdown->setItemText(7, QApplication::translate("main_window", "7x", nullptr));
+        instruction_control_dropdown->setItemText(8, QApplication::translate("main_window", "8x", nullptr));
+        instruction_control_dropdown->setItemText(9, QApplication::translate("main_window", "9x", nullptr));
+        instruction_control_dropdown->setItemText(10, QApplication::translate("main_window", "10x", nullptr));
 
-        prg_control_edit->setText(QApplication::translate("main_window", "Textfeld", nullptr));
-        prg_arrow_left_btn->setText(QApplication::translate("main_window", "\342\206\220", nullptr));
-        prg_arrow_down_btn->setText(QApplication::translate("main_window", "\342\206\223", nullptr));
-        prg_arrow_right_btn->setText(QApplication::translate("main_window", "\342\206\222", nullptr));
-        prg_arrow_center_btn->setText(QApplication::translate("main_window", "\342\200\242", nullptr));
-        prg_arrow_back_btn->setText(QApplication::translate("main_window", "\342\257\207", nullptr));
-        prg_arrow_up_btn->setText(QApplication::translate("main_window", "\342\206\221", nullptr));
+        instruction_edit->setText(QString());
+        instruction_arrow_left_btn->setText(QApplication::translate("main_window", "\342\206\220", nullptr));
+        instruction_arrow_down_btn->setText(QApplication::translate("main_window", "\342\206\223", nullptr));
+        instruction_arrow_right_btn->setText(QApplication::translate("main_window", "\342\206\222", nullptr));
+        instruction_arrow_center_btn->setText(QApplication::translate("main_window", "\342\200\242", nullptr));
+        instruction_arrow_back_btn->setText(QApplication::translate("main_window", "\342\257\207", nullptr));
+        instruction_arrow_up_btn->setText(QApplication::translate("main_window", "\342\206\221", nullptr));
         mission_control->setTitle(QString());
         m_c_label->setText(QApplication::translate("main_window", "Missionsablauf", nullptr));
         m_c_start_btn->setText(QApplication::translate("main_window", "Start", nullptr));
