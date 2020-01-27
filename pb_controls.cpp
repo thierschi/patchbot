@@ -17,6 +17,11 @@ void controls::connect_to_parent()
 		this, &controls::reset);
 }
 
+void controls::make_instruction_backup()
+{
+	backup = instruction_queue;
+}
+
 void controls::activate_instructions_contorls()
 {
 	parent->activate_instruction_btns();

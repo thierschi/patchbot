@@ -15,6 +15,7 @@ public:
 	controls(const controls&) = default;
 
 	void connect_to_parent();
+	void make_instruction_backup();
 
 	void activate_instructions_contorls();
 	void deactivate_instructions_contorls();

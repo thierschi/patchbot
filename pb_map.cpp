@@ -168,8 +168,26 @@ void robot_map::set_robots_grave(int x, int y)
 	graves.insert(std::pair<int, bool>(y * width + x, true));
 }
 
+void robot_map::move_robot(int x, int y, int new_x, int new_y)
+{
+
+	if (x >= width || y >= height)
+		throw std::invalid_argument("Invalid argument passed to to robot_map: "
+			"Coordinates out of range.");
+
+	if (new_x >= width || new_y >= height)
+		throw std::invalid_argument("Invalid argument passed to to robot_map: "
+			"Coordinates out of range.");
+	if (robots[y * width + x].type == robot_type::NONE)
+		return;
+	if (robots[new_y * width + new_x].type != robot_type::NONE)
+		return;
+	robots[new_y * width + new_x] = robots[y * width + x];
+	robots[y * width + x] = robot();
+	robots_locations[robots[new_y * width + new_x].type] = coords(new_x, new_y);
+}
+
 tile::tile(terrain t) :
-	is_open(false),
 	tile_terrain(t)
 {
 	if (t != terrain::STEEL_PLANKS)
@@ -179,6 +197,7 @@ tile::tile(terrain t) :
 			"Terrain class missmatch.");
 }
 
+
 terrain tile::get_terrain() const {
 	return tile_terrain;
 }
@@ -186,12 +205,6 @@ terrain tile::get_terrain() const {
 action tile::interact(robot_type r) {
 	return action::WALK;
 }
-
-bool tile::get_is_open() const
-{
-	return is_open;
-}
-
 
 startingpoint::startingpoint(robot_type r) :
 	starting(r)
@@ -207,6 +220,11 @@ startingpoint::startingpoint(robot_type r) :
 			"constructor of tile: "
 			"Terrain class missmatch.");
 	tile_terrain = terrain::ENEMY_START;
+}
+
+action startingpoint::interact(robot_type r)
+{
+	return action::WALK;
 }
 
 danger::danger(terrain t)
@@ -270,28 +288,26 @@ door::door(terrain t) {
 }
 
 action door::interact(robot_type r) {
-	/*
-		TODO: Door opening and closing methods.
-		Will be implemented in the future.
-	*/
-	if (is_open)
+	if (tile_terrain == terrain::AUTOMATIC_DOOR_OPEN ||
+		tile_terrain == terrain::MANUAL_DOOR_OPEN)
 		return action::WALK;
-	if (tile_terrain == terrain::AUTOMATIC_DOOR) {
-		if (r == robot_type::PATCHBOT)
+	if (r == robot_type::PATCHBOT) {
+		if (tile_terrain == terrain::AUTOMATIC_DOOR)
 			return action::OBSTRUCTED;
-		// open()
-		return action::WAIT;
+		tile_terrain = terrain::MANUAL_DOOR_OPEN;
+		return action::OPEN_DOOR;
 	}
-	// open()
-	return action::WAIT;
+	if (tile_terrain == terrain::AUTOMATIC_DOOR)
+		tile_terrain = terrain::AUTOMATIC_DOOR_OPEN;
+	else
+		tile_terrain = terrain::MANUAL_DOOR_OPEN;
+	return action::OPEN_DOOR;
 }
+
 
 wall::wall(terrain t) {
 	if (!((std::find(std::begin(walls),
-		std::end(walls),
-		t)
-		!=
-		std::end(walls))))
+		std::end(walls), t) != std::end(walls))))
 		throw std::invalid_argument(
 			"Invalid argument passed to "
 			"constructor of tile: "
@@ -324,7 +340,7 @@ tile_map::tile_map(std::string _name, int _width, int _height) :
 {
 	/* A new Tile_map is always filled with the standard
 	Tile object more accurate with STEEL_PLANKS */
-	i_map.insert(i_map.begin(), _width * _height, tile());
+	i_map.insert(i_map.begin(), _width * _height, std::make_shared<tile>());
 }
 
 // Getter
@@ -340,7 +356,15 @@ int tile_map::get_width()  const {
 	return width;
 }
 
-tile tile_map::get_tile(int x, int y) const {
+terrain tile_map::get_tile_terrain(int x, int y) const {
+	if (x >= width || y >= height)
+		throw std::invalid_argument(
+			"Invalid argument passed to Tile_map: "
+			"Coordinates out of range.");
+	return i_map[y * width + x]->get_terrain();
+}
+
+std::shared_ptr<tile> tile_map::get_tile(int x, int y) {
 	if (x >= width || y >= height)
 		throw std::invalid_argument(
 			"Invalid argument passed to Tile_map: "
@@ -360,13 +384,12 @@ void tile_map::set_height(int h) {
 			"Height of tile_map must be 1 or greater.");
 	}
 	else if (h < height) {
-		i_map.erase(i_map.begin() + h * width,
-			i_map.end());
+		i_map.erase(i_map.begin() + h * width, i_map.end());
 		height = h;
 	}
 	else if (h > height) {
-		i_map.insert(i_map.end(),
-			(h - height) * width, tile());
+		i_map.insert(i_map.end(), (h - height) * width, 
+			std::make_shared<tile>());
 		height = h;
 	}
 	robots.set_height(h);
@@ -395,10 +418,10 @@ void tile_map::set_width(int w) {
 		width = w;
 	}
 	else if (w > width) {
-		i_map.push_back(tile());
+		i_map.push_back(std::make_shared<tile>());
 		for (int i = height; i > 0; i--) {
-			i_map.insert(i_map.begin() + i * width,
-				w - width, tile());
+			i_map.insert(i_map.begin() + i * width, w - width,
+				std::make_shared<tile>());
 		}
 		i_map.pop_back();
 		width = w;
@@ -411,7 +434,7 @@ void tile_map::set_tile(const tile& t, int x, int y) {
 		throw std::invalid_argument(
 			"Invalid argument passed to Tile_map: "
 			"Coordinates out of range.");
-	i_map[y * width + x] = t;
+	i_map[y * width + x] = std::make_shared<tile>(t);
 	
 }
 
@@ -425,7 +448,7 @@ void tile_map::set_tile(const startingpoint& t, int x, int y) {
 			"Invalid argument passed to Tile_map: "
 			"This map already has a startingpoint for patchbot.");
 
-	i_map[y * width + x] = t;
+	i_map[y * width + x] = std::make_shared<tile>(t);
 	robots.set_robot(robot(t.starting), x, y);
 	has_pb_start = (t.starting == robot_type::PATCHBOT) ? true : has_pb_start;
 }
@@ -442,52 +465,42 @@ void tile_map::set_tile(char c, int x, int y) {
 			throw std::invalid_argument(
 				"Invalid argument passed to Tile_map: "
 				"This map already has a startingpoint for patchbot.");
-		i_map[y * width + x] = startingpoint(
-			(robot_type)c);
+		i_map[y * width + x] = std::make_shared<startingpoint>((robot_type)c);
 		robots.set_robot(robot(robot_type::PATCHBOT), x, y);
 		has_pb_start = true;
 		break;
 	case 'P':
-		i_map[y * width + x] = server();
+		i_map[y * width + x] = std::make_shared<server>();
 		break;
 	case ' ':
-		i_map[y * width + x] = tile();
+		i_map[y * width + x] = std::make_shared<tile>();
 		break;
 	case '#':
-		i_map[y * width + x] = wall(
-			terrain::CONCRETE_WALL);
+		i_map[y * width + x] = std::make_shared<wall>(terrain::CONCRETE_WALL);
 		break;
 	case 'M':
-		i_map[y * width + x] = wall(
-			terrain::ROCK_WALL);
+		i_map[y * width + x] = std::make_shared<wall>(terrain::ROCK_WALL);
 		break;
 	case 'd':
-		i_map[y * width + x] = door(
-			terrain::MANUAL_DOOR);
+		i_map[y * width + x] = std::make_shared<door>(terrain::MANUAL_DOOR);
 		break;
 	case 'D':
-		i_map[y * width + x] = door(
-			terrain::AUTOMATIC_DOOR);
+		i_map[y * width + x] = std::make_shared<door>(terrain::AUTOMATIC_DOOR);
 		break;
 	case 'g':
-		i_map[y * width + x] = obstacle(
-			terrain::ALIEN_GRASS);
+		i_map[y * width + x] = std::make_shared<obstacle>(terrain::ALIEN_GRASS);
 		break;
 	case '.':
-		i_map[y * width + x] = obstacle(
-			terrain::GRAVEL);
+		i_map[y * width + x] = std::make_shared<obstacle>(terrain::GRAVEL);
 		break;
 	case 'x':
-		i_map[y * width + x] = obstacle(
-			terrain::SECRET_PASSAGE);
+		i_map[y * width + x] = std::make_shared<obstacle>(terrain::SECRET_PASSAGE);
 		break;
 	case 'O':
-		i_map[y * width + x] = danger(
-			terrain::ABYSS);
+		i_map[y * width + x] = std::make_shared<danger>(terrain::ABYSS);
 		break;
 	case '~':
-		i_map[y * width + x] = danger(
-			terrain::WATER);
+		i_map[y * width + x] = std::make_shared<danger>(terrain::WATER);
 		break;
 	case '1':
 	case '2':
@@ -496,7 +509,7 @@ void tile_map::set_tile(char c, int x, int y) {
 	case '5':
 	case '6':
 	case '7':
-		i_map[y * width + x] = startingpoint((robot_type)c);
+		i_map[y * width + x] = std::make_shared<startingpoint>((robot_type)c);
 		robots.set_robot(robot((robot_type)c), x, y);
 		break;
 	default:

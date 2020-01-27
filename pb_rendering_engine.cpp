@@ -20,47 +20,47 @@ rendering_engine::rendering_engine(main_window* _parent,
 
 int rendering_engine::get_full_width_px()
 {
-	return parent->map.get_width()
-		* resources.get_terrain.at(parent->map.get_tile(0, 0).get_terrain()).header.img_width;
+    return parent->map.get_width()
+        * resources.get_terrain_img.at(parent->map.get_tile(0, 0)->get_terrain()).header.img_width;
 }
 
 int rendering_engine::get_full_height_px()
 {
-	return parent->map.get_height()
-		* resources.get_terrain.at(parent->map.get_tile(0, 0).get_terrain()).header.img_height;
+    return parent->map.get_height()
+        * resources.get_terrain_img.at(parent->map.get_tile(0, 0)->get_terrain()).header.img_height;
 }
 
 void rendering_engine::render_pixel(int x, int y)
 {
     /* Calc corresponding tile to coords*/
-    int map_x = floor((x + padding_left) / resources.get_terrain.at(
-        parent->map.get_tile(0, 0).get_terrain()).header.img_width);
-    int map_y = floor((y + padding_top) / resources.get_terrain.at(
-        parent->map.get_tile(0, 0).get_terrain()).header.img_height);
+    int map_x = floor((x + padding_left) / resources.get_terrain_img.at(
+        parent->map.get_tile(0, 0)->get_terrain()).header.img_width);
+    int map_y = floor((y + padding_top) / resources.get_terrain_img.at(
+        parent->map.get_tile(0, 0)->get_terrain()).header.img_height);
     /* Calc corresponding pixel of a tga tile image to coords */
-    int pixel_x = (x + padding_left) % resources.get_terrain.at(
-        parent->map.get_tile(0, 0).get_terrain()).header.img_width;
-    int pixel_y = (y + padding_top) % resources.get_terrain.at(
-        parent->map.get_tile(0, 0).get_terrain()).header.img_height;
+    int pixel_x = (x + padding_left) % resources.get_terrain_img.at(
+        parent->map.get_tile(0, 0)->get_terrain()).header.img_width;
+    int pixel_y = (y + padding_top) % resources.get_terrain_img.at(
+        parent->map.get_tile(0, 0)->get_terrain()).header.img_height;
 
-    rgba_pixel pixel = resources.get_terrain.at((
-        parent->map.get_tile(map_x, map_y).get_terrain()
-        )).get_pixel(pixel_x, resources.get_terrain.at(
-            parent->map.get_tile(0, 0).get_terrain()).header.img_height - 1 - pixel_y);
+    rgba_pixel pixel = resources.get_terrain_img.at((
+        parent->map.get_tile(map_x, map_y)->get_terrain()
+        )).get_pixel(pixel_x, resources.get_terrain_img.at(
+            parent->map.get_tile(0, 0)->get_terrain()).header.img_height - 1 - pixel_y);
 
     if (game_is_on) {
         /* Blend pixel of robot on top, if robot is present on field */
         if (parent->map.robots.get_robot(map_x, map_y).type != robot_type::NONE)
-            pixel.overlay_pixel(resources.get_robot.at(
+            pixel.overlay_pixel(resources.get_robot_img.at(
                 parent->map.robots.get_robot(map_x, map_y).type)
-                .get_pixel(pixel_x, resources.get_terrain.at(
-                    parent->map.get_tile(0, 0).get_terrain())
+                .get_pixel(pixel_x, resources.get_terrain_img.at(
+                    parent->map.get_tile(0, 0)->get_terrain())
                     .header.img_height - 1 - pixel_y));
 
         if (parent->map.robots.is_grave(map_x, map_y))
-            pixel.underlay_pixel(resources.get_robot.at(robot_type::DEAD)
-                .get_pixel(pixel_x, resources.get_terrain.at(
-                    parent->map.get_tile(0, 0).get_terrain())
+            pixel.underlay_pixel(resources.get_robot_img.at(robot_type::DEAD)
+                .get_pixel(pixel_x, resources.get_terrain_img.at(
+                    parent->map.get_tile(0, 0)->get_terrain())
                     .header.img_height - 1 - pixel_y));
     }
 
@@ -130,8 +130,8 @@ void rendering_engine::initial_render()
 
 void rendering_engine::refresh_render()
 {
-    for (int y = padding_top; y < qimg.height() + padding_top; y++) {
-        for (int x = padding_left; x < qimg.width() + padding_left; x++) {
+    for (int y = 0; y < qimg.height(); y++) {
+        for (int x = 0; x < qimg.width(); x++) {
             // Render whole visible part of map
             render_pixel(x, y);
         }

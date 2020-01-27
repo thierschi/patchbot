@@ -12,8 +12,7 @@
 #include <Windows.h>
 #include <debugapi.h>
 
-main_window::main_window(QWidget* parent,
-    const std::string& path_to_resources)
+main_window::main_window(QWidget* parent)
     : QMainWindow(parent),
     ui(new Ui::main_window),
     map(tile_map()),
@@ -62,9 +61,9 @@ void main_window::adjust_scrollbars()
 {
     ui->map_h_scrollbar->setPageStep(ui->map_scrollArea->width());
     ui->map_v_scrollbar->setPageStep(ui->map_scrollArea->height());
-    ui->map_v_scrollbar->setRange(0, resource_width
+    ui->map_v_scrollbar->setRange(0, resource_height
         - ui->map_v_scrollbar->pageStep());
-    ui->map_h_scrollbar->setRange(0, resource_height
+    ui->map_h_scrollbar->setRange(0, resource_width
         - ui->map_h_scrollbar->pageStep());
 }
 
@@ -85,7 +84,7 @@ void main_window::adjust_instruction_edit_scrollbar()
 {
     int temp = ui->instruction_edit->cursorPosition();
     ui->instruction_edit->end(false);
-    ui->instruction_control_h_scroll->setPageStep(14);
+    ui->instruction_control_h_scroll->setPageStep(12);
     ui->instruction_control_h_scroll->setRange(0,
         ui->instruction_edit->cursorPosition()
         - ui->instruction_control_h_scroll->pageStep());

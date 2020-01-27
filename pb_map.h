@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <unordered_map>
+#include <memory>
 
 /*
 	Enumerations fpr Terrain-types, Robot-types and Action-types
@@ -11,13 +12,6 @@ enum class terrain {
 	STEEL_PLANKS = ' ',
 	PATCHBOT_START = 'p',
 	ENEMY_START = 'e',
-	/*BUGGER_START = '1',
-	PUSHER_START = '2',
-	DIGGER_START = '3',
-	SWIMMER_START = '4',
-	FOLLOWER_START = '5',
-	HUNTER_START = '6',
-	SNIFFER_START = '7',*/
 	ABYSS = 'O',
 	WATER = '~',
 	MAIN_SERVER = 'P',
@@ -52,7 +46,8 @@ enum class action {
 	WALK_AND_WAIT,
 	WAIT,
 	OBSTRUCTED,
-	DIG
+	DIG,
+	OPEN_DOOR
 };
 
 class coords {
@@ -104,6 +99,7 @@ public:
 	void set_width(int _width);
 	void set_robot(const robot& _robot, int x, int y);
 	void set_robots_grave(int x, int y);
+	void move_robot(int x, int y, int new_x, int new_y);
 };
 
 /*
@@ -112,7 +108,6 @@ public:
 */
 class tile {
 protected:
-	bool is_open; // Only for doors
 	terrain tile_terrain;
 
 public:
@@ -122,6 +117,8 @@ public:
 		after a successfull check
 	*/
 	tile(terrain t = terrain::STEEL_PLANKS);
+	tile(const tile&) = default;
+	//tile(tile&&) = default;
 
 	terrain get_terrain() const;
 
@@ -131,18 +128,21 @@ public:
 		a robot tries to walk on it / interact with it
 	*/
 	virtual action interact(robot_type r);
-	bool get_is_open() const;
 };
 
 class startingpoint : public tile {
 public:
 	robot_type starting;
 	startingpoint(robot_type t);
+	startingpoint(const startingpoint&) = default;
+
+	action interact(robot_type r) override;
 };
 
 class danger : public tile {
 public:
 	danger(terrain t);
+	danger(const danger&) = default;
 
 	action interact(robot_type r) override;
 };
@@ -150,6 +150,7 @@ public:
 class obstacle : public tile {
 public:
 	obstacle(terrain t);
+	obstacle(const obstacle&) = default;
 
 	action interact(robot_type r) override;
 };
@@ -157,6 +158,7 @@ public:
 class door : public tile {
 public:
 	door(terrain t);
+	door(const door&) = default;
 
 	action interact(robot_type r) override;
 };
@@ -164,6 +166,7 @@ public:
 class wall : public tile {
 public:
 	wall(terrain t);
+	wall(const wall&) = default;
 
 	action interact(robot_type r) override;
 };
@@ -171,12 +174,13 @@ public:
 class server : public tile {
 public:
 	server();
+	server(const server&) = default;
 
 	action interact(robot_type r) override;
 };
 
 /*
-	Tile_map is implemented as one dimensional vector  "i_map", where each
+	Tile_map is implemented as one dimensional vector "i_map", where each
 	coordinate-pair x and y can be mapped to its tile with y * width + x.
 	Coordinates are starting from zero.
 */
@@ -185,7 +189,7 @@ protected:
 	int height;
 	int width;
 	bool has_pb_start;
-	std::vector<tile> i_map;
+	std::vector<std::shared_ptr<tile>> i_map;
 
 public:
 	std::string name;
@@ -197,10 +201,10 @@ public:
 	int get_size() const;
 	int get_height() const;
 	int get_width() const;
-	tile get_tile(int x, int y) const;
+	terrain get_tile_terrain(int x, int y) const;
+	std::shared_ptr<tile> get_tile(int x, int y);
 
 	//Setter :
-
 	void set_height(int h);
 	void set_width(int w);
 	void set_tile(const tile& t, int x, int y);

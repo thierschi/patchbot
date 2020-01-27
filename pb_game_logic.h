@@ -8,6 +8,7 @@
 #include <QTimer>
 
 class open_door {
+public:
 	int x;
 	int y;
 	int remaining_open_for;
@@ -22,10 +23,12 @@ class game_logic : public QObject {
 public:
 	game_logic(main_window* _parent,
 		rendering_engine* _rendering_engine, controls* _controls);
+	game_logic(const game_logic&) = default;
+	~game_logic();
 
 	void connect_to_parent();
 
-	//void won_game();
+	void won_game();
 	void lost_game();
 	void reset();
 

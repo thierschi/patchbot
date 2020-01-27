@@ -36,8 +36,7 @@ public:
     Ui::main_window* ui;
     tile_map map;
 
-    main_window(QWidget* parent = 0,
-        const std::string& path_to_resources = ".");
+    main_window(QWidget* parent = 0);
     ~main_window();
 
     void resizeEvent(QResizeEvent* event);
