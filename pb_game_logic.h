@@ -4,16 +4,16 @@
 #include "pb_controls.h"
 
 #include <QObject>
-#include <queue>
 #include <QTimer>
+#include <list>
 
 class open_door {
 public:
+	int open_since;
 	int x;
 	int y;
-	int remaining_open_for;
 
-	open_door(int _x, int _y, int _remaining_open_for = 10);
+	open_door(int _x, int _y, int _open_since);
 };
 
 class game_logic : public QObject {
@@ -28,6 +28,9 @@ public:
 
 	void connect_to_parent();
 
+	void patchbots_turn();
+	void doors();
+
 	void won_game();
 	void lost_game();
 	void reset();
@@ -40,11 +43,15 @@ public slots:
 	void cancel_game();
 
 private:
+	int time_steps;
+	int duration;
+
 	main_window* parent;
 	rendering_engine* __rendering_engine;
 	controls* __controls;
 	
 	QTimer *automation_timer;
-	std::queue<open_door> open_doors;
+	std::list<open_door> open_doors;
+	std::list<open_door> blocked_doors;
 };
 

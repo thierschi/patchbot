@@ -18,5 +18,6 @@ int main(int argc, char *argv[])
     game_logic l(&w, &r, &c);
     w.show();
     r.initial_render();
+    r.refresh_render();
     return a.exec();
 }

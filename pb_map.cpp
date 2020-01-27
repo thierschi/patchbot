@@ -275,7 +275,8 @@ action obstacle::interact(robot_type r) {
 		? action::WALK_AND_WAIT : action::WALK;
 }
 
-door::door(terrain t) {
+door::door(terrain t) 
+{
 	if (!(std::find(std::begin(doors),
 		std::end(doors),
 		t)
@@ -288,19 +289,29 @@ door::door(terrain t) {
 }
 
 action door::interact(robot_type r) {
-	if (tile_terrain == terrain::AUTOMATIC_DOOR_OPEN ||
-		tile_terrain == terrain::MANUAL_DOOR_OPEN)
+	if (r == robot_type::NONE) {
+		if (tile_terrain == terrain::OPEN_AUTOMATIC_DOOR) {
+			tile_terrain = terrain::AUTOMATIC_DOOR;
+			return action::WAIT;
+		}
+		else if (tile_terrain == terrain::OPEN_MANUAL_DOOR) {
+			tile_terrain = terrain::MANUAL_DOOR;
+			return action::WAIT;
+		}
+	}
+	if (tile_terrain == terrain::OPEN_AUTOMATIC_DOOR ||
+		tile_terrain == terrain::OPEN_MANUAL_DOOR)
 		return action::WALK;
 	if (r == robot_type::PATCHBOT) {
 		if (tile_terrain == terrain::AUTOMATIC_DOOR)
 			return action::OBSTRUCTED;
-		tile_terrain = terrain::MANUAL_DOOR_OPEN;
+		tile_terrain = terrain::OPEN_MANUAL_DOOR;
 		return action::OPEN_DOOR;
 	}
 	if (tile_terrain == terrain::AUTOMATIC_DOOR)
-		tile_terrain = terrain::AUTOMATIC_DOOR_OPEN;
+		tile_terrain = terrain::OPEN_AUTOMATIC_DOOR;
 	else
-		tile_terrain = terrain::MANUAL_DOOR_OPEN;
+		tile_terrain = terrain::OPEN_MANUAL_DOOR;
 	return action::OPEN_DOOR;
 }
 

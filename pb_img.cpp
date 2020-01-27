@@ -363,11 +363,11 @@ img_resources::img_resources(const std::string& _path,
 		pb_input::read_tga_img(path_tiles + "\\hindernis_schotter.tga")));
 	get_terrain_img.insert(std::pair<terrain, tga>(terrain::AUTOMATIC_DOOR,
 		pb_input::read_tga_img(path_tiles + "\\tuer_automatisch_geschlossen.tga")));
-	get_terrain_img.insert(std::pair<terrain, tga>(terrain::AUTOMATIC_DOOR_OPEN, 
+	get_terrain_img.insert(std::pair<terrain, tga>(terrain::OPEN_AUTOMATIC_DOOR, 
 		pb_input::read_tga_img(path_tiles + "\\tuer_automatisch_offen.tga")));
 	get_terrain_img.insert(std::pair<terrain, tga>(terrain::MANUAL_DOOR, 
 		pb_input::read_tga_img(path_tiles + "\\tuer_manuell_geschlossen.tga")));
-	get_terrain_img.insert(std::pair<terrain, tga>(terrain::MANUAL_DOOR_OPEN, 
+	get_terrain_img.insert(std::pair<terrain, tga>(terrain::OPEN_MANUAL_DOOR, 
 		pb_input::read_tga_img(path_tiles + "\\tuer_manuell_offen.tga")));
 	get_terrain_img.insert(std::pair<terrain, tga>(terrain::CONCRETE_WALL,
 		pb_input::read_tga_img(path_tiles + "\\wand_beton.tga")));
