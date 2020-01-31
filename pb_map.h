@@ -19,9 +19,9 @@ enum class terrain {
 	GRAVEL = '.',
 	SECRET_PASSAGE = 'x',
 	MANUAL_DOOR = 'd',
-	OPEN_MANUAL_DOOR,
+	OPEN_MANUAL_DOOR = 'c',
 	AUTOMATIC_DOOR = 'D',
-	OPEN_AUTOMATIC_DOOR,
+	OPEN_AUTOMATIC_DOOR = 'C',
 	CONCRETE_WALL = '#',
 	ROCK_WALL = 'M'
 };
@@ -66,7 +66,7 @@ public:
 	robot_type type;
 	bool is_dead;
 
-	robot(robot_type _type = robot_type::NONE, bool _is_dead = false);
+	robot(robot_type type_ = robot_type::NONE, bool is_dead_ = false);
 };
 
 /*
@@ -84,7 +84,7 @@ protected:
 	std::unordered_map<robot_type, coords> robots_locations;
 
 public:
-	robot_map(int _width = 1, int height = 1);
+	robot_map(int width_ = 1, int height_ = 1);
 
 	// Getter
 	int get_size() const;
@@ -95,9 +95,9 @@ public:
 	coords get_robots_location(robot_type type);
 
 	// Setter
-	void set_height(int _height);
-	void set_width(int _width);
-	void set_robot(const robot& _robot, int x, int y);
+	void set_height(int height_);
+	void set_width(int width_);
+	void set_robot(const robot& robot_, int x, int y);
 	void set_robots_grave(int x, int y);
 	void move_robot(int x, int y, int new_x, int new_y);
 };

@@ -39,20 +39,20 @@ const robot_type robots_with_wheels[] = {
 	robot_type::SWIMMER
 };
 
-coords::coords(int _x, int _y) :
-	x(_x),
-	y(_y)
+coords::coords(int x_, int y_) :
+	x(x_),
+	y(y_)
 {
 }
 
-robot::robot(robot_type _type, bool _is_dead) :
-	type(_type),
-	is_dead(_is_dead) 
+robot::robot(robot_type type_, bool is_dead_) :
+	type(type_),
+	is_dead(is_dead_) 
 {};
 
-robot_map::robot_map(int _width, int _height) :
-	width(_width),
-	height(_height),
+robot_map::robot_map(int width_, int height_) :
+	width(width_),
+	height(height_),
 	has_pb(false)
 {
 	/*
@@ -95,27 +95,27 @@ coords robot_map::get_robots_location(robot_type type)
 	return robots_locations.at(type);
 }
 
-void robot_map::set_height(int _height) {
+void robot_map::set_height(int height_) {
 	/* Setting height by either appending
 	width * new-height - old-height tiles
 	or removing width * old-height - new-height tiles
 	from the end */
-	if (_height <= 0)
+	if (height_ <= 0)
 		throw std::invalid_argument("Invalid argument passed to robot_map: "
 			"Height of robot_map must be 1 or greater.");
-	else if (_height < height) {
-		robots.erase(robots.begin() + _height * width, 
+	else if (height_ < height) {
+		robots.erase(robots.begin() + height_ * width, 
 			robots.end());
-		height = _height;
+		height = height_;
 	}
-	else if (_height > height) {
-		robots.insert(robots.end(), (_height - height) * width, 
+	else if (height_ > height) {
+		robots.insert(robots.end(), (height_ - height) * width, 
 			robot());
-		height = _height;
+		height = height_;
 	}
 }
 
-void robot_map::set_width(int _width) {
+void robot_map::set_width(int width_) {
 	/*
 		Setting width by either removing the last
 		new-width - old-with tiles in every section
@@ -124,36 +124,36 @@ void robot_map::set_width(int _width) {
 		every old-with times.
 		In both cases starting from the back of the map.
 	*/
-	if (_width <= 0)
+	if (width_ <= 0)
 		throw std::invalid_argument("Invalid argument passed to robot_map: "
 			"Width of robot_map must be 1 or greater.");
-	else if (_width < width) {
+	else if (width_ < width) {
 		for (int i = height; i > 0; i--)
-			robots.erase(robots.begin() + ((i - 1) * width) + _width, 
+			robots.erase(robots.begin() + ((i - 1) * width) + width_, 
 				robots.begin() + i * width);
-		width = _width;
+		width = width_;
 	}
-	else if (_width > width) {
+	else if (width_ > width) {
 		robots.push_back(robot());
 		for (int i = height; i > 0; i--)
-			robots.insert(robots.begin() + i * width, _width - width, 
+			robots.insert(robots.begin() + i * width, width_ - width, 
 				robot());
 		robots.pop_back();
-		width = _width;
+		width = width_;
 	}
 }
 
-void robot_map::set_robot(const robot& _robot, int x, int y) {
+void robot_map::set_robot(const robot& robot_, int x, int y) {
 	if (x >= width || y >= height)
 		throw std::invalid_argument("Invalid argument passed to to robot_map: "
 			"Coordinates out of range.");
-	if (_robot.type == robot_type::PATCHBOT && has_pb) 
+	if (robot_.type == robot_type::PATCHBOT && has_pb) 
 		throw std::invalid_argument(
 			"Invalid argument passed to robot_map: "
 			"This robot_map already has a patchbot.");
-	robots[y * width + x] = _robot;
-	has_pb = (_robot.type == robot_type::PATCHBOT) ? true : has_pb;
-	robots_locations[_robot.type] = coords(x, y);
+	robots[y * width + x] = robot_;
+	has_pb = (robot_.type == robot_type::PATCHBOT) ? true : has_pb;
+	robots_locations[robot_.type] = coords(x, y);
 }
 
 void robot_map::set_robots_grave(int x, int y)
@@ -290,6 +290,7 @@ door::door(terrain t)
 
 action door::interact(robot_type r) {
 	if (r == robot_type::NONE) {
+		// Close door
 		if (tile_terrain == terrain::OPEN_AUTOMATIC_DOOR) {
 			tile_terrain = terrain::AUTOMATIC_DOOR;
 			return action::WAIT;
@@ -342,16 +343,16 @@ action server::interact(robot_type r) {
 	return action::OBSTRUCTED;
 }
 
-tile_map::tile_map(std::string _name, int _width, int _height) :
-	name(_name),
-	width(_width),
-	height(_height),
+tile_map::tile_map(std::string name_, int width_, int height_) :
+	name(name_),
+	width(width_),
+	height(height_),
 	has_pb_start(false),
-	robots(robot_map(_width, _height))
+	robots(robot_map(width_, height_))
 {
 	/* A new Tile_map is always filled with the standard
 	Tile object more accurate with STEEL_PLANKS */
-	i_map.insert(i_map.begin(), _width * _height, std::make_shared<tile>());
+	i_map.insert(i_map.begin(), width_ * height_, std::make_shared<tile>());
 }
 
 // Getter

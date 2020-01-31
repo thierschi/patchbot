@@ -5,18 +5,18 @@
 #include <thread>
 #include <QMessageBox>
 
-open_door::open_door(int _x, int _y, int _open_since) :
-	x(_x),
-	y(_y),
-	open_since(_open_since)
+open_door::open_door(int x_, int y_, int open_since_) :
+	x(x_),
+	y(y_),
+	open_since(open_since_)
 {
 }
 
-game_logic::game_logic(main_window* _parent,
-	rendering_engine* _rendering_engine, controls* _controls) :
-	parent(_parent),
-	__rendering_engine(_rendering_engine),
-	__controls(_controls),
+game_logic::game_logic(main_window* parent_,
+	rendering_engine* rendering_engine_, controls* controls_) :
+	parent(parent_),
+	p_rendering_engine(rendering_engine_),
+	p_controls(controls_),
 	automation_timer(new QTimer(this)),
 	duration(10)
 {
@@ -43,33 +43,38 @@ void game_logic::connect_to_parent()
 		this, &game_logic::cancel_game);
 }
 
-void game_logic::patchbots_turn()
+void game_logic::move_patchbot()
 {
-	if (__controls->instruction_queue.size() < 1) {
-		lost_game();
+	// If no instructions left -> Lost
+	if (p_controls->instruction_queue.size() < 1) {
+		loose_game();
 		return;
 	}
 
-	instruction_type current_instruction = __controls->
+	// Get next instruction and delete if neccesary
+	instruction_type current_instruction = p_controls->
 		instruction_queue.front().type;
-	if (__controls->instruction_queue.front().amount == 1)
-		__controls->instruction_queue.erase(
-			__controls->instruction_queue.begin());
-	else if (__controls->instruction_queue.front().amount > 1)
-		__controls->instruction_queue.front().amount--;
+	if (p_controls->instruction_queue.front().amount == 1)
+		p_controls->instruction_queue.erase(
+			p_controls->instruction_queue.begin());
+	else if (p_controls->instruction_queue.front().amount > 1)
+		p_controls->instruction_queue.front().amount--;
 
+	// Creat old and new coords
 	coords old_pos = parent->
 		map.robots.get_robots_location(robot_type::PATCHBOT);
 	coords new_pos = coords();
 
 	action patchbot_action;
 
+	// Get new coords if patchbot would walk
 	switch (current_instruction)
 	{
 	case(instruction_type::UP):
 		new_pos.x = old_pos.x;
-		if (new_pos.y < 0) {
-			patchbot_action = action::WAIT;
+
+		if (old_pos.y - 1 < 0) {
+			patchbot_action = action::OBSTRUCTED;
 			new_pos.y = old_pos.y;
 		}
 		else {
@@ -77,10 +82,12 @@ void game_logic::patchbots_turn()
 			new_pos.y = old_pos.y - 1;
 		}
 		break;
+
 	case(instruction_type::DOWN):
 		new_pos.x = old_pos.x;
-		if (new_pos.y >= parent->map.get_height()) {
-			patchbot_action = action::WAIT;
+
+		if (old_pos.y + 1 >= parent->map.get_height()) {
+			patchbot_action = action::OBSTRUCTED;
 			new_pos.y = old_pos.y;
 		}
 		else {
@@ -88,10 +95,12 @@ void game_logic::patchbots_turn()
 			new_pos.y = old_pos.y + 1;
 		}
 		break;
+
 	case(instruction_type::LEFT):
 		new_pos.y = old_pos.y;
-		if (new_pos.x < 0) {
-			patchbot_action = action::WAIT;
+
+		if (old_pos.x - 1 < 0) {
+			patchbot_action = action::OBSTRUCTED;
 			new_pos.x = old_pos.x;
 		}
 		else {
@@ -99,10 +108,12 @@ void game_logic::patchbots_turn()
 			new_pos.x = old_pos.x - 1;
 		}
 		break;
+
 	case(instruction_type::RIGHT):
-		new_pos.y = old_pos.y;
-		if (new_pos.x >= parent->map.get_width()) {
-			patchbot_action = action::WAIT;
+		new_pos.y = old_pos.y;		
+
+		if (old_pos.x + 1 >= parent->map.get_width()) {
+			patchbot_action = action::OBSTRUCTED;
 			new_pos.x = old_pos.x;
 		}
 		else {
@@ -110,40 +121,40 @@ void game_logic::patchbots_turn()
 			new_pos.x = old_pos.x + 1;
 		}
 		break;
+
 	case(instruction_type::WAIT):
 		new_pos.x = old_pos.x;
 		new_pos.y = old_pos.y;
 		patchbot_action = action::WAIT;
 		break;
+
 	default:
 		throw std::invalid_argument("Invalid argument in single_step: "
 			"Invalid instruction passed.");
 		break;
 	}
 
+	// Interact with tile
 	if (patchbot_action == action::WALK) {
 		switch (parent->map.get_tile(new_pos.x, new_pos.y)
 			->interact(robot_type::PATCHBOT)) {
 		case(action::DIE):
-			lost_game();
+			loose_game();
 			return;
 		case(action::WIN):
-			won_game();
+			win_game();
 			return;
 		case(action::OBSTRUCTED):
-			if (__controls->instruction_queue.size() > 0)
-				if (__controls->instruction_queue.front().amount == 0)
-					__controls->instruction_queue.erase(
-						__controls->instruction_queue.begin());
-			patchbot_action = action::WAIT;
+			patchbot_action = action::OBSTRUCTED;
 			break;
 		case(action::WALK_AND_WAIT):
-			__controls->instruction_queue.insert(
-				__controls->instruction_queue.begin(),
+			p_controls->instruction_queue.insert(
+				p_controls->instruction_queue.begin(),
 				instruction(instruction_type::WAIT, 1));
 			patchbot_action = action::WALK;
 			break;
 		case(action::OPEN_DOOR):
+			// Add door to door loop for closing in the future
 			open_doors.push_front(open_door(new_pos.x, new_pos.y, time_steps));
 			patchbot_action = action::WAIT;
 			break;
@@ -155,12 +166,18 @@ void game_logic::patchbots_turn()
 		}
 	}
 
+	// Patchbit walk
 	if (patchbot_action == action::WALK)
 		parent->map.robots.move_robot(old_pos.x, old_pos.y,
 			new_pos.x, new_pos.y);
+	else if (patchbot_action == action::OBSTRUCTED)
+		if (p_controls->instruction_queue.size() > 0)
+			if (p_controls->instruction_queue.front().amount == 0)
+				p_controls->instruction_queue.erase(
+					p_controls->instruction_queue.begin());
 }
 
-void game_logic::doors()
+void game_logic::update_doors()
 {
 	while (!open_doors.empty()) {
 		if (time_steps - open_doors.back().open_since >= duration) {
@@ -195,7 +212,7 @@ void game_logic::doors()
 	}
 }
 
-void game_logic::won_game()
+void game_logic::win_game()
 {
 	if (automation_timer->isActive())
 		automation_timer->stop();
@@ -204,7 +221,7 @@ void game_logic::won_game()
 	reset();
 }
 
-void game_logic::lost_game()
+void game_logic::loose_game()
 {
 	if(automation_timer->isActive())
 		automation_timer->stop();
@@ -215,41 +232,42 @@ void game_logic::lost_game()
 
 void game_logic::reset()
 {
-	__rendering_engine->game_is_on = false;
+	p_rendering_engine->game_is_on = false;
 	parent->reset();
 	parent->deactivate_mission_control_btns();
 	parent->activate_instruction_btns();
-	__controls->reset(true);
+	p_controls->reset(true);
+	p_rendering_engine->do_refresh_render();
 	open_doors.clear();
 	blocked_doors.clear();
 }
 
 void game_logic::start_game() 
 {
-	__controls->make_instruction_backup();
-	__controls->deactivate_instructions_contorls();
-	__controls->activate_mission_control_contorls();
-	__rendering_engine->game_is_on = true;
-	__rendering_engine->refresh_render();
+	p_controls->make_instruction_backup();
+	p_controls->deactivate_instructions_contorls();
+	p_controls->activate_mission_control_contorls();
+	p_rendering_engine->game_is_on = true;
+	p_rendering_engine->do_refresh_render();
 }
 
 void game_logic::single_step()
 {
-	patchbots_turn();
+	move_patchbot();
 
 	/*
 		TODO: Gegner sind am Zug
 	*/
 
-	doors();
+	update_doors();
 	time_steps++;
 
-	__rendering_engine->refresh_render();
+	p_rendering_engine->do_refresh_render();
 }
 
 void game_logic::automatic_stepping()
 {
-	__controls->deactivate_mission_control_contorls(true);
+	p_controls->deactivate_mission_control_contorls(true);
 	automation_timer->start(1000);
 }
 
@@ -257,10 +275,10 @@ void game_logic::stop_automatic_stepping()
 {
 	automation_timer->stop();
 
-	__controls->activate_mission_control_contorls(true);
+	p_controls->activate_mission_control_contorls(true);
 }
 
 void game_logic::cancel_game()
 {
-	lost_game();
+	loose_game();
 }

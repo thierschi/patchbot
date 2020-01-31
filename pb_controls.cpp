@@ -2,8 +2,8 @@
 
 #include <QMessageBox>
 
-controls::controls(main_window* _parent) :
-	parent(_parent)
+controls::controls(main_window* parent_) :
+	parent(parent_)
 {
 	connect_to_parent();
 	parent->adjust_instruction_edit_scrollbar();
@@ -42,15 +42,17 @@ void controls::deactivate_mission_control_contorls(bool auto_mode)
 	parent->deactivate_mission_control_btns(auto_mode);
 }
 
-void controls::on_new_instruction(instruction _instruction) 
+void controls::on_new_instruction(const instruction& instruction_) 
 {
-	if (_instruction.type == instruction_type::WAIT
-		&& _instruction.amount == 0) {
+	// Add instruction to instruction queue
+	if (instruction_.type == instruction_type::WAIT
+		&& instruction_.amount == 0) {
 		QMessageBox::about(parent, "Fehler", "Option \"Bis Hindernis\" "
 			"ist inkompatibel mit Instruktion \"Warten\"");
 		return;
 	}
-	if (_instruction.type == instruction_type::DEL) {
+	if (instruction_.type == instruction_type::DEL) {
+		// Delete instruction
 		if (!instruction_queue.empty()) {
 			parent->del_in_instruction_line_edit(QString::number(
 				instruction_queue.back().amount).length());
@@ -59,16 +61,18 @@ void controls::on_new_instruction(instruction _instruction)
 		return;
 	}
 	if (!instruction_queue.empty()) {
-		if (instruction_queue.back().type == _instruction.type) {
+		// Combine last instructions if the same
+		if (instruction_queue.back().type == instruction_.type) {
 			parent->del_in_instruction_line_edit(QString::number(
 				instruction_queue.back().amount).length());
-			instruction_queue.back().amount += _instruction.amount;
+			instruction_queue.back().amount += instruction_.amount;
 			parent->add_to_instruction_line_edit(instruction_queue.back());
 			return;
 		}
 	}
-	instruction_queue.push_back(_instruction);
-	parent->add_to_instruction_line_edit(_instruction);
+	// Insert new normal instruction
+	instruction_queue.push_back(instruction_);
+	parent->add_to_instruction_line_edit(instruction_);
 }
 
 void controls::reset(bool keep_instructions)

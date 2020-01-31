@@ -13,7 +13,7 @@ public:
 	int x;
 	int y;
 
-	open_door(int _x, int _y, int _open_since);
+	open_door(int x_, int y_, int open_since_);
 };
 
 class game_logic : public QObject {
@@ -21,18 +21,18 @@ class game_logic : public QObject {
 	Q_OBJECT
 
 public:
-	game_logic(main_window* _parent,
-		rendering_engine* _rendering_engine, controls* _controls);
+	game_logic(main_window* parent_,
+		rendering_engine* rendering_engine_, controls* controls_);
 	game_logic(const game_logic&) = default;
 	~game_logic();
 
 	void connect_to_parent();
 
-	void patchbots_turn();
-	void doors();
+	void move_patchbot();
+	void update_doors();
 
-	void won_game();
-	void lost_game();
+	void win_game();
+	void loose_game();
 	void reset();
 
 public slots:
@@ -47,8 +47,8 @@ private:
 	int duration;
 
 	main_window* parent;
-	rendering_engine* __rendering_engine;
-	controls* __controls;
+	rendering_engine* p_rendering_engine;
+	controls* p_controls;
 	
 	QTimer *automation_timer;
 	std::list<open_door> open_doors;

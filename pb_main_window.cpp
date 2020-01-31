@@ -92,11 +92,11 @@ void main_window::adjust_instruction_edit_scrollbar()
     ui->instruction_control_h_scroll->setValue(temp);
 }
 
-void main_window::add_to_instruction_line_edit(const instruction& _instruction)
+void main_window::add_to_instruction_line_edit(const instruction& instruction_)
 {
-    QString qstr = (char)_instruction.type;
-    qstr.append((_instruction.amount != 0) 
-        ? QString::number(_instruction.amount) : (QString)'X');
+    QString qstr = (char)instruction_.type;
+    qstr.append((instruction_.amount != 0) 
+        ? QString::number(instruction_.amount) : (QString)'X');
 
     ui->instruction_edit->end(false);
     ui->instruction_edit->insert(qstr);
@@ -175,13 +175,6 @@ void main_window::reset()
     //Reset instruction_edit
     ui->instruction_edit->clear();
     ui->instruction_control_dropdown->setCurrentIndex(0);
-
-    // Reset all values and reset scrollbar
-    ui->map_h_scrollbar->setValue(0);
-    ui->map_v_scrollbar->setValue(0);
-
-    /* Render map again*/
-    emit do_initial_render();
 }
 
 void main_window::on_change_colonie_button_clicked()
@@ -191,10 +184,28 @@ void main_window::on_change_colonie_button_clicked()
         tr("Karten-Textdatei öffnen..."), ".\\txt", tr("Text Files (*.txt)"));
     map_path = file_name.toStdString();
 
-    reset();
+    // Load map again
+    try {
+        map = pb_input::read_map_txt(map_path);
+    }
+    catch (std::exception & e) {
+        QMessageBox::about(this, "Fehler", e.what());
+        return;
+    }
 
+    //Reset instruction_edit
+    ui->instruction_edit->clear();
+    ui->instruction_control_dropdown->setCurrentIndex(0);
+
+    // Reset all values and reset scrollbar
+    ui->map_h_scrollbar->setValue(0);
+    ui->map_v_scrollbar->setValue(0);
+       
     // Reset instructions
     emit reset_instructions(false);
+
+    //Render again
+    emit do_initial_render();
 }
 
 void main_window::on_instruction_arrow_up_btn_clicked()
@@ -272,8 +283,8 @@ void main_window::on_instruction_control_h_scroll_valueChanged(int value)
     ui->instruction_edit->setCursorPosition(value * 2);
 }
 
-instruction::instruction(instruction_type _type, int _amount) :
-    type(_type), 
-    amount(_amount)
+instruction::instruction(instruction_type type_, int amount_) :
+    type(type_), 
+    amount(amount_)
 {
 }

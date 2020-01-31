@@ -17,7 +17,7 @@ public:
 	QImage qimg;
 	bool game_is_on;
 
-	rendering_engine(main_window* _parent,
+	rendering_engine(main_window* parent_,
 		const std::string& path_to_resources = ".");
 	rendering_engine(const rendering_engine&) = default;
 
@@ -28,8 +28,8 @@ public:
 	void connect_to_parent();
 
 public slots:
-	void initial_render();
-	void refresh_render();
+	void do_initial_render();
+	void do_refresh_render();
 	void on_window_resized(const QScrollArea& resizee);
 	void on_vertical_scroll(int value);
 	void on_horizontal_scroll(int value);
@@ -38,6 +38,8 @@ private:
 	bool initial_render_complete;
 	int h_value_before_scroll;
 	int v_value_before_scroll;
+	int scrollarea_width_before_scroll;
+	int scrollarea_height_before_scroll;
 	int padding_top;
 	int padding_left;
 

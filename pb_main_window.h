@@ -21,7 +21,7 @@ public:
     /* If 0: Until obstruction */
     int amount;
 
-    instruction(instruction_type _type, int _amount);
+    instruction(instruction_type type_, int amount_);
 };
 
 QT_BEGIN_NAMESPACE
@@ -44,19 +44,21 @@ public:
     int get_map_scrollArea_width() const;
     int get_map_scrollArea_height() const;
 
+    // Setter for rendering_engine
     void resize_map_placeholder(int width, int height);
     void map_placeholder_set_pixmap(const QPixmap& pixmap);
     void adjust_scrollbars();
     void refresh_colonie_label();
     void set_resource_size(int width, int height);
+
+    // Setter for contorls
     void adjust_instruction_edit_scrollbar();
-    void add_to_instruction_line_edit(const instruction& _instruction);
+    void add_to_instruction_line_edit(const instruction& instruction_);
     void del_in_instruction_line_edit(int number_of_deletes);
     void activate_instruction_btns();
     void deactivate_instruction_btns();
     void activate_mission_control_btns(bool auto_mode = false);
     void deactivate_mission_control_btns(bool auto_mode = false);
-
     void reset();
 
 public slots:
@@ -83,14 +85,18 @@ public slots:
     void on_instruction_control_h_scroll_valueChanged(int value);
 
 signals:
+    // Signals for rendering_engine
     void do_initial_render();
     void window_resized(const QScrollArea& resizee);
     void v_scroll(int value);
     void h_scroll(int value);
+    void do_refresh_render();
 
-    void new_instruction(const instruction& _instruction);
+    // Signals for controls
+    void new_instruction(const instruction& instruction_);
     void reset_instructions(bool kepp_instrucions);
 
+    // Signals for game logic
     void start_game();
     void single_step();
     void automatic_stepping();

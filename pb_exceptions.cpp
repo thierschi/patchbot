@@ -1,7 +1,7 @@
 #include "pb_exceptions.h"
 
-map_format_exception::map_format_exception(const char* _message) :
-	message(_message)
+map_format_exception::map_format_exception(const char* message_) :
+	message(message_)
 {
 }
 

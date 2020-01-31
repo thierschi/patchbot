@@ -3,16 +3,18 @@
 
 #include <QMainWindow>
 
-rendering_engine::rendering_engine(main_window* _parent,
+rendering_engine::rendering_engine(main_window* parent_,
     const std::string& path_to_resources) :
     resources(img_resources(path_to_resources)),
     qimg(QImage()),
     initial_render_complete(false),
     v_value_before_scroll(0),
     h_value_before_scroll(0),
+    scrollarea_width_before_scroll(0),
+    scrollarea_height_before_scroll(0),
     padding_top(0),
     padding_left(0),
-    parent(_parent),
+    parent(parent_),
     game_is_on(false)
 {
     connect_to_parent();
@@ -43,8 +45,10 @@ void rendering_engine::render_pixel(int x, int y)
     int pixel_y = (y + padding_top) % resources.get_terrain_img.at(
         parent->map.get_tile(0, 0)->get_terrain()).header.img_height;
 
+
+    auto tile_type = parent->map.get_tile(map_x, map_y)->get_terrain();
     rgba_pixel pixel = resources.get_terrain_img.at((
-        parent->map.get_tile(map_x, map_y)->get_terrain()
+        tile_type
         )).get_pixel(pixel_x, resources.get_terrain_img.at(
             parent->map.get_tile(0, 0)->get_terrain()).header.img_height - 1 - pixel_y);
 
@@ -76,16 +80,18 @@ void rendering_engine::connect_to_parent()
 {
     /* Connect the parents singals to this' slot */
     QObject::connect(parent, &main_window::do_initial_render,
-        this, &rendering_engine::initial_render);
+        this, &rendering_engine::do_initial_render);
     QObject::connect(parent, &main_window::window_resized,
         this, &rendering_engine::on_window_resized);
     QObject::connect(parent, &main_window::v_scroll,
         this, &rendering_engine::on_vertical_scroll);
     QObject::connect(parent, &main_window::h_scroll,
         this, &rendering_engine::on_horizontal_scroll);
+    QObject::connect(parent, &main_window::do_refresh_render,
+        this, &rendering_engine::do_refresh_render);
 }
 
-void rendering_engine::initial_render()
+void rendering_engine::do_initial_render()
 {
     parent->set_resource_size(get_full_width_px(), get_full_height_px());
     initial_render_complete = false;
@@ -128,16 +134,18 @@ void rendering_engine::initial_render()
     initial_render_complete = true;
 }
 
-void rendering_engine::refresh_render()
+void rendering_engine::do_refresh_render()
 {
-    for (int y = 0; y < qimg.height(); y++) {
-        for (int x = 0; x < qimg.width(); x++) {
-            // Render whole visible part of map
-            render_pixel(x, y);
+    if (initial_render_complete) {
+        for (int y = 0; y < qimg.height(); y++) {
+            for (int x = 0; x < qimg.width(); x++) {
+                // Render whole visible part of map
+                render_pixel(x, y);
+            }
         }
-    }
 
-    parent->map_placeholder_set_pixmap(QPixmap::fromImage(qimg));
+        parent->map_placeholder_set_pixmap(QPixmap::fromImage(qimg));
+    }
 }
 
 void rendering_engine::on_window_resized(const QScrollArea& resizee)
@@ -151,38 +159,43 @@ void rendering_engine::on_window_resized(const QScrollArea& resizee)
 
         int width, height;
 
-        if (get_full_width_px() < resizee.width() + padding_left)
+        padding_top = std::max(0, padding_top - (resizee.height() - scrollarea_height_before_scroll));
+        padding_left = std::max(0, padding_left - (resizee.width() - scrollarea_width_before_scroll));
+
+        if (get_full_width_px() < resizee.width() + padding_left) {
             width = get_full_width_px() - padding_left;
+        }
         else
             width = parent->get_map_scrollArea_width();
-
-        if (get_full_height_px() < resizee.height() + padding_top)
-            height = get_full_height_px() - padding_top;
+        if (get_full_height_px() < resizee.height() + padding_top) {
+            
+            height = get_full_height_px() - padding_top;    
+        }
         else
             height = parent->get_map_scrollArea_height();
         parent->resize_map_placeholder(width, height);
 
         qimg = qimg.copy(0, 0, width, qimg.height());
+        qimg = qimg.copy(0, 0, qimg.width(), height);
 
         for (int x = old_width; x < qimg.width(); x++) {
             for (int y = 0; y < old_height; y++) {
-                // Render currently unrendered pixel
+                // render currently unrendered pixel
                 render_pixel(x, y);
             }
         }
-
-        qimg = qimg.copy(0, 0, qimg.width(), height);
 
         for (int y = old_height; y < qimg.height(); y++) {
             for (int x = 0; x < qimg.width(); x++) {
-                // Render currently unrendered pixel
+                // render currently unrendered pixel
                 render_pixel(x, y);
             }
         }
 
+        scrollarea_width_before_scroll = resizee.width();
+        scrollarea_height_before_scroll = resizee.height();
+
         // Display the fresh image
-        /*ui->map_placeholder->setPixmap(QPixmap::fromImage(qimg));
-        adjust_scrollbars();*/
         parent->map_placeholder_set_pixmap(QPixmap::fromImage(qimg));
         parent->adjust_scrollbars();
     }
@@ -193,31 +206,38 @@ void rendering_engine::on_vertical_scroll(int value)
     if (initial_render_complete) {
         // Calculate distance scrolled
         int d_value = value - v_value_before_scroll;
-        v_value_before_scroll = value;
 
-        // Move qimg and save by how much the map is moved 
-        qimg = qimg.copy(0, d_value, qimg.width(), qimg.height());
-        padding_top = value;
-
-        // Check in which direction one scrolled
-        if (d_value > 0) {
-            for (int y = qimg.height() - d_value; y < qimg.height(); y++) {
-                for (int x = 0; x < qimg.width(); x++) {
-                    // Render now blank pixels
-                    render_pixel(x, y);
-                }
-            }
-        }
+        if (abs(d_value) >= qimg.height()) {
+            padding_top = value;
+            do_refresh_render();
+        } 
         else {
-            for (int y = 0; y < 0 - d_value; y++) {
-                for (int x = 0; x < qimg.width(); x++) {
-                    // Render now blank pixels
-                    render_pixel(x, y);
+            v_value_before_scroll = value;
+
+            // Move qimg and save by how much the map is moved 
+            qimg = qimg.copy(0, d_value, qimg.width(), qimg.height());
+            padding_top = value;
+
+            // Check in which direction one scrolled
+            if (d_value > 0) {
+                for (int y = qimg.height() - d_value; y < qimg.height(); y++) {
+                    for (int x = 0; x < qimg.width(); x++) {
+                        // Render now blank pixels
+                        render_pixel(x, y);
+                    }
                 }
             }
-        }
+            else {
+                for (int y = 0; y < 0 - d_value; y++) {
+                    for (int x = 0; x < qimg.width(); x++) {
+                        // Render now blank pixels
+                        render_pixel(x, y);
+                    }
+                }
+            }
 
-        parent->map_placeholder_set_pixmap(QPixmap::fromImage(qimg));
+            parent->map_placeholder_set_pixmap(QPixmap::fromImage(qimg));
+        }
         return;
     }
 }
@@ -227,31 +247,38 @@ void rendering_engine::on_horizontal_scroll(int value)
     if (initial_render_complete) {
         // Calculate distance scrolled
         int d_value = value - h_value_before_scroll;
-        h_value_before_scroll = value;
 
-        // Move qimg and save by how much the map is moved 
-        qimg = qimg.copy(d_value, 0, qimg.width(), qimg.height());
-        padding_left = value;
-
-        // Check in which direction one scrolled
-        if (d_value > 0) {
-            for (int x = qimg.width() - d_value; x < qimg.width(); x++) {
-                for (int y = 0; y < qimg.height(); y++) {
-                    // Render now blank pixels
-                    render_pixel(x, y);
-                }
-            }
+        if (abs(d_value) >= qimg.width()) {
+            padding_left = value;
+            do_refresh_render();
         }
         else {
-            for (int x = 0; x < 0 - d_value; x++) {
-                for (int y = 0; y < qimg.height(); y++) {
-                    // Render now blank pixels
-                    render_pixel(x, y);
+            h_value_before_scroll = value;
+
+            // Move qimg and save by how much the map is moved 
+            qimg = qimg.copy(d_value, 0, qimg.width(), qimg.height());
+            padding_left = value;
+
+            // Check in which direction one scrolled
+            if (d_value > 0) {
+                for (int x = qimg.width() - d_value; x < qimg.width(); x++) {
+                    for (int y = 0; y < qimg.height(); y++) {
+                        // Render now blank pixels
+                        render_pixel(x, y);
+                    }
                 }
             }
-        }
+            else {
+                for (int x = 0; x < 0 - d_value; x++) {
+                    for (int y = 0; y < qimg.height(); y++) {
+                        // Render now blank pixels
+                        render_pixel(x, y);
+                    }
+                }
+            }
 
-        parent->map_placeholder_set_pixmap(QPixmap::fromImage(qimg));
+            parent->map_placeholder_set_pixmap(QPixmap::fromImage(qimg));
+        }
         return;
     }
 }

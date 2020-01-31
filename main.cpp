@@ -17,7 +17,6 @@ int main(int argc, char *argv[])
     controls c(&w);
     game_logic l(&w, &r, &c);
     w.show();
-    r.initial_render();
-    r.refresh_render();
+    r.do_initial_render();
     return a.exec();
 }

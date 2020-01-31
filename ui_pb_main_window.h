@@ -134,6 +134,7 @@ public:
 ""));
         map_placeholder->setAlignment(Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop);
         map_placeholder->setMargin(0);
+        map_placeholder->setIndent(0);
         map_scrollArea->setWidget(map_scrollAreaWidgetContents);
 
         map->addWidget(map_scrollArea, 0, 0, 1, 1);

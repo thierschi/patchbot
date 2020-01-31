@@ -11,7 +11,7 @@ class controls : public QWidget{
 public:
 	std::vector<instruction> instruction_queue;
 
-	controls(main_window* _parent);
+	controls(main_window* parent_);
 	controls(const controls&) = default;
 
 	void connect_to_parent();
@@ -23,7 +23,7 @@ public:
 	void deactivate_mission_control_contorls(bool auto_mode = false);
 
 public slots:
-	void on_new_instruction(instruction _instruction);
+	void on_new_instruction(const instruction& instruction_);
 	void reset(bool keep_instructions = false);
 
 private:

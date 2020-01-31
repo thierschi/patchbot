@@ -13,7 +13,7 @@ private:
 	const char* message;
 
 public:
-	explicit img_exception(const char* _message);
+	explicit img_exception(const char* message_);
 	virtual const char* what() const throw();
 };
 
@@ -40,10 +40,10 @@ public:
 	unsigned char alpha;
 
 	rgba_pixel(
-		char _r = 0,
-		char _g = 0,
-		char _b = 0,
-		char _a = 0);
+		char r_ = 0,
+		char g_ = 0,
+		char b_ = 0,
+		char a_ = 0);
 
 	/* Blends given pixel over this pixel*/
 	void overlay_pixel(const rgba_pixel& pixel);
@@ -69,8 +69,9 @@ public:
 	*/
 	int data_size;
 
+	tga();
 	tga(
-		tga_header&& _header, std::vector<rgba_pixel>&& _pixel_map);
+		tga_header&& header_, std::vector<rgba_pixel>&& pixel_map_);
 
 	/*
 		Returns smart ptr to char array which holds the binary data for the
@@ -98,7 +99,7 @@ public:
 	std::unordered_map<terrain, tga> get_terrain_img;
 	std::unordered_map<robot_type, tga> get_robot_img;
 
-	img_resources(const std::string& _path,
-		const std::string& _tile_folder = "umgebungen",
-		const std::string& _robot_folder = "roboter");
+	img_resources(const std::string& path_,
+		const std::string& tile_folder_ = "umgebungen",
+		const std::string& robot_folder_ = "roboter");
 };

@@ -5,8 +5,8 @@
 #include <math.h>
 #include <iostream>
 
-img_exception::img_exception(const char* _message) :
-	message(_message)
+img_exception::img_exception(const char* message_) :
+	message(message_)
 {
 }
 
@@ -15,14 +15,14 @@ const char* img_exception::what() const throw() {
 }
 
 rgba_pixel::rgba_pixel(
-	char _red,
-	char _green,
-	char _blue,
-	char _alpha) :
-	red(_red),
-	green(_green),
-	blue(_blue),
-	alpha(_alpha)
+	char red_,
+	char green_,
+	char blue_,
+	char alpha_) :
+	red(red_),
+	green(green_),
+	blue(blue_),
+	alpha(alpha_)
 {
 }
 
@@ -148,14 +148,20 @@ rgba_pixel rgba_pixel::blend(const rgba_pixel& overlay_pixel,
 		floor(new_alpha * 255.0));
 }
 
-tga::tga(tga_header&& _header,
-	std::vector <rgba_pixel>&& _pixel_map) :
-	header(_header),
-	pixel_map(_pixel_map),
-	data_size(_pixel_map.size() * 4)
+tga::tga() :
+	data_size(0),
+	header(tga_header())
 {
-	if (_header.img_width * _header.img_height
-		!= _pixel_map.size())
+}
+
+tga::tga(tga_header&& header_,
+	std::vector <rgba_pixel>&& pixel_map_) :
+	header(header_),
+	pixel_map(pixel_map_),
+	data_size(pixel_map_.size() * 4)
+{
+	if (header_.img_width * header_.img_height
+		!= pixel_map_.size())
 		throw std::invalid_argument("Cannot construct tga image class: "
 			"Pixel vector's size does not match "
 			"width * height specified in header.");
@@ -330,11 +336,11 @@ void tga::set_pixel(const rgba_pixel& pixel, int x, int y) {
 	pixel_map[y * header.img_width + x] = pixel;
 }
 
-img_resources::img_resources(const std::string& _path, 
-	const std::string& _tile_folder, const std::string& _robot_folder) :
-	path(_path),
-	tile_folder(_tile_folder),
-	robot_folder(_robot_folder)
+img_resources::img_resources(const std::string& path_,
+	const std::string& tile_folder_, const std::string& robot_folder_) :
+	path(path_),
+	tile_folder(tile_folder_),
+	robot_folder(robot_folder_)
 {
 	if (path.back() == '\\') path.pop_back();
 	if (tile_folder.back() == '\\') tile_folder.pop_back();
@@ -347,31 +353,31 @@ img_resources::img_resources(const std::string& _path,
 		pb_input::read_tga_img(path_tiles + "\\boden.tga")));
 	get_terrain_img.insert(std::pair<terrain, tga>(terrain::PATCHBOT_START,
 		pb_input::read_tga_img(path_tiles + "\\boden_start_patchbot.tga")));
-	get_terrain_img.insert(std::pair<terrain, tga>(terrain::ENEMY_START, 
+	get_terrain_img.insert(std::pair<terrain, tga>(terrain::ENEMY_START,
 		pb_input::read_tga_img(path_tiles + "\\boden_start_gegner.tga")));
-	get_terrain_img.insert(std::pair<terrain, tga>(terrain::ABYSS, 
+	get_terrain_img.insert(std::pair<terrain, tga>(terrain::ABYSS,
 		pb_input::read_tga_img(path_tiles + "\\gefahr_abgrund.tga")));
-	get_terrain_img.insert(std::pair<terrain, tga>(terrain::WATER, 
+	get_terrain_img.insert(std::pair<terrain, tga>(terrain::WATER,
 		pb_input::read_tga_img(path_tiles + "\\gefahr_wasser.tga")));
-	get_terrain_img.insert(std::pair<terrain, tga>(terrain::MAIN_SERVER, 
+	get_terrain_img.insert(std::pair<terrain, tga>(terrain::MAIN_SERVER,
 		pb_input::read_tga_img(path_tiles + "\\hauptserver.tga")));
-	get_terrain_img.insert(std::pair<terrain, tga>(terrain::ALIEN_GRASS, 
+	get_terrain_img.insert(std::pair<terrain, tga>(terrain::ALIEN_GRASS,
 		pb_input::read_tga_img(path_tiles + "\\hindernis_aliengras.tga")));
 	get_terrain_img.insert(std::pair<terrain, tga>(terrain::SECRET_PASSAGE,
 		pb_input::read_tga_img(path_tiles + "\\hindernis_geheimgang.tga")));
-	get_terrain_img.insert(std::pair<terrain, tga>(terrain::GRAVEL, 
+	get_terrain_img.insert(std::pair<terrain, tga>(terrain::GRAVEL,
 		pb_input::read_tga_img(path_tiles + "\\hindernis_schotter.tga")));
 	get_terrain_img.insert(std::pair<terrain, tga>(terrain::AUTOMATIC_DOOR,
 		pb_input::read_tga_img(path_tiles + "\\tuer_automatisch_geschlossen.tga")));
-	get_terrain_img.insert(std::pair<terrain, tga>(terrain::OPEN_AUTOMATIC_DOOR, 
+	get_terrain_img.insert(std::pair<terrain, tga>(terrain::OPEN_AUTOMATIC_DOOR,
 		pb_input::read_tga_img(path_tiles + "\\tuer_automatisch_offen.tga")));
-	get_terrain_img.insert(std::pair<terrain, tga>(terrain::MANUAL_DOOR, 
+	get_terrain_img.insert(std::pair<terrain, tga>(terrain::MANUAL_DOOR,
 		pb_input::read_tga_img(path_tiles + "\\tuer_manuell_geschlossen.tga")));
-	get_terrain_img.insert(std::pair<terrain, tga>(terrain::OPEN_MANUAL_DOOR, 
+	get_terrain_img.insert(std::pair<terrain, tga>(terrain::OPEN_MANUAL_DOOR,
 		pb_input::read_tga_img(path_tiles + "\\tuer_manuell_offen.tga")));
 	get_terrain_img.insert(std::pair<terrain, tga>(terrain::CONCRETE_WALL,
 		pb_input::read_tga_img(path_tiles + "\\wand_beton.tga")));
-	get_terrain_img.insert(std::pair<terrain, tga>(terrain::ROCK_WALL, 
+	get_terrain_img.insert(std::pair<terrain, tga>(terrain::ROCK_WALL,
 		pb_input::read_tga_img(path_tiles + "\\wand_fels.tga")));
 
 	std::string path_robots = path + '\\' + robot_folder;
