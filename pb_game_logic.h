@@ -29,6 +29,7 @@ public:
 	void connect_to_parent();
 
 	void move_patchbot();
+	void add_open_door(int x, int y);
 	void update_doors();
 
 	void win_game();

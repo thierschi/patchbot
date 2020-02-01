@@ -155,7 +155,7 @@ void game_logic::move_patchbot()
 			break;
 		case(action::OPEN_DOOR):
 			// Add door to door loop for closing in the future
-			open_doors.push_front(open_door(new_pos.x, new_pos.y, time_steps));
+			add_open_door(new_pos.x, new_pos.y);
 			patchbot_action = action::WAIT;
 			break;
 		case(action::WAIT):
@@ -177,35 +177,68 @@ void game_logic::move_patchbot()
 					p_controls->instruction_queue.begin());
 }
 
+void game_logic::add_open_door(int x, int y)
+{
+	/* Push to open_door class */
+	open_doors.push_front(open_door(x, y, time_steps));
+
+	/* Update doors edge weights */
+	parent->map.update_adjacent_weights(x, y, 1);
+}
+
 void game_logic::update_doors()
 {
 	while (!open_doors.empty()) {
+
+		/* When there are open doors, check if it's time to close them */
 		if (time_steps - open_doors.back().open_since >= duration) {
+
+			/* When there are doors that are shedueld for closing, 
+			check if tile is not occupied by a robot */
 			if (parent->map.robots.get_robot(
 				open_doors.back().x, open_doors.back().y).type 
 				== robot_type::NONE) {
+				/* Close door again*/
 				parent->map.get_tile(open_doors.back().x, open_doors.back().y)
 					->interact(robot_type::NONE);
+
+				/* Update doors edge weights */
+				parent->map.update_adjacent_weights(open_doors.back().x,
+					open_doors.back().y, 2);
 				open_doors.pop_back();
 			}
 			else {
+				/* If a door that is to be closed is occupied by a robot,
+				then add it to the blocked doors to check on next update
+				if they can be closed*/
 				blocked_doors.push_front(open_doors.back());
 				open_doors.pop_back();
 			}
 		} else {
+			/* The open_door with highest index is the open_door that go pushed
+			first, hence if it is not ready to be closed none of the open_doors
+			with lower index are ready to be closed*/
 			break;
 		}
 	}
 
 	for (open_door o : blocked_doors) {
+		// Check if previously blocked doors are now ready to be closed
 		if (parent->map.robots.get_robot(
 			blocked_doors.back().x, blocked_doors.back().y).type
 			== robot_type::NONE) {
+			/* If so: close door*/
 			parent->map.get_tile(blocked_doors.back().x, blocked_doors.back().y)
 				->interact(robot_type::NONE);
+
+			/* Update doors edge weights */
+			parent->map.update_adjacent_weights(blocked_doors.back().x,
+				blocked_doors.back().y, 2);
 			blocked_doors.pop_back();
 		}
 		else {
+			/* If it is still occupied, push it to the front again,
+			therefor we have a cycle that we go through on each update */
 			blocked_doors.push_front(blocked_doors.back());
 			blocked_doors.pop_back();
 		}

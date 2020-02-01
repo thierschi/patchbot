@@ -50,6 +50,14 @@ enum class action {
 	OPEN_DOOR
 };
 
+enum class direction {
+	NORTH,
+	EAST,
+	SOUTH,
+	UNDEFINED,
+	SOURCE
+};
+
 class coords {
 public:
 	int x, y;
@@ -111,23 +119,26 @@ protected:
 	terrain tile_terrain;
 
 public:
-	/*
-		Constructor always checks, that passed Terrain-type is suitable for the
-		child class, throws an exception if it is not and sets the tile_terrain
-		after a successfull check
-	*/
+	/* Properties important for dijkstra algorithmn */
+	direction predecessor;
+	int length_to_src;
+	int weights_nesw[4];
+
+	/* Constructor always checks, that passed Terrain-type is suitable for the
+	child class, throws an exception if it is not and sets the tile_terrain
+	after a successfull check */
 	tile(terrain t = terrain::STEEL_PLANKS);
 	tile(const tile&) = default;
-	//tile(tile&&) = default;
 
 	terrain get_terrain() const;
 
-	/*
-		Overloaded function intertact has the purpose of providing a uniform way
-		to interact with tiles, so that this method can tell what happens when
-		a robot tries to walk on it / interact with it
-	*/
+	/* Overloaded function intertact has the purpose of providing a uniform way
+	to interact with tiles, so that this method can tell what happens when
+	a robot tries to walk on it / interact with it */
 	virtual action interact(robot_type r);
+
+	/* Geht weight of edge going to tile */
+	virtual int get_weight();
 };
 
 class startingpoint : public tile {
@@ -137,6 +148,8 @@ public:
 	startingpoint(const startingpoint&) = default;
 
 	action interact(robot_type r) override;
+	
+	int get_weight() override;
 };
 
 class danger : public tile {
@@ -145,6 +158,8 @@ public:
 	danger(const danger&) = default;
 
 	action interact(robot_type r) override;
+
+	int get_weight() override;
 };
 
 class obstacle : public tile {
@@ -153,6 +168,8 @@ public:
 	obstacle(const obstacle&) = default;
 
 	action interact(robot_type r) override;
+
+	int get_weight() override;
 };
 
 class door : public tile {
@@ -161,6 +178,8 @@ public:
 	door(const door&) = default;
 
 	action interact(robot_type r) override;
+
+	int get_weight() override;
 };
 
 class wall : public tile {
@@ -169,6 +188,8 @@ public:
 	wall(const wall&) = default;
 
 	action interact(robot_type r) override;
+
+	int get_weight() override;
 };
 
 class server : public tile {
@@ -177,6 +198,8 @@ public:
 	server(const server&) = default;
 
 	action interact(robot_type r) override;
+
+	int get_weight() override;
 };
 
 /*
@@ -210,4 +233,10 @@ public:
 	void set_tile(const tile& t, int x, int y);
 	void set_tile(const startingpoint& t, int x, int y);
 	void set_tile(char c, int x, int y);
+
+	// Setter for dijkstra 
+	void init_map_graph_struct();
+	/* Resets the values in tile, important for dijkstra but leaves the weights */
+	void reset_all_tile_nodes();
+	void update_adjacent_weights(int x, int y, int weight);
 };

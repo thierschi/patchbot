@@ -87,7 +87,7 @@ void rendering_engine::connect_to_parent()
         this, &rendering_engine::on_vertical_scroll);
     QObject::connect(parent, &main_window::h_scroll,
         this, &rendering_engine::on_horizontal_scroll);
-    QObject::connect(parent, &main_window::do_refresh_render,
+    QObject::connect(parent, &main_window::do_refresh_render,  
         this, &rendering_engine::do_refresh_render);
 }
 

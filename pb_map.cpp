@@ -188,6 +188,8 @@ void robot_map::move_robot(int x, int y, int new_x, int new_y)
 }
 
 tile::tile(terrain t) :
+	predecessor(direction::UNDEFINED),
+	length_to_src(INT_MAX),
 	tile_terrain(t)
 {
 	if (t != terrain::STEEL_PLANKS)
@@ -204,6 +206,11 @@ terrain tile::get_terrain() const {
 
 action tile::interact(robot_type r) {
 	return action::WALK;
+}
+
+int tile::get_weight()
+{
+	return 1;
 }
 
 startingpoint::startingpoint(robot_type r) :
@@ -227,6 +234,11 @@ action startingpoint::interact(robot_type r)
 	return action::WALK;
 }
 
+int startingpoint::get_weight()
+{
+	return 1;
+}
+
 danger::danger(terrain t)
 {
 	if (!(
@@ -247,6 +259,11 @@ action danger::interact(robot_type r) {
 		== terrain::WATER)
 		return action::WALK;
 	return action::DIE;
+}
+
+int danger::get_weight()
+{
+	return 0;
 }
 
 obstacle::obstacle(terrain t) {
@@ -273,6 +290,15 @@ action obstacle::interact(robot_type r) {
 		? action::WALK_AND_WAIT : action::WALK;
 	return (tile_terrain == terrain::GRAVEL)
 		? action::WALK_AND_WAIT : action::WALK;
+}
+
+int obstacle::get_weight()
+{
+	if (tile_terrain == terrain::ALIEN_GRASS)
+		return 1;
+	else if (tile_terrain == terrain::SECRET_PASSAGE)
+		return 0;
+	return 2;
 }
 
 door::door(terrain t) 
@@ -316,6 +342,10 @@ action door::interact(robot_type r) {
 	return action::OPEN_DOOR;
 }
 
+int door::get_weight()
+{
+	return 2;
+}
 
 wall::wall(terrain t) {
 	if (!((std::find(std::begin(walls),
@@ -333,6 +363,11 @@ action wall::interact(robot_type r) {
 	return action::DIG;
 }
 
+int wall::get_weight()
+{
+	return 0;
+}
+
 server::server() {
 	tile_terrain = terrain::MAIN_SERVER;
 }
@@ -341,6 +376,11 @@ action server::interact(robot_type r) {
 	if (r == robot_type::PATCHBOT)
 		return action::WIN;
 	return action::OBSTRUCTED;
+}
+
+int server::get_weight()
+{
+	return 0;
 }
 
 tile_map::tile_map(std::string name_, int width_, int height_) :
@@ -529,4 +569,78 @@ void tile_map::set_tile(char c, int x, int y) {
 			"Map-format-exception: "
 			"Unknown character in map.");
 	}
+}
+
+void tile_map::init_map_graph_struct()
+{
+	for (int i = 0; i < i_map.size(); i++) {
+		int x = i % width;
+		int y = floor(i / width);
+
+		/* NORTH */
+		if (y == 0)
+			i_map[i]->weights_nesw[0] = 0;
+		else
+			i_map[i]->weights_nesw[0] = get_tile(x, y - 1)->get_weight();
+
+		/* EAST */
+		if (x == width - 1)
+			i_map[i]->weights_nesw[1] = 0;
+		else
+			i_map[i]->weights_nesw[1] = get_tile(x + 1, y)->get_weight();
+
+		/* SOUTH */
+		if (y == height - 1)
+			i_map[i]->weights_nesw[2] = 0;
+		else
+			i_map[i]->weights_nesw[2] = get_tile(x, y + 1)->get_weight();
+
+		/* WEST */
+		if (x == 0)
+			i_map[i]->weights_nesw[3] = 0;
+		else
+			i_map[i]->weights_nesw[3] = get_tile(x - 1, y)->get_weight();
+	}
+	coords pb_pos = robots.get_robots_location(robot_type::PATCHBOT);
+	get_tile(pb_pos.x, pb_pos.y)->predecessor = direction::SOURCE;
+	get_tile(pb_pos.x, pb_pos.y)->length_to_src = 0;
+}
+
+void tile_map::reset_all_tile_nodes()
+{
+	for (std::shared_ptr<tile> t : i_map) {
+		t->predecessor = direction::UNDEFINED;
+		t->length_to_src = INT_MAX;
+	}
+	coords pb_pos = robots.get_robots_location(robot_type::PATCHBOT);
+	get_tile(pb_pos.x, pb_pos.y)->predecessor = direction::SOURCE;
+	get_tile(pb_pos.x, pb_pos.y)->length_to_src = 0;
+}
+
+void tile_map::update_adjacent_weights(int x, int y, int weight)
+{
+	if (weight < 0)
+		throw std::invalid_argument(
+			"Invalid argument passed to tile_map:"
+			"Edge's weight must be 0 or greater.");
+
+	/*NORTH
+		Set weight of south edge of notrthern tile, if exists*/
+	if (y > 0)
+		get_tile(x, y - 1)->weights_nesw[2] = weight;
+
+	/*EAST
+		Set weight of west edge of eastern tile, if exits*/
+	if (x < width - 1)
+		get_tile(x + 1, y)->weights_nesw[3] = weight;
+
+	/*SOUTH
+		Set weight of north edge of southern tile, if exits*/
+	if (y < height - 1)
+		get_tile(x, y + 1)->weights_nesw[0] = weight;
+
+	/*WEST
+		Set weight of east edge of western tile, if exits*/
+	if (y > 0)
+		get_tile(x - 1, y)->weights_nesw[1] = weight;
 }

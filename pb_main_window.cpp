@@ -20,6 +20,7 @@ main_window::main_window(QWidget* parent)
 {
     try {
         map = pb_input::read_map_txt(map_path);
+        map.init_map_graph_struct();
     }
     catch (std::exception& e) {
         QMessageBox::about(this, "Fehler", e.what());
@@ -166,6 +167,7 @@ void main_window::reset()
     // Load map again
     try {
         map = pb_input::read_map_txt(map_path);
+        map.init_map_graph_struct();
     }
     catch (std::exception & e) {
         QMessageBox::about(this, "Fehler", e.what());
@@ -187,6 +189,7 @@ void main_window::on_change_colonie_button_clicked()
     // Load map again
     try {
         map = pb_input::read_map_txt(map_path);
+        map.init_map_graph_struct();
     }
     catch (std::exception & e) {
         QMessageBox::about(this, "Fehler", e.what());
