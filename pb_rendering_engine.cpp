@@ -7,6 +7,7 @@ rendering_engine::rendering_engine(main_window* parent_,
     const std::string& path_to_resources) :
     resources(img_resources(path_to_resources)),
     qimg(QImage()),
+    is_path_debug_mode(true),
     initial_render_complete(false),
     v_value_before_scroll(0),
     h_value_before_scroll(0),
@@ -66,6 +67,23 @@ void rendering_engine::render_pixel(int x, int y)
                 .get_pixel(pixel_x, resources.get_terrain_img.at(
                     parent->map.get_tile(0, 0)->get_terrain())
                     .header.img_height - 1 - pixel_y));
+
+        if (is_path_debug_mode) {
+            if (parent->map.get_tile(map_x, map_y)->predecessor <= direction::WEST) {
+                pixel.overlay_pixel(resources.get_arrow_img.at(parent->map.get_tile(map_x, map_y)->predecessor).get_pixel(pixel_x, 32 - 1 - pixel_y));
+            }
+        }
+            
+
+
+            /*if (parent->map.get_tile(map_x, map_y)
+                ->predecessor <= direction::WEST)
+                if(map_x == 1 && map_y == 1)
+                pixel.overlay_pixel(resources.get_arrow_img.at(
+                    parent->map.get_tile(map_x, map_y)->predecessor)
+                    .get_pixel(pixel_x, resources.get_arrow_img.at(
+                    parent->map.get_tile(0, 0)->predecessor)
+                        .header.img_height - 1 - pixel_y));*/
     }
 
     qimg.setPixel(x, y, qRgba(

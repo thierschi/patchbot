@@ -35,6 +35,8 @@ public slots:
 	void on_horizontal_scroll(int value);
 
 private:
+	bool is_path_debug_mode;
+
 	bool initial_render_complete;
 	int h_value_before_scroll;
 	int v_value_before_scroll;

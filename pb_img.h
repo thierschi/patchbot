@@ -94,12 +94,15 @@ protected:
 	std::string path;
 	std::string tile_folder;
 	std::string robot_folder;
+	std::string arrow_folder;
 
 public:
 	std::unordered_map<terrain, tga> get_terrain_img;
 	std::unordered_map<robot_type, tga> get_robot_img;
+	std::unordered_map<direction, tga> get_arrow_img;
 
 	img_resources(const std::string& path_,
 		const std::string& tile_folder_ = "umgebungen",
-		const std::string& robot_folder_ = "roboter");
+		const std::string& robot_folder_ = "roboter",
+		const std::string& arrow_folder_ = "pfeile");
 };

@@ -337,16 +337,21 @@ void tga::set_pixel(const rgba_pixel& pixel, int x, int y) {
 }
 
 img_resources::img_resources(const std::string& path_,
-	const std::string& tile_folder_, const std::string& robot_folder_) :
+	const std::string& tile_folder_, 
+	const std::string& robot_folder_,
+	const std::string& arrow_folder_) :
 	path(path_),
 	tile_folder(tile_folder_),
-	robot_folder(robot_folder_)
+	robot_folder(robot_folder_),
+	arrow_folder(arrow_folder_)
 {
 	if (path.back() == '\\') path.pop_back();
 	if (tile_folder.back() == '\\') tile_folder.pop_back();
 	if (tile_folder.front() == '\\') tile_folder.erase(tile_folder.begin());
 	if (robot_folder.back() == '\\') robot_folder.pop_back();
 	if (robot_folder.front() == '\\') robot_folder.erase(tile_folder.begin());
+	if (arrow_folder.back() == '\\') arrow_folder.pop_back();
+	if (arrow_folder.front() == '\\') arrow_folder.erase(tile_folder.begin());
 
 	std::string path_tiles = path + '\\' + tile_folder;
 	get_terrain_img.insert(std::pair<terrain, tga>(terrain::STEEL_PLANKS,
@@ -399,4 +404,14 @@ img_resources::img_resources(const std::string& path_,
 		pb_input::read_tga_img(path_robots + "\\typ6_hunter.tga")));
 	get_robot_img.insert(std::pair<robot_type, tga>(robot_type::SNIFFER, 
 		pb_input::read_tga_img(path_robots + "\\typ7_sniffer.tga")));
+
+	std::string path_arrows = path + '\\' + arrow_folder;
+	get_arrow_img.insert(std::pair<direction, tga>(direction::NORTH,
+		pb_input::read_tga_img(path_arrows + "\\pfeil_oben.tga")));
+	get_arrow_img.insert(std::pair<direction, tga>(direction::EAST,
+		pb_input::read_tga_img(path_arrows + "\\pfeil_rechts.tga")));
+	get_arrow_img.insert(std::pair<direction, tga>(direction::SOUTH,
+		pb_input::read_tga_img(path_arrows + "\\pfeil_unten.tga")));
+	get_arrow_img.insert(std::pair<direction, tga>(direction::WEST,
+		pb_input::read_tga_img(path_arrows + "\\pfeil_links.tga")));
 }

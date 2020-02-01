@@ -189,7 +189,8 @@ void robot_map::move_robot(int x, int y, int new_x, int new_y)
 
 tile::tile(terrain t) :
 	predecessor(direction::UNDEFINED),
-	length_to_src(INT_MAX),
+	weights_nesw{0, 0, 0, 0},
+	is_in_heap(false),
 	tile_terrain(t)
 {
 	if (t != terrain::STEEL_PLANKS)
@@ -344,7 +345,7 @@ action door::interact(robot_type r) {
 
 int door::get_weight()
 {
-	return 2;
+	return 0;
 }
 
 wall::wall(terrain t) {
@@ -381,6 +382,11 @@ action server::interact(robot_type r) {
 int server::get_weight()
 {
 	return 0;
+}
+
+bool int_pair_comparator::operator()(const int_pair& ip1, const int_pair& ip2)
+{
+	return ip1.first < ip2.first;
 }
 
 tile_map::tile_map(std::string name_, int width_, int height_) :
@@ -603,18 +609,15 @@ void tile_map::init_map_graph_struct()
 	}
 	coords pb_pos = robots.get_robots_location(robot_type::PATCHBOT);
 	get_tile(pb_pos.x, pb_pos.y)->predecessor = direction::SOURCE;
-	get_tile(pb_pos.x, pb_pos.y)->length_to_src = 0;
 }
 
 void tile_map::reset_all_tile_nodes()
 {
-	for (std::shared_ptr<tile> t : i_map) {
-		t->predecessor = direction::UNDEFINED;
-		t->length_to_src = INT_MAX;
+	for (int i = 0; i < i_map.size(); i++) {
+			i_map[i]->predecessor = direction::UNDEFINED;
 	}
 	coords pb_pos = robots.get_robots_location(robot_type::PATCHBOT);
 	get_tile(pb_pos.x, pb_pos.y)->predecessor = direction::SOURCE;
-	get_tile(pb_pos.x, pb_pos.y)->length_to_src = 0;
 }
 
 void tile_map::update_adjacent_weights(int x, int y, int weight)
@@ -643,4 +646,60 @@ void tile_map::update_adjacent_weights(int x, int y, int weight)
 		Set weight of east edge of western tile, if exits*/
 	if (y > 0)
 		get_tile(x - 1, y)->weights_nesw[1] = weight;
+}
+
+void tile_map::run_path_finding()
+{
+	std::priority_queue<int_pair, std::vector<int_pair>, int_pair_comparator> pq;
+
+	std::vector<int> dist(i_map.size(), INT_MAX);
+
+	coords pb_pos = robots.get_robots_location(robot_type::PATCHBOT);
+	pq.push(std::make_pair(0, pb_pos.y * width + pb_pos.x));
+
+	while (!pq.empty()) {
+		int u = pq.top().second;
+		pq.pop();
+
+		/* NORTH */
+		if (i_map[u]->weights_nesw[0] != 0 
+			&& i_map[u]->predecessor != direction::NORTH) {
+			if (dist[u - width] > dist[u] + i_map[u]->weights_nesw[0]) {
+				dist[u - width] = dist[u] + i_map[u]->weights_nesw[0];
+				pq.push(std::make_pair(dist[u - width], u - width));
+				i_map[u - width]->predecessor = direction::SOUTH;
+			}
+		};
+
+		/* EAST */
+		if (i_map[u]->weights_nesw[1] != 0 
+			&& i_map[u]->predecessor != direction::EAST) {
+			if (dist[u + 1] > dist[u] + i_map[u]->weights_nesw[1]) {
+				dist[u + 1] = dist[u] + i_map[u]->weights_nesw[1];
+				pq.push(std::make_pair(dist[u + 1], u + 1));
+				i_map[u + 1]->predecessor = direction::WEST;
+			}
+		};
+
+		/* SOUTH */
+		if (i_map[u]->weights_nesw[2] != 0
+			&& i_map[u]->predecessor != direction::SOUTH) {
+			if (dist[u + width] > dist[u] + i_map[u]->weights_nesw[2]) {
+				dist[u + width] = dist[u] + i_map[u]->weights_nesw[2];
+				pq.push(std::make_pair(dist[u + width], u + width));
+				i_map[u + width]->predecessor = direction::NORTH;
+			}
+		};
+
+		/* WEST */
+		if (i_map[u]->weights_nesw[3] != 0
+			&& i_map[u]->predecessor != direction::WEST) {
+			if (dist[u - 1] > dist[u] + i_map[u]->weights_nesw[3]) {
+				dist[u - 1] = dist[u] + i_map[u]->weights_nesw[3];
+				pq.push(std::make_pair(dist[u - 1], u - 1));
+				i_map[u - 1]->predecessor = direction::EAST;
+			}
+		};
+		
+	}
 }

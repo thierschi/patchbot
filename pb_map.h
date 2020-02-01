@@ -1,9 +1,9 @@
 #pragma once
-#pragma once
 #include <vector>
 #include <string>
 #include <unordered_map>
 #include <memory>
+#include <queue>
 
 /*
 	Enumerations fpr Terrain-types, Robot-types and Action-types
@@ -54,9 +54,12 @@ enum class direction {
 	NORTH,
 	EAST,
 	SOUTH,
+	WEST,
 	UNDEFINED,
 	SOURCE
 };
+
+typedef std::pair<int, int> int_pair;
 
 class coords {
 public:
@@ -119,10 +122,12 @@ protected:
 	terrain tile_terrain;
 
 public:
+	int index;
+
 	/* Properties important for dijkstra algorithmn */
 	direction predecessor;
-	int length_to_src;
 	int weights_nesw[4];
+	bool is_in_heap;
 
 	/* Constructor always checks, that passed Terrain-type is suitable for the
 	child class, throws an exception if it is not and sets the tile_terrain
@@ -202,6 +207,12 @@ public:
 	int get_weight() override;
 };
 
+
+class int_pair_comparator {
+public:
+	bool operator() (const int_pair& ip1, const int_pair& ip2);
+};
+
 /*
 	Tile_map is implemented as one dimensional vector "i_map", where each
 	coordinate-pair x and y can be mapped to its tile with y * width + x.
@@ -239,4 +250,5 @@ public:
 	/* Resets the values in tile, important for dijkstra but leaves the weights */
 	void reset_all_tile_nodes();
 	void update_adjacent_weights(int x, int y, int weight);
+	void run_path_finding();
 };
