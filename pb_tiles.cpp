@@ -42,7 +42,7 @@ robot::robot(robot_type type_, bool is_dead_) :
 
 tile::tile(terrain t) :
 	predecessor(direction::UNDEFINED),
-	weights_nesw{ 0, 0, 0, 0 },
+	weights_nesw{ -1, -1, -1, -1},
 	tile_terrain(t)
 {
 	if (t != terrain::STEEL_PLANKS)
@@ -109,7 +109,7 @@ action danger::interact(robot_type r) {
 
 int danger::get_weight()
 {
-	return 0;
+	return -1;
 }
 
 obstacle::obstacle(terrain t) {
@@ -143,7 +143,7 @@ int obstacle::get_weight()
 	if (tile_terrain == terrain::ALIEN_GRASS)
 		return 1;
 	else if (tile_terrain == terrain::SECRET_PASSAGE)
-		return 0;
+		return -1;
 	return 2;
 }
 
@@ -195,7 +195,7 @@ action door::interact(robot_type r) {
 
 int door::get_weight()
 {
-	return 0;
+	return 2;
 }
 
 wall::wall(terrain t) {
@@ -215,7 +215,7 @@ action wall::interact(robot_type r) {
 
 int wall::get_weight()
 {
-	return 0;
+	return -1;
 }
 
 server::server() {
@@ -230,5 +230,5 @@ action server::interact(robot_type r) {
 
 int server::get_weight()
 {
-	return 0;
+	return -1;
 }

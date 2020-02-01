@@ -438,7 +438,7 @@ void tile_map::run_path_finding()
 			to a wall */
 
 		/* NORTH */
-		if (i_map[u]->weights_nesw[0] != 0 
+		if (i_map[u]->weights_nesw[0] != -1 
 			&& i_map[u]->predecessor != direction::NORTH) {
 			if (dist[u - width] > dist[u] + i_map[u]->weights_nesw[0]) {
 				dist[u - width] = dist[u] + i_map[u]->weights_nesw[0];
@@ -448,7 +448,7 @@ void tile_map::run_path_finding()
 		};
 
 		/* EAST */
-		if (i_map[u]->weights_nesw[1] != 0 
+		if (i_map[u]->weights_nesw[1] != -1
 			&& i_map[u]->predecessor != direction::EAST) {
 			if (dist[u + 1] > dist[u] + i_map[u]->weights_nesw[1]) {
 				dist[u + 1] = dist[u] + i_map[u]->weights_nesw[1];
@@ -458,7 +458,7 @@ void tile_map::run_path_finding()
 		};
 
 		/* SOUTH */
-		if (i_map[u]->weights_nesw[2] != 0
+		if (i_map[u]->weights_nesw[2] != -1
 			&& i_map[u]->predecessor != direction::SOUTH) {
 			if (dist[u + width] > dist[u] + i_map[u]->weights_nesw[2]) {
 				dist[u + width] = dist[u] + i_map[u]->weights_nesw[2];
@@ -468,7 +468,7 @@ void tile_map::run_path_finding()
 		};
 
 		/* WEST */
-		if (i_map[u]->weights_nesw[3] != 0
+		if (i_map[u]->weights_nesw[3] != -1
 			&& i_map[u]->predecessor != direction::WEST) {
 			if (dist[u - 1] > dist[u] + i_map[u]->weights_nesw[3]) {
 				dist[u - 1] = dist[u] + i_map[u]->weights_nesw[3];

@@ -225,7 +225,7 @@ void game_logic::update_doors()
 
 				/* Update doors edge weights */
 				parent->map.update_adjacent_weights(open_doors.back().x,
-					open_doors.back().y, 0);
+					open_doors.back().y, 2);
 				open_doors.pop_back();
 			}
 			else {
@@ -254,7 +254,7 @@ void game_logic::update_doors()
 
 			/* Update doors edge weights */
 			parent->map.update_adjacent_weights(blocked_doors.back().x,
-				blocked_doors.back().y, 0);
+				blocked_doors.back().y, 2);
 			blocked_doors.pop_back();
 		}
 		else {
