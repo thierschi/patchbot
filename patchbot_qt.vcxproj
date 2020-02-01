@@ -196,6 +196,7 @@
     <ClCompile Include="pb_main_window.cpp" />
     <ClCompile Include="pb_map.cpp" />
     <ClCompile Include="pb_rendering_engine.cpp" />
+    <ClCompile Include="pb_tiles.cpp" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="pb_main_window.h">
@@ -224,6 +225,7 @@
     </QtUic>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="pb_tiles.h" />
     <QtMoc Include="pb_controls.h" />
     <ClInclude Include="pb_exceptions.h" />
     <QtMoc Include="pb_game_logic.h" />

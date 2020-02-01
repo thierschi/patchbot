@@ -345,6 +345,7 @@ img_resources::img_resources(const std::string& path_,
 	robot_folder(robot_folder_),
 	arrow_folder(arrow_folder_)
 {
+	/* Bring fromats into uniform format */
 	if (path.back() == '\\') path.pop_back();
 	if (tile_folder.back() == '\\') tile_folder.pop_back();
 	if (tile_folder.front() == '\\') tile_folder.erase(tile_folder.begin());

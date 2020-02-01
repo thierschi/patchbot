@@ -1,54 +1,12 @@
 #pragma once
 #include "pb_map.h"
 #include "pb_exceptions.h"
-#include "pb_img.h"
 
 #include <iostream>
 #include <vector>
-#include <iostream>
 #include <stdexcept>
-#include <algorithm>
-#include <iterator>
 #include <math.h>
-
-const terrain dangers[] = {
-	terrain::ABYSS,
-	terrain::WATER
-};
-
-const terrain obstacles[] = {
-	terrain::ALIEN_GRASS,
-	terrain::GRAVEL,
-	terrain::SECRET_PASSAGE
-};
-
-const terrain doors[] = {
-	terrain::MANUAL_DOOR,
-	terrain::AUTOMATIC_DOOR
-};
-
-const terrain walls[] = {
-	terrain::CONCRETE_WALL,
-	terrain::ROCK_WALL
-};
-
-const robot_type robots_with_wheels[] = {
-	robot_type::PATCHBOT,
-	robot_type::PUSHER,
-	robot_type::DIGGER,
-	robot_type::SWIMMER
-};
-
-coords::coords(int x_, int y_) :
-	x(x_),
-	y(y_)
-{
-}
-
-robot::robot(robot_type type_, bool is_dead_) :
-	type(type_),
-	is_dead(is_dead_) 
-{};
+#include <queue>
 
 robot_map::robot_map(int width_, int height_) :
 	width(width_),
@@ -185,203 +143,6 @@ void robot_map::move_robot(int x, int y, int new_x, int new_y)
 	robots[new_y * width + new_x] = robots[y * width + x];
 	robots[y * width + x] = robot();
 	robots_locations[robots[new_y * width + new_x].type] = coords(new_x, new_y);
-}
-
-tile::tile(terrain t) :
-	predecessor(direction::UNDEFINED),
-	weights_nesw{0, 0, 0, 0},
-	is_in_heap(false),
-	tile_terrain(t)
-{
-	if (t != terrain::STEEL_PLANKS)
-		throw std::invalid_argument(
-			"Invalid argument passed to "
-			"constructor of tile: "
-			"Terrain class missmatch.");
-}
-
-
-terrain tile::get_terrain() const {
-	return tile_terrain;
-}
-
-action tile::interact(robot_type r) {
-	return action::WALK;
-}
-
-int tile::get_weight()
-{
-	return 1;
-}
-
-startingpoint::startingpoint(robot_type r) :
-	starting(r)
-{
-	if (r == robot_type::PATCHBOT) {
-		tile_terrain = terrain::PATCHBOT_START;
-		return;
-	}
-	if ((char)r < '1' || '7' < (char)r)
-		// Check for the other robots (1-7)
-		throw std::invalid_argument(
-			"Invalid argument passed to "
-			"constructor of tile: "
-			"Terrain class missmatch.");
-	tile_terrain = terrain::ENEMY_START;
-}
-
-action startingpoint::interact(robot_type r)
-{
-	return action::WALK;
-}
-
-int startingpoint::get_weight()
-{
-	return 1;
-}
-
-danger::danger(terrain t)
-{
-	if (!(
-		(std::find(std::begin(dangers),
-			std::end(dangers),
-			t)
-			!= std::end(dangers))))
-		throw std::invalid_argument(
-			"Invalid argument passed to "
-			"constructor of tile: "
-			"Terrain class missmatch.");
-	tile_terrain = t;
-}
-
-action danger::interact(robot_type r) {
-	if (r == robot_type::SWIMMER
-		&& tile_terrain
-		== terrain::WATER)
-		return action::WALK;
-	return action::DIE;
-}
-
-int danger::get_weight()
-{
-	return 0;
-}
-
-obstacle::obstacle(terrain t) {
-	if (!((std::find(std::begin(obstacles),
-		std::end(obstacles),
-		t)
-		!= std::end(obstacles))))
-		throw std::invalid_argument(
-			"Invalid argument passed to "
-			"constructor of tile: "
-			"Terrain class missmatch.");
-	tile_terrain = t;
-}
-
-action obstacle::interact(robot_type r) {
-	if (tile_terrain == terrain::SECRET_PASSAGE)
-		return (r == robot_type::PATCHBOT)
-		? action::WALK : action::OBSTRUCTED;
-	if ((std::find(std::begin(robots_with_wheels),
-		std::end(robots_with_wheels),
-		r)
-		!= std::end(robots_with_wheels)))
-		return (tile_terrain == terrain::ALIEN_GRASS)
-		? action::WALK_AND_WAIT : action::WALK;
-	return (tile_terrain == terrain::GRAVEL)
-		? action::WALK_AND_WAIT : action::WALK;
-}
-
-int obstacle::get_weight()
-{
-	if (tile_terrain == terrain::ALIEN_GRASS)
-		return 1;
-	else if (tile_terrain == terrain::SECRET_PASSAGE)
-		return 0;
-	return 2;
-}
-
-door::door(terrain t) 
-{
-	if (!(std::find(std::begin(doors),
-		std::end(doors),
-		t)
-		!= std::end(doors)))
-		throw std::invalid_argument(
-			"Invalid argument passed to "
-			"constructor of tile: "
-			"Terrain class missmatch.");
-	tile_terrain = t;
-}
-
-action door::interact(robot_type r) {
-	if (r == robot_type::NONE) {
-		// Close door
-		if (tile_terrain == terrain::OPEN_AUTOMATIC_DOOR) {
-			tile_terrain = terrain::AUTOMATIC_DOOR;
-			return action::WAIT;
-		}
-		else if (tile_terrain == terrain::OPEN_MANUAL_DOOR) {
-			tile_terrain = terrain::MANUAL_DOOR;
-			return action::WAIT;
-		}
-	}
-	if (tile_terrain == terrain::OPEN_AUTOMATIC_DOOR ||
-		tile_terrain == terrain::OPEN_MANUAL_DOOR)
-		return action::WALK;
-	if (r == robot_type::PATCHBOT) {
-		if (tile_terrain == terrain::AUTOMATIC_DOOR)
-			return action::OBSTRUCTED;
-		tile_terrain = terrain::OPEN_MANUAL_DOOR;
-		return action::OPEN_DOOR;
-	}
-	if (tile_terrain == terrain::AUTOMATIC_DOOR)
-		tile_terrain = terrain::OPEN_AUTOMATIC_DOOR;
-	else
-		tile_terrain = terrain::OPEN_MANUAL_DOOR;
-	return action::OPEN_DOOR;
-}
-
-int door::get_weight()
-{
-	return 0;
-}
-
-wall::wall(terrain t) {
-	if (!((std::find(std::begin(walls),
-		std::end(walls), t) != std::end(walls))))
-		throw std::invalid_argument(
-			"Invalid argument passed to "
-			"constructor of tile: "
-			"Terrain class missmatch.");
-	tile_terrain = t;
-}
-
-action wall::interact(robot_type r) {
-	if (r != robot_type::DIGGER)
-		return action::OBSTRUCTED;
-	return action::DIG;
-}
-
-int wall::get_weight()
-{
-	return 0;
-}
-
-server::server() {
-	tile_terrain = terrain::MAIN_SERVER;
-}
-
-action server::interact(robot_type r) {
-	if (r == robot_type::PATCHBOT)
-		return action::WIN;
-	return action::OBSTRUCTED;
-}
-
-int server::get_weight()
-{
-	return 0;
 }
 
 bool int_pair_comparator::operator()(const int_pair& ip1, const int_pair& ip2)
@@ -650,16 +411,31 @@ void tile_map::update_adjacent_weights(int x, int y, int weight)
 
 void tile_map::run_path_finding()
 {
+	/* Priotity queue  with custom comparator implemented like a min_heap
+	Adjacent nodes get pushed here */
 	std::priority_queue<int_pair, std::vector<int_pair>, int_pair_comparator> pq;
 
+	/* Vector of distences (local, beacaus we dont need these values later) */
 	std::vector<int> dist(i_map.size(), INT_MAX);
 
+	/* Initialize source (patchbot)
+	One may notice that I calculate with the values in the vector not with
+	(x,y) values */
 	coords pb_pos = robots.get_robots_location(robot_type::PATCHBOT);
 	pq.push(std::make_pair(0, pb_pos.y * width + pb_pos.x));
 
 	while (!pq.empty()) {
+		/* Get node/vertex with smallest dist and remove from "heap" */
 		int u = pq.top().second;
 		pq.pop();
+
+
+		/* Normally one would iterate through all adjacent edges, but this
+		is a 2d map and we have 4 edges at max. Hence we go through them
+		one by one, so that we dont need to save references to the adjacend
+		nodes in each tile, but just calculate the coordinates.
+			--> If an edge has value 0, that means it does not exist, e.g. edge 
+			to a wall */
 
 		/* NORTH */
 		if (i_map[u]->weights_nesw[0] != 0 

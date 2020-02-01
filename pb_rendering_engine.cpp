@@ -46,15 +46,18 @@ void rendering_engine::render_pixel(int x, int y)
     int pixel_y = (y + padding_top) % resources.get_terrain_img.at(
         parent->map.get_tile(0, 0)->get_terrain()).header.img_height;
 
-
+    /* Basically get pixel from terrain img corresponding to tile_type of tile
+    at ( map_x | map_y ) at (pixel_x | inverted* pixel_y )
+        *inverted meand from bottom to top */
     auto tile_type = parent->map.get_tile(map_x, map_y)->get_terrain();
-    rgba_pixel pixel = resources.get_terrain_img.at((
-        tile_type
-        )).get_pixel(pixel_x, resources.get_terrain_img.at(
-            parent->map.get_tile(0, 0)->get_terrain()).header.img_height - 1 - pixel_y);
+    rgba_pixel pixel = resources.get_terrain_img.at((tile_type))
+        .get_pixel(pixel_x, resources.get_terrain_img.at(parent->
+            map.get_tile(0, 0)->get_terrain()).header.img_height - 1 - pixel_y);
 
+    /* Only render robots and death_marks if game is actually "on" */
     if (game_is_on) {
-        /* Blend pixel of robot on top, if robot is present on field */
+        /* Blend pixel of robot on top, if robot is present on field
+        For getting the right pixel see the allocation of rgba_pixel above */
         if (parent->map.robots.get_robot(map_x, map_y).type != robot_type::NONE)
             pixel.overlay_pixel(resources.get_robot_img.at(
                 parent->map.robots.get_robot(map_x, map_y).type)
@@ -62,28 +65,25 @@ void rendering_engine::render_pixel(int x, int y)
                     parent->map.get_tile(0, 0)->get_terrain())
                     .header.img_height - 1 - pixel_y));
 
+        /* Underlay death mark, if robot died on this tile
+        For getting the right pixel see the allocation of rgba_pixel above */
         if (parent->map.robots.is_grave(map_x, map_y))
             pixel.underlay_pixel(resources.get_robot_img.at(robot_type::DEAD)
                 .get_pixel(pixel_x, resources.get_terrain_img.at(
                     parent->map.get_tile(0, 0)->get_terrain())
                     .header.img_height - 1 - pixel_y));
 
+        /* If we want to see the arrows for checking that the implemented
+        dijkstra algortihmn is working, blend those on top
+        For getting the right pixel see the allocation of rgba_pixel above */
         if (is_path_debug_mode) {
-            if (parent->map.get_tile(map_x, map_y)->predecessor <= direction::WEST) {
-                pixel.overlay_pixel(resources.get_arrow_img.at(parent->map.get_tile(map_x, map_y)->predecessor).get_pixel(pixel_x, 32 - 1 - pixel_y));
-            }
-        }
-            
-
-
-            /*if (parent->map.get_tile(map_x, map_y)
-                ->predecessor <= direction::WEST)
-                if(map_x == 1 && map_y == 1)
+            if (parent->map.get_tile(map_x, map_y)
+                ->predecessor <= direction::WEST) {
                 pixel.overlay_pixel(resources.get_arrow_img.at(
                     parent->map.get_tile(map_x, map_y)->predecessor)
-                    .get_pixel(pixel_x, resources.get_arrow_img.at(
-                    parent->map.get_tile(0, 0)->predecessor)
-                        .header.img_height - 1 - pixel_y));*/
+                    .get_pixel(pixel_x, 32 - 1 - pixel_y));
+            }
+        }
     }
 
     qimg.setPixel(x, y, qRgba(

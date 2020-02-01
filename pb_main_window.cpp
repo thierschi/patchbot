@@ -84,10 +84,10 @@ void main_window::adjust_instruction_edit_scrollbar()
 {
     int temp = ui->instruction_edit->cursorPosition();
     ui->instruction_edit->end(false);
-    ui->instruction_control_h_scroll->setPageStep(12);
+    ui->instruction_control_h_scroll->setPageStep(14);
     ui->instruction_control_h_scroll->setRange(0,
         ui->instruction_edit->cursorPosition()
-        - ui->instruction_control_h_scroll->pageStep());
+        - ui->instruction_control_h_scroll->pageStep() + 1);
     ui->instruction_edit->setCursorPosition(temp);
     ui->instruction_control_h_scroll->setValue(temp);
 }

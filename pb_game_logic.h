@@ -26,22 +26,26 @@ public:
 	game_logic(const game_logic&) = default;
 	~game_logic();
 
+	/* Connect all slots of this to all signals of parent */
 	void connect_to_parent();
 
 	void move_patchbot();
+
 	void add_open_door(int x, int y);
 	void update_doors();
 
 	void win_game();
 	void loose_game();
+	
 	void reset();
 
 public slots:
 	void start_game();
+	void cancel_game();
+
 	void single_step();
 	void automatic_stepping();
 	void stop_automatic_stepping();
-	void cancel_game();
 
 private:
 	int time_steps;

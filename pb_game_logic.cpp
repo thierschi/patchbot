@@ -320,6 +320,12 @@ void game_logic::start_game()
 	p_rendering_engine->do_refresh_render();
 }
 
+void game_logic::cancel_game()
+{
+	loose_game();
+}
+
+
 void game_logic::single_step()
 {
 	parent->map.reset_all_tile_nodes();
@@ -350,9 +356,4 @@ void game_logic::stop_automatic_stepping()
 {
 	automation_timer->stop();
 	p_controls->activate_mission_control_contorls(true);
-}
-
-void game_logic::cancel_game()
-{
-	loose_game();
 }

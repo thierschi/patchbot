@@ -64,6 +64,9 @@
     <ClCompile Include="pb_game_logic.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="pb_tiles.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="pb_main_window.h">
@@ -103,6 +106,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="pb_map.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pb_tiles.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

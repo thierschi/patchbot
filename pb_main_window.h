@@ -1,6 +1,7 @@
 #ifndef MAIN_WINDOW_H
 #define MAIN_WINDOW_H
-#include "pb_img.h"
+
+#include "pb_map.h"
 
 #include <QMainWindow>
 #include <QScrollBar>
