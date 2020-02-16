@@ -340,6 +340,22 @@ tga tga::load_file(std::ifstream& file) {
 	return tga(std::move(header), std::move(pixel_data));
 }
 
+QPixmap tga::to_qpixmap() const {
+	QImage qimg(header.img_width, header.img_height, QImage::Format_RGBA8888);
+	
+	for (int y = 0; y < qimg.height(); y++) {
+		for (int x = 0; x < qimg.width(); x++) {
+			qimg.setPixel(x, y, qRgba(
+				pixel_map[y * qimg.width() + x].red,
+				pixel_map[y * qimg.width() + x].green,
+				pixel_map[y * qimg.width() + x].blue,
+				pixel_map[y * qimg.width() + x].alpha));
+		}
+	}
+
+	return QPixmap::fromImage(qimg);
+}
+
 rgba_pixel tga::get_pixel(int x, int y) const {
 	if (x >= header.img_width || y >= header.img_height)
 		throw std::invalid_argument("Invalid argument passed to tga: "
@@ -380,64 +396,92 @@ img_resources::img_resources(const std::string& path_,
 	if (arrow_folder.front() == '\\') arrow_folder.erase(tile_folder.begin());
 
 	std::string path_tiles = path + '\\' + tile_folder;
-	get_terrain_img.insert(std::pair<terrain, tga>(terrain::STEEL_PLANKS,
-		pb_input::read_tga_img(path_tiles + "\\boden.tga")));
-	get_terrain_img.insert(std::pair<terrain, tga>(terrain::PATCHBOT_START,
-		pb_input::read_tga_img(path_tiles + "\\boden_start_patchbot.tga")));
-	get_terrain_img.insert(std::pair<terrain, tga>(terrain::ENEMY_START,
-		pb_input::read_tga_img(path_tiles + "\\boden_start_gegner.tga")));
-	get_terrain_img.insert(std::pair<terrain, tga>(terrain::ABYSS,
-		pb_input::read_tga_img(path_tiles + "\\gefahr_abgrund.tga")));
-	get_terrain_img.insert(std::pair<terrain, tga>(terrain::WATER,
-		pb_input::read_tga_img(path_tiles + "\\gefahr_wasser.tga")));
-	get_terrain_img.insert(std::pair<terrain, tga>(terrain::MAIN_SERVER,
-		pb_input::read_tga_img(path_tiles + "\\hauptserver.tga")));
-	get_terrain_img.insert(std::pair<terrain, tga>(terrain::ALIEN_GRASS,
-		pb_input::read_tga_img(path_tiles + "\\hindernis_aliengras.tga")));
-	get_terrain_img.insert(std::pair<terrain, tga>(terrain::SECRET_PASSAGE,
-		pb_input::read_tga_img(path_tiles + "\\hindernis_geheimgang.tga")));
-	get_terrain_img.insert(std::pair<terrain, tga>(terrain::GRAVEL,
-		pb_input::read_tga_img(path_tiles + "\\hindernis_schotter.tga")));
-	get_terrain_img.insert(std::pair<terrain, tga>(terrain::AUTOMATIC_DOOR,
-		pb_input::read_tga_img(path_tiles + "\\tuer_automatisch_geschlossen.tga")));
-	get_terrain_img.insert(std::pair<terrain, tga>(terrain::OPEN_AUTOMATIC_DOOR,
-		pb_input::read_tga_img(path_tiles + "\\tuer_automatisch_offen.tga")));
-	get_terrain_img.insert(std::pair<terrain, tga>(terrain::MANUAL_DOOR,
-		pb_input::read_tga_img(path_tiles + "\\tuer_manuell_geschlossen.tga")));
-	get_terrain_img.insert(std::pair<terrain, tga>(terrain::OPEN_MANUAL_DOOR,
-		pb_input::read_tga_img(path_tiles + "\\tuer_manuell_offen.tga")));
-	get_terrain_img.insert(std::pair<terrain, tga>(terrain::CONCRETE_WALL,
-		pb_input::read_tga_img(path_tiles + "\\wand_beton.tga")));
-	get_terrain_img.insert(std::pair<terrain, tga>(terrain::ROCK_WALL,
-		pb_input::read_tga_img(path_tiles + "\\wand_fels.tga")));
+	get_terrain_img.insert(std::pair<terrain, QPixmap>(terrain::STEEL_PLANKS,
+		pb_input::read_tga_img(
+			path_tiles + "\\boden.tga").to_qpixmap()));
+	get_terrain_img.insert(std::pair<terrain, QPixmap>(terrain::PATCHBOT_START,
+		pb_input::read_tga_img(
+			path_tiles + "\\boden_start_patchbot.tga").to_qpixmap()));
+	get_terrain_img.insert(std::pair<terrain, QPixmap>(terrain::ENEMY_START,
+		pb_input::read_tga_img(
+			path_tiles + "\\boden_start_gegner.tga").to_qpixmap()));
+	get_terrain_img.insert(std::pair<terrain, QPixmap>(terrain::ABYSS,
+		pb_input::read_tga_img(
+			path_tiles + "\\gefahr_abgrund.tga").to_qpixmap()));
+	get_terrain_img.insert(std::pair<terrain, QPixmap>(terrain::WATER,
+		pb_input::read_tga_img(
+			path_tiles + "\\gefahr_wasser.tga").to_qpixmap()));
+	get_terrain_img.insert(std::pair<terrain, QPixmap>(terrain::MAIN_SERVER,
+		pb_input::read_tga_img(
+			path_tiles + "\\hauptserver.tga").to_qpixmap()));
+	get_terrain_img.insert(std::pair<terrain, QPixmap>(terrain::ALIEN_GRASS,
+		pb_input::read_tga_img(
+			path_tiles + "\\hindernis_aliengras.tga").to_qpixmap()));
+	get_terrain_img.insert(std::pair<terrain, QPixmap>(terrain::SECRET_PASSAGE,
+		pb_input::read_tga_img(
+			path_tiles + "\\hindernis_geheimgang.tga").to_qpixmap()));
+	get_terrain_img.insert(std::pair<terrain, QPixmap>(terrain::GRAVEL,
+		pb_input::read_tga_img(
+			path_tiles + "\\hindernis_schotter.tga").to_qpixmap()));
+	get_terrain_img.insert(std::pair<terrain, QPixmap>(terrain::AUTOMATIC_DOOR,
+		pb_input::read_tga_img(
+			path_tiles + "\\tuer_automatisch_geschlossen.tga").to_qpixmap()));
+	get_terrain_img.insert(std::pair<terrain, QPixmap>(terrain::OPEN_AUTOMATIC_DOOR,
+		pb_input::read_tga_img(
+			path_tiles + "\\tuer_automatisch_offen.tga").to_qpixmap()));
+	get_terrain_img.insert(std::pair<terrain, QPixmap>(terrain::MANUAL_DOOR,
+		pb_input::read_tga_img(
+			path_tiles + "\\tuer_manuell_geschlossen.tga").to_qpixmap()));
+	get_terrain_img.insert(std::pair<terrain, QPixmap>(terrain::OPEN_MANUAL_DOOR,
+		pb_input::read_tga_img(
+			path_tiles + "\\tuer_manuell_offen.tga").to_qpixmap()));
+	get_terrain_img.insert(std::pair<terrain, QPixmap>(terrain::CONCRETE_WALL,
+		pb_input::read_tga_img(
+			path_tiles + "\\wand_beton.tga").to_qpixmap()));
+	get_terrain_img.insert(std::pair<terrain, QPixmap>(terrain::ROCK_WALL,
+		pb_input::read_tga_img(
+			path_tiles + "\\wand_fels.tga").to_qpixmap()));
 
 	std::string path_robots = path + '\\' + robot_folder;
-	get_robot_img.insert(std::pair<robot_type, tga>(robot_type::DEAD, 
-		pb_input::read_tga_img(path_robots + "\\dead.tga")));
-	get_robot_img.insert(std::pair<robot_type, tga>(robot_type::PATCHBOT, 
-		pb_input::read_tga_img(path_robots + "\\patchbot.tga")));
-	get_robot_img.insert(std::pair<robot_type, tga>(robot_type::BUGGER, 
-		pb_input::read_tga_img(path_robots + "\\typ1_bugger.tga")));
-	get_robot_img.insert(std::pair<robot_type, tga>(robot_type::PUSHER,
-		pb_input::read_tga_img(path_robots + "\\typ2_pusher.tga")));
-	get_robot_img.insert(std::pair<robot_type, tga>(robot_type::DIGGER, 
-		pb_input::read_tga_img(path_robots + "\\typ3_digger.tga")));
-	get_robot_img.insert(std::pair<robot_type, tga>(robot_type::SWIMMER,
-		pb_input::read_tga_img(path_robots + "\\typ4_swimmer.tga")));
-	get_robot_img.insert(std::pair<robot_type, tga>(robot_type::FOLLOWER, 
-		pb_input::read_tga_img(path_robots + "\\typ5_follower.tga")));
-	get_robot_img.insert(std::pair<robot_type, tga>(robot_type::HUNTER,
-		pb_input::read_tga_img(path_robots + "\\typ6_hunter.tga")));
-	get_robot_img.insert(std::pair<robot_type, tga>(robot_type::SNIFFER, 
-		pb_input::read_tga_img(path_robots + "\\typ7_sniffer.tga")));
+	get_robot_img.insert(std::pair<robot_type, QPixmap>(robot_type::DEAD, 
+		pb_input::read_tga_img(
+			path_robots + "\\dead.tga").to_qpixmap()));
+	get_robot_img.insert(std::pair<robot_type, QPixmap>(robot_type::PATCHBOT, 
+		pb_input::read_tga_img(
+			path_robots + "\\patchbot.tga").to_qpixmap()));
+	get_robot_img.insert(std::pair<robot_type, QPixmap>(robot_type::BUGGER, 
+		pb_input::read_tga_img(
+			path_robots + "\\typ1_bugger.tga").to_qpixmap()));
+	get_robot_img.insert(std::pair<robot_type, QPixmap>(robot_type::PUSHER,
+		pb_input::read_tga_img(
+			path_robots + "\\typ2_pusher.tga").to_qpixmap()));
+	get_robot_img.insert(std::pair<robot_type, QPixmap>(robot_type::DIGGER, 
+		pb_input::read_tga_img(
+			path_robots + "\\typ3_digger.tga").to_qpixmap()));
+	get_robot_img.insert(std::pair<robot_type, QPixmap>(robot_type::SWIMMER,
+		pb_input::read_tga_img(
+			path_robots + "\\typ4_swimmer.tga").to_qpixmap()));
+	get_robot_img.insert(std::pair<robot_type, QPixmap>(robot_type::FOLLOWER, 
+		pb_input::read_tga_img(
+			path_robots + "\\typ5_follower.tga").to_qpixmap()));
+	get_robot_img.insert(std::pair<robot_type, QPixmap>(robot_type::HUNTER,
+		pb_input::read_tga_img(
+			path_robots + "\\typ6_hunter.tga").to_qpixmap()));
+	get_robot_img.insert(std::pair<robot_type, QPixmap>(robot_type::SNIFFER, 
+		pb_input::read_tga_img(
+			path_robots + "\\typ7_sniffer.tga").to_qpixmap()));
 
 	std::string path_arrows = path + '\\' + arrow_folder;
-	get_arrow_img.insert(std::pair<direction, tga>(direction::NORTH,
-		pb_input::read_tga_img(path_arrows + "\\pfeil_oben.tga")));
-	get_arrow_img.insert(std::pair<direction, tga>(direction::EAST,
-		pb_input::read_tga_img(path_arrows + "\\pfeil_rechts.tga")));
-	get_arrow_img.insert(std::pair<direction, tga>(direction::SOUTH,
-		pb_input::read_tga_img(path_arrows + "\\pfeil_unten.tga")));
-	get_arrow_img.insert(std::pair<direction, tga>(direction::WEST,
-		pb_input::read_tga_img(path_arrows + "\\pfeil_links.tga")));
+	get_arrow_img.insert(std::pair<direction, QPixmap>(direction::NORTH,
+		pb_input::read_tga_img(
+			path_arrows + "\\pfeil_oben.tga").to_qpixmap()));
+	get_arrow_img.insert(std::pair<direction, QPixmap>(direction::EAST,
+		pb_input::read_tga_img(
+			path_arrows + "\\pfeil_rechts.tga").to_qpixmap()));
+	get_arrow_img.insert(std::pair<direction, QPixmap>(direction::SOUTH,
+		pb_input::read_tga_img(
+			path_arrows + "\\pfeil_unten.tga").to_qpixmap()));
+	get_arrow_img.insert(std::pair<direction, QPixmap>(direction::WEST,
+		pb_input::read_tga_img(
+			path_arrows + "\\pfeil_links.tga").to_qpixmap()));
 }

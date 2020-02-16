@@ -4,7 +4,7 @@
 #include <pb_main_window.h>
 
 #include <QObject>
-#include <QImage>
+#include <QPixmap>
 #include <QScrollArea>
 #include <QString>
 
@@ -14,7 +14,7 @@ class rendering_engine : public QObject
 
 public:
 	img_resources resources;
-	QImage qimg;
+	QPixmap pixmap;
 	bool game_is_on;
 
 	rendering_engine(main_window* parent_,

@@ -7,6 +7,7 @@
 #include <string>
 #include <memory>
 #include <unordered_map>
+#include <QPixmap>
 
 class img_exception : public std::exception {
 private:
@@ -85,6 +86,11 @@ public:
 	*/
 	static tga load_file(std::ifstream& file);
 
+	/*
+		Convert tga to QImage
+	*/
+	QPixmap to_qpixmap() const;
+
 	rgba_pixel get_pixel(int x, int y) const;
 	void set_pixel(const rgba_pixel& pixel, int x, int y);
 };
@@ -97,9 +103,9 @@ protected:
 	std::string arrow_folder;
 
 public:
-	std::unordered_map<terrain, tga> get_terrain_img;
-	std::unordered_map<robot_type, tga> get_robot_img;
-	std::unordered_map<direction, tga> get_arrow_img;
+	std::unordered_map<terrain, QPixmap> get_terrain_img;
+	std::unordered_map<robot_type, QPixmap> get_robot_img;
+	std::unordered_map<direction, QPixmap> get_arrow_img;
 
 	img_resources(const std::string& path_,
 		const std::string& tile_folder_ = "umgebungen",
