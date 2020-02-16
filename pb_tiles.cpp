@@ -2,47 +2,64 @@
 
 #include <stdexcept>
 
-const terrain dangers[] = {
+const terrain tile::dangers[] = {
 	terrain::ABYSS,
 	terrain::WATER
 };
 
-const terrain obstacles[] = {
+const terrain tile::obstacles[] = {
 	terrain::ALIEN_GRASS,
 	terrain::GRAVEL,
 	terrain::SECRET_PASSAGE
 };
 
-const terrain doors[] = {
+const terrain tile::doors[] = {
 	terrain::MANUAL_DOOR,
 	terrain::AUTOMATIC_DOOR
 };
 
-const terrain walls[] = {
+const terrain tile::walls[] = {
 	terrain::CONCRETE_WALL,
 	terrain::ROCK_WALL
 };
 
-const robot_type robots_with_wheels[] = {
+const robot_type tile::robots_with_wheels[] = {
 	robot_type::PATCHBOT,
 	robot_type::PUSHER,
 	robot_type::DIGGER,
 	robot_type::SWIMMER
 };
 
+/*
+	Class coords
+*/
+
 coords::coords(int x_, int y_) :
 	x(x_),
 	y(y_)
 {}
+
+
+
+
+/*
+	Class robot
+*/
 
 robot::robot(robot_type type_, bool is_dead_) :
 	type(type_),
 	is_dead(is_dead_)
 {}
 
+
+
+
+/*
+	Class tile
+*/
+
 tile::tile(terrain t) :
 	predecessor(direction::UNDEFINED),
-	weights_nesw{ -1, -1, -1, -1},
 	tile_terrain(t)
 {
 	if (t != terrain::STEEL_PLANKS)
@@ -64,6 +81,13 @@ int tile::get_weight()
 {
 	return 1;
 }
+
+
+
+
+/*
+	Class startingpoint
+*/
 
 startingpoint::startingpoint(robot_type r) :
 	starting(r)
@@ -90,6 +114,13 @@ int startingpoint::get_weight()
 	return 1;
 }
 
+
+
+
+/*
+	Class danger
+*/
+
 danger::danger(terrain t)
 {
 	if (!((std::find(std::begin(dangers), std::end(dangers), t) 
@@ -111,6 +142,13 @@ int danger::get_weight()
 {
 	return -1;
 }
+
+
+
+
+/*
+	Class obstacle
+*/
 
 obstacle::obstacle(terrain t) {
 	if (!((std::find(std::begin(obstacles), std::end(obstacles), t)
@@ -146,6 +184,13 @@ int obstacle::get_weight()
 		return -1;
 	return 2;
 }
+
+
+
+
+/*
+	Class door
+*/
 
 door::door(terrain t)
 {
@@ -195,8 +240,18 @@ action door::interact(robot_type r) {
 
 int door::get_weight()
 {
+	if (tile_terrain == terrain::OPEN_AUTOMATIC_DOOR
+		|| tile_terrain == terrain::OPEN_MANUAL_DOOR)
+		return 1;
 	return 2;
 }
+
+
+
+
+/*
+	Class wall
+*/
 
 wall::wall(terrain t) {
 	if (!((std::find(std::begin(walls), std::end(walls), t) != std::end(walls))))
@@ -217,6 +272,13 @@ int wall::get_weight()
 {
 	return -1;
 }
+
+
+
+
+/*
+	Class server
+*/
 
 server::server() {
 	tile_terrain = terrain::MAIN_SERVER;

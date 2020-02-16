@@ -195,6 +195,7 @@
     <ClCompile Include="pb_io.cpp" />
     <ClCompile Include="pb_main_window.cpp" />
     <ClCompile Include="pb_map.cpp" />
+    <ClCompile Include="pb_path_finding.cpp" />
     <ClCompile Include="pb_rendering_engine.cpp" />
     <ClCompile Include="pb_tiles.cpp" />
   </ItemGroup>
@@ -225,6 +226,7 @@
     </QtUic>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="pb_path_finding.h" />
     <ClInclude Include="pb_tiles.h" />
     <QtMoc Include="pb_controls.h" />
     <ClInclude Include="pb_exceptions.h" />

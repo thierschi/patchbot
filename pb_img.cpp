@@ -5,6 +5,10 @@
 #include <math.h>
 #include <iostream>
 
+/*
+	Class img_exception
+*/
+
 img_exception::img_exception(const char* message_) :
 	message(message_)
 {
@@ -13,6 +17,13 @@ img_exception::img_exception(const char* message_) :
 const char* img_exception::what() const throw() {
 	return message;
 }
+
+
+
+
+/*
+	Class rgba_pixel
+*/
 
 rgba_pixel::rgba_pixel(
 	char red_,
@@ -147,6 +158,13 @@ rgba_pixel rgba_pixel::blend(const rgba_pixel& overlay_pixel,
 		floor(blue * 255.0), 
 		floor(new_alpha * 255.0));
 }
+
+
+
+
+/*
+	Class tga
+*/
 
 tga::tga() :
 	data_size(0),
@@ -335,6 +353,13 @@ void tga::set_pixel(const rgba_pixel& pixel, int x, int y) {
 			"Coordinates out of range.");
 	pixel_map[y * header.img_width + x] = pixel;
 }
+
+
+
+
+/*
+	Class img_resources
+*/
 
 img_resources::img_resources(const std::string& path_,
 	const std::string& tile_folder_, 

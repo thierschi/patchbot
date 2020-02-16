@@ -8,6 +8,10 @@
 #include <math.h>
 #include <queue>
 
+/*
+	Class robot_map
+*/
+
 robot_map::robot_map(int width_, int height_) :
 	width(width_),
 	height(height_),
@@ -145,10 +149,12 @@ void robot_map::move_robot(int x, int y, int new_x, int new_y)
 	robots_locations[robots[new_y * width + new_x].type] = coords(new_x, new_y);
 }
 
-bool int_pair_comparator::operator()(const int_pair& ip1, const int_pair& ip2)
-{
-	return ip1.first < ip2.first;
-}
+
+
+
+/*
+	Class tile_map
+*/
 
 tile_map::tile_map(std::string name_, int width_, int height_) :
 	name(name_),
@@ -183,7 +189,7 @@ terrain tile_map::get_tile_terrain(int x, int y) const {
 	return i_map[y * width + x]->get_terrain();
 }
 
-std::shared_ptr<tile> tile_map::get_tile(int x, int y) {
+std::shared_ptr<tile> tile_map::get_tile(int x, int y) const {
 	if (x >= width || y >= height)
 		throw std::invalid_argument(
 			"Invalid argument passed to Tile_map: "
@@ -340,34 +346,6 @@ void tile_map::set_tile(char c, int x, int y) {
 
 void tile_map::init_map_graph_struct()
 {
-	for (int i = 0; i < i_map.size(); i++) {
-		int x = i % width;
-		int y = floor(i / width);
-
-		/* NORTH */
-		if (y == 0)
-			i_map[i]->weights_nesw[0] = 0;
-		else
-			i_map[i]->weights_nesw[0] = get_tile(x, y - 1)->get_weight();
-
-		/* EAST */
-		if (x == width - 1)
-			i_map[i]->weights_nesw[1] = 0;
-		else
-			i_map[i]->weights_nesw[1] = get_tile(x + 1, y)->get_weight();
-
-		/* SOUTH */
-		if (y == height - 1)
-			i_map[i]->weights_nesw[2] = 0;
-		else
-			i_map[i]->weights_nesw[2] = get_tile(x, y + 1)->get_weight();
-
-		/* WEST */
-		if (x == 0)
-			i_map[i]->weights_nesw[3] = 0;
-		else
-			i_map[i]->weights_nesw[3] = get_tile(x - 1, y)->get_weight();
-	}
 	coords pb_pos = robots.get_robots_location(robot_type::PATCHBOT);
 	get_tile(pb_pos.x, pb_pos.y)->predecessor = direction::SOURCE;
 }
@@ -381,101 +359,77 @@ void tile_map::reset_all_tile_nodes()
 	get_tile(pb_pos.x, pb_pos.y)->predecessor = direction::SOURCE;
 }
 
-void tile_map::update_adjacent_weights(int x, int y, int weight)
-{
-	if (weight < 0)
-		throw std::invalid_argument(
-			"Invalid argument passed to tile_map:"
-			"Edge's weight must be 0 or greater.");
-
-	/*NORTH
-		Set weight of south edge of notrthern tile, if exists*/
-	if (y > 0)
-		get_tile(x, y - 1)->weights_nesw[2] = weight;
-
-	/*EAST
-		Set weight of west edge of eastern tile, if exits*/
-	if (x < width - 1)
-		get_tile(x + 1, y)->weights_nesw[3] = weight;
-
-	/*SOUTH
-		Set weight of north edge of southern tile, if exits*/
-	if (y < height - 1)
-		get_tile(x, y + 1)->weights_nesw[0] = weight;
-
-	/*WEST
-		Set weight of east edge of western tile, if exits*/
-	if (y > 0)
-		get_tile(x - 1, y)->weights_nesw[1] = weight;
-}
-
-void tile_map::run_path_finding()
-{
-	/* Priotity queue  with custom comparator implemented like a min_heap
-	Adjacent nodes get pushed here */
-	std::priority_queue<int_pair, std::vector<int_pair>, int_pair_comparator> pq;
-
-	/* Vector of distences (local, beacaus we dont need these values later) */
-	std::vector<int> dist(i_map.size(), INT_MAX);
-
-	/* Initialize source (patchbot)
-	One may notice that I calculate with the values in the vector not with
-	(x,y) values */
-	coords pb_pos = robots.get_robots_location(robot_type::PATCHBOT);
-	pq.push(std::make_pair(0, pb_pos.y * width + pb_pos.x));
-
-	while (!pq.empty()) {
-		/* Get node/vertex with smallest dist and remove from "heap" */
-		int u = pq.top().second;
-		pq.pop();
-
-
-		/* Normally one would iterate through all adjacent edges, but this
-		is a 2d map and we have 4 edges at max. Hence we go through them
-		one by one, so that we dont need to save references to the adjacend
-		nodes in each tile, but just calculate the coordinates.
-			--> If an edge has value 0, that means it does not exist, e.g. edge 
-			to a wall */
-
-		/* NORTH */
-		if (i_map[u]->weights_nesw[0] != -1 
-			&& i_map[u]->predecessor != direction::NORTH) {
-			if (dist[u - width] > dist[u] + i_map[u]->weights_nesw[0]) {
-				dist[u - width] = dist[u] + i_map[u]->weights_nesw[0];
-				pq.push(std::make_pair(dist[u - width], u - width));
-				i_map[u - width]->predecessor = direction::SOUTH;
-			}
-		};
-
-		/* EAST */
-		if (i_map[u]->weights_nesw[1] != -1
-			&& i_map[u]->predecessor != direction::EAST) {
-			if (dist[u + 1] > dist[u] + i_map[u]->weights_nesw[1]) {
-				dist[u + 1] = dist[u] + i_map[u]->weights_nesw[1];
-				pq.push(std::make_pair(dist[u + 1], u + 1));
-				i_map[u + 1]->predecessor = direction::WEST;
-			}
-		};
-
-		/* SOUTH */
-		if (i_map[u]->weights_nesw[2] != -1
-			&& i_map[u]->predecessor != direction::SOUTH) {
-			if (dist[u + width] > dist[u] + i_map[u]->weights_nesw[2]) {
-				dist[u + width] = dist[u] + i_map[u]->weights_nesw[2];
-				pq.push(std::make_pair(dist[u + width], u + width));
-				i_map[u + width]->predecessor = direction::NORTH;
-			}
-		};
-
-		/* WEST */
-		if (i_map[u]->weights_nesw[3] != -1
-			&& i_map[u]->predecessor != direction::WEST) {
-			if (dist[u - 1] > dist[u] + i_map[u]->weights_nesw[3]) {
-				dist[u - 1] = dist[u] + i_map[u]->weights_nesw[3];
-				pq.push(std::make_pair(dist[u - 1], u - 1));
-				i_map[u - 1]->predecessor = direction::EAST;
-			}
-		};
-		
-	}
-}
+//void tile_map::run_path_finding()
+//{
+//	/* Priotity queue  with custom comparator implemented like a min_heap
+//	Adjacent nodes get pushed here */
+//	std::priority_queue<int_pair, std::vector<int_pair>, int_pair_comparator> pq;
+//
+//	/* Vector of distences (local, beacaus we dont need these values later) */
+//	std::vector<int> dist(i_map.size(), INT_MAX);
+//
+//	/* Initialize source (patchbot)
+//	One may notice that I calculate with the values in the vector not with
+//	(x,y) values */
+//	coords pb_pos = robots.get_robots_location(robot_type::PATCHBOT);
+//	pq.push(std::make_pair(0, pb_pos.y * width + pb_pos.x));
+//
+//	while (!pq.empty()) {
+//		/* Get node/vertex with smallest dist and remove from "heap" */
+//		int v_dist = pq.top().first;
+//		int u = pq.top().second;
+//		pq.pop();
+//
+//
+//		/* Normally one would iterate through all adjacent edges, but this
+//		is a 2d map and we have 4 edges at max. Hence we go through them
+//		one by one, so that we dont need to save references to the adjacend
+//		nodes in each tile, but just calculate the coordinates.
+//			--> If an edge has value 0, that means it does not exist, e.g. edge 
+//			to a wall */
+//
+//		/* Skip checking the adjacent edges if a smaller distance already exists */
+//		if (v_dist > dist[u]) continue;
+//
+//		/* NORTH */
+//		if (i_map[u - width]->get_weight() != -1
+//			&& i_map[u]->predecessor != direction::NORTH) {
+//			if (dist[u - width] > dist[u] + i_map[u - width]->get_weight()) {
+//				dist[u - width] = dist[u] + i_map[u - width]->get_weight();
+//				pq.push(std::make_pair(dist[u - width], u - width));
+//				i_map[u - width]->predecessor = direction::SOUTH;
+//			}
+//		};
+//
+//		/* EAST */
+//		if (i_map[u + 1]->get_weight() != -1
+//			&& i_map[u]->predecessor != direction::EAST) {
+//			if (dist[u + 1] > dist[u] + i_map[u + 1]->get_weight()) {
+//				dist[u + 1] = dist[u] + i_map[u + 1]->get_weight();
+//				pq.push(std::make_pair(dist[u + 1], u + 1));
+//				i_map[u + 1]->predecessor = direction::WEST;
+//			}
+//		};
+//
+//		/* SOUTH */
+//		if (i_map[u + width]->get_weight() != -1
+//			&& i_map[u]->predecessor != direction::SOUTH) {
+//			if (dist[u + width] > dist[u] + i_map[u + width]->get_weight()) {
+//				dist[u + width] = dist[u] + i_map[u + width]->get_weight();
+//				pq.push(std::make_pair(dist[u + width], u + width));
+//				i_map[u + width]->predecessor = direction::NORTH;
+//			}
+//		};
+//
+//		/* WEST */
+//		if (i_map[u - 1]->get_weight() != -1
+//			&& i_map[u]->predecessor != direction::WEST) {
+//			if (dist[u - 1] > dist[u] + i_map[u - 1]->get_weight()) {
+//				dist[u - 1] = dist[u] + i_map[u - 1]->get_weight();
+//				pq.push(std::make_pair(dist[u - 1], u - 1));
+//				i_map[u - 1]->predecessor = direction::EAST;
+//			}
+//		};
+//		
+//	}
+//}

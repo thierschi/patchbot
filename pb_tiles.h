@@ -79,15 +79,22 @@ protected:
 	terrain tile_terrain;
 
 public:
+	/* Arrays of terrain types */
+	static const terrain dangers[];
+	static const terrain obstacles[];
+	static const terrain doors[];
+	static const terrain walls[];
+	static const robot_type robots_with_wheels[];
+
 	/* Properties important for dijkstra algorithmn */
 	direction predecessor;
-	int weights_nesw[4];
 
 	/* Constructor always checks, that passed Terrain-type is suitable for the
 	child class, throws an exception if it is not and sets the tile_terrain
 	after a successfull check */
 	tile(terrain t = terrain::STEEL_PLANKS);
 	tile(const tile&) = default;
+	virtual ~tile() = default;
 
 	terrain get_terrain() const;
 

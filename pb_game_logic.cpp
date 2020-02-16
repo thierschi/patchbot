@@ -1,5 +1,6 @@
 #include "pb_game_logic.h"
 #include "pb_map.h"
+#include "pb_path_finding.h"
 
 #include <chrono>
 #include <thread>
@@ -202,9 +203,6 @@ void game_logic::add_open_door(int x, int y)
 {
 	/* Push to open_door class */
 	open_doors.push_front(open_door(x, y, time_steps));
-
-	/* Update doors edge weights */
-	parent->map.update_adjacent_weights(x, y, 1);
 }
 
 void game_logic::update_doors()
@@ -223,9 +221,6 @@ void game_logic::update_doors()
 				parent->map.get_tile(open_doors.back().x, open_doors.back().y)
 					->interact(robot_type::NONE);
 
-				/* Update doors edge weights */
-				parent->map.update_adjacent_weights(open_doors.back().x,
-					open_doors.back().y, 2);
 				open_doors.pop_back();
 			}
 			else {
@@ -252,9 +247,6 @@ void game_logic::update_doors()
 			parent->map.get_tile(blocked_doors.back().x, blocked_doors.back().y)
 				->interact(robot_type::NONE);
 
-			/* Update doors edge weights */
-			parent->map.update_adjacent_weights(blocked_doors.back().x,
-				blocked_doors.back().y, 2);
 			blocked_doors.pop_back();
 		}
 		else {
@@ -315,7 +307,8 @@ void game_logic::start_game()
 	p_controls->activate_mission_control_contorls();
 
 	parent->map.init_map_graph_struct();
-	parent->map.run_path_finding();
+	dijkstra::run_path_finding(parent->map);
+	//parent->map.run_path_finding();
 
 	p_rendering_engine->do_refresh_render();
 }
@@ -334,7 +327,8 @@ void game_logic::single_step()
 	move_patchbot();
 
 	// Find shortest way to patchbot
-	parent->map.run_path_finding();
+	dijkstra::run_path_finding(parent->map);
+	//parent->map.run_path_finding();
 
 	/*
 		TODO: Gegner sind am Zug

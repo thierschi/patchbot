@@ -11,6 +11,10 @@
 #include <memory>
 #include <stdlib.h>
 
+/*
+	Class pb_input
+*/
+
 tile_map pb_input::read_map_txt(const std::string& path) {
 	std::ifstream map_txt;
 	map_txt.open(path, std::ios_base::in);
@@ -121,6 +125,13 @@ tga pb_input::read_tga_img(const std::string& path) {
 	img_file.close();
 	return img;
 }
+
+
+
+
+/*
+	Class pb_output
+*/
 
 void pb_output::write_map_txt(const std::string& path,
 	const tile_map& t_map) {

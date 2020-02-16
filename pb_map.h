@@ -6,8 +6,6 @@
 #include <unordered_map>
 #include <memory>
 
-typedef std::pair<int, int> int_pair;
-
 /*
 	Robot_map is implemented as one dimensional vector  "__robot_map", where 
 	each coordinate-pair x and y can be mapped to its tile with y * width + x.
@@ -41,11 +39,6 @@ public:
 	void move_robot(int x, int y, int new_x, int new_y);
 };
 
-class int_pair_comparator {
-public:
-	bool operator() (const int_pair& ip1, const int_pair& ip2);
-};
-
 /*
 	Tile_map is implemented as one dimensional vector "i_map", where each
 	coordinate-pair x and y can be mapped to its tile with y * width + x.
@@ -69,7 +62,7 @@ public:
 	int get_height() const;
 	int get_width() const;
 	terrain get_tile_terrain(int x, int y) const;
-	std::shared_ptr<tile> get_tile(int x, int y);
+	std::shared_ptr<tile> get_tile(int x, int y) const;
 
 	//Setter :
 	void set_height(int h);
@@ -84,6 +77,5 @@ public:
 	void init_map_graph_struct();
 	/* Resets the values in tile, important for dijkstra but leaves the weights */
 	void reset_all_tile_nodes();
-	void update_adjacent_weights(int x, int y, int weight);
-	void run_path_finding();
+	//void run_path_finding();
 };
