@@ -11,6 +11,13 @@ bool int_pair_comparator::operator()(const int_pair& ip1, const int_pair& ip2)
 	return ip1.first < ip2.first;
 }
 
+
+
+
+/*
+	class dijkstra
+*/
+
 void dijkstra::run_path_finding(tile_map& map)
 {
 	/* Priotity queue  with custom comparator implemented like a min_heap
