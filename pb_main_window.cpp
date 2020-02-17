@@ -57,7 +57,7 @@ void main_window::map_placeholder_set_pixmap(const QPixmap& pixmap)
     ui->map_placeholder->setPixmap(pixmap);
 }
 
-void main_window::adjust_scrollbars()
+void main_window::adjust_scrollbars(int l_value, int t_value)
 {
     ui->map_h_scrollbar->setPageStep(ui->map_scrollArea->width());
     ui->map_v_scrollbar->setPageStep(ui->map_scrollArea->height());
@@ -65,6 +65,8 @@ void main_window::adjust_scrollbars()
         - ui->map_v_scrollbar->pageStep());
     ui->map_h_scrollbar->setRange(0, resource_width
         - ui->map_h_scrollbar->pageStep());
+    ui->map_h_scrollbar->setValue(l_value);
+    ui->map_v_scrollbar->setValue(t_value);
 }
 
 void main_window::refresh_colonie_label()

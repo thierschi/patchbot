@@ -48,7 +48,7 @@ public:
     // Setter for rendering_engine
     void resize_map_placeholder(int width, int height);
     void map_placeholder_set_pixmap(const QPixmap& pixmap);
-    void adjust_scrollbars();
+    void adjust_scrollbars(int l_value, int t_value);
     void refresh_colonie_label();
     void set_resource_size(int width, int height);
 

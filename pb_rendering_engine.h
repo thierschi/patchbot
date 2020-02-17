@@ -4,6 +4,7 @@
 #include <pb_main_window.h>
 
 #include <QObject>
+#include <QPainter>
 #include <QPixmap>
 #include <QScrollArea>
 #include <QString>
@@ -14,6 +15,7 @@ class rendering_engine : public QObject
 
 public:
 	img_resources resources;
+	QPainter painter;
 	QPixmap pixmap;
 	bool game_is_on;
 
@@ -24,7 +26,7 @@ public:
 	int get_full_width_px();
 	int get_full_height_px();
 
-	void render_pixel(int x, int y);
+	void draw_tile(int x, int y);
 	void connect_to_parent();
 
 public slots:

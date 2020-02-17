@@ -345,7 +345,7 @@ QPixmap tga::to_qpixmap() const {
 	
 	for (int y = 0; y < qimg.height(); y++) {
 		for (int x = 0; x < qimg.width(); x++) {
-			qimg.setPixel(x, y, qRgba(
+			qimg.setPixel(x, qimg.height() - 1 - y, qRgba(
 				pixel_map[y * qimg.width() + x].red,
 				pixel_map[y * qimg.width() + x].green,
 				pixel_map[y * qimg.width() + x].blue,
