@@ -55,43 +55,45 @@ void dijkstra::run_path_finding(tile_map& map)
 
 		/* NORTH */
 		if (map.get_tile(x, y - 1)->get_weight() != -1
-			&& map.get_tile(x, y)->predecessor != direction::NORTH) {
+			&& map.get_tile(x, y)->predecessor != direction::NORTH && y > 0) {
 			if (dist[u - map.get_width()] > dist[u] + map.get_tile(x, y - 1)->get_weight()) {
 				dist[u - map.get_width()] = dist[u] + map.get_tile(x, y - 1)->get_weight();
 				pq.push(std::make_pair(dist[u - map.get_width()], u - map.get_width()));
 				map.get_tile(x, y - 1)->predecessor = direction::SOUTH;
 			}
-		};
+		}
 
 		/* EAST */
 		if (map.get_tile(x + 1, y)->get_weight() != -1
-			&& map.get_tile(x, y)->predecessor != direction::EAST) {
+			&& map.get_tile(x, y)->predecessor != direction::EAST
+			&& x < map.get_width() - 1) {
 			if (dist[u + 1] > dist[u] + map.get_tile(x + 1, y)->get_weight()) {
 				dist[u + 1] = dist[u] + map.get_tile(x + 1, y)->get_weight();
 				pq.push(std::make_pair(dist[u + 1], u + 1));
 				map.get_tile(x + 1, y)->predecessor = direction::WEST;
 			}
-		};
+		}
 
 		/* SOUTH */
 		if (map.get_tile(x, y + 1)->get_weight() != -1
-			&& map.get_tile(x, y)->predecessor != direction::SOUTH) {
+			&& map.get_tile(x, y)->predecessor != direction::SOUTH
+			&& y < map.get_height() - 1) {
 			if (dist[u + map.get_width()] > dist[u] + map.get_tile(x, y + 1)->get_weight()) {
 				dist[u + map.get_width()] = dist[u] + map.get_tile(x, y + 1)->get_weight();
 				pq.push(std::make_pair(dist[u + map.get_width()], u + map.get_width()));
 				map.get_tile(x, y + 1)->predecessor = direction::NORTH;
 			}
-		};
+		}
 
 		/* WEST */
 		if (map.get_tile(x - 1, y)->get_weight() != -1
-			&& map.get_tile(x, y)->predecessor != direction::WEST) {
+			&& map.get_tile(x, y)->predecessor != direction::WEST && x > 0) {
 			if (dist[u - 1] > dist[u] + map.get_tile(x - 1, y)->get_weight()) {
 				dist[u - 1] = dist[u] + map.get_tile(x - 1, y)->get_weight();
 				pq.push(std::make_pair(dist[u - 1], u - 1));
 				map.get_tile(x - 1, y)->predecessor = direction::EAST;
 			}
-		};
+		}
 
 	}
 }

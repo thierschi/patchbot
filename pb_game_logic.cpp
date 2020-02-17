@@ -191,12 +191,14 @@ void game_logic::move_patchbot()
 		// Patchbot actually walk
 		parent->map.robots.move_robot(old_pos.x, old_pos.y,
 			new_pos.x, new_pos.y);
-	else if (patchbot_action == action::OBSTRUCTED)
+	else if (patchbot_action == action::OBSTRUCTED) {
 		// End "step until obstructed" here
 		if (p_controls->instruction_queue.size() > 0)
 			if (p_controls->instruction_queue.front().amount == 0)
 				p_controls->instruction_queue.erase(
 					p_controls->instruction_queue.begin());
+		move_patchbot();
+	}
 }
 
 void game_logic::add_open_door(int x, int y)
@@ -328,7 +330,6 @@ void game_logic::single_step()
 
 	// Find shortest way to patchbot
 	dijkstra::run_path_finding(parent->map);
-	//parent->map.run_path_finding();
 
 	/*
 		TODO: Gegner sind am Zug
