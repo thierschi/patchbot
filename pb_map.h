@@ -63,6 +63,7 @@ public:
 	int get_width() const;
 	terrain get_tile_terrain(int x, int y) const;
 	std::shared_ptr<tile> get_tile(int x, int y) const;
+	bool is_in_line_of_sight(coords p1, coords p2) const;
 
 	//Setter :
 	void set_height(int h);

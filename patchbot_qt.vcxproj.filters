@@ -70,6 +70,9 @@
     <ClCompile Include="pb_path_finding.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="pb_state_machine.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="pb_main_window.h">
@@ -115,6 +118,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="pb_path_finding.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pb_state_machine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

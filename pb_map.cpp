@@ -7,6 +7,7 @@
 #include <stdexcept>
 #include <math.h>
 #include <queue>
+#include <functional>
 
 /*
 	Class robot_map
@@ -197,6 +198,128 @@ std::shared_ptr<tile> tile_map::get_tile(int x, int y) const {
 	return i_map[y * width + x];
 }
 
+bool tile_map::is_in_line_of_sight(coords p1, coords p2) const
+{
+	/* Return False if either one of the coordinates is out of bounds of the map */
+	if (p1.x < 0 || p1.y < 0 || p2.x < 0 || p2.y < 0) return false;
+	if (p1.x >= width || p1.y >= width 
+		|| p2.x >= width || p2.y >= width) return false;
+	/* Return true if the coordinates are the same */
+	if (p1.x == p2.x && p1.y == p2.y) return true;
+
+	// What is a wall?
+	terrain walls[] = {
+		terrain::CONCRETE_WALL,
+		terrain::ROCK_WALL,
+		terrain::MANUAL_DOOR,
+		terrain::AUTOMATIC_DOOR,
+		terrain::SECRET_PASSAGE
+	};
+
+	/* If start- or -endcoordinate is in the wall, return false */
+	if (std::end(walls) != std::find(std::begin(walls), std::end(walls), 
+		get_tile(p1.x, p1.y)->get_terrain())) return false;
+	if (std::end(walls) != std::find(std::begin(walls), std::end(walls),
+		get_tile(p2.x, p2.y)->get_terrain())) return false;
+
+	/*   -------- dx --------   --------- dy -------- */
+	if (std::abs(p2.x - p1.x) > std::abs(p2.y - p1.y)) {
+		if (p2.x < p1.x) {
+			coords temp = p2;
+			p2 = p1;
+			p1 = temp;
+		}
+
+		/* Simple check, performed when p1 an p2 are on one line horizontally */
+		if (p1.y == p2.y) {
+			for (int i = p1.x + 1; i < p2.x; i++)
+				if (std::end(walls) != std::find(
+					std::begin(walls),
+					std::end(walls), get_tile(i, p1.y)->get_terrain()))
+					return false;
+			return true;
+		}
+	}
+	else {
+		if (p2.y < p1.y) {
+			coords temp = p2;
+			p2 = p1;
+			p1 = temp;
+		}
+
+		/* Simple check, performed when p1 an p2 are on one line vertiacally */
+		if (p1.x == p2.x) {
+			for (int i = p1.y + 1; i < p2.y; i++)
+				if (std::end(walls) != std::find(
+					std::begin(walls),
+					std::end(walls), get_tile(p1.x, i)->get_terrain()))
+					return false;
+			return true;
+		}
+	}
+	/* Diagonal is y = mx + t*/
+	double m = (p2.y - p1.y) / (p2.x - p1.x);
+	double t = p2.y - m * p2.x;
+
+	if (std::abs(p2.x - p1.x) >= std::abs(p2.y - p1.y)) {
+		/* Diagonale, solved for y */
+		std::function<double(double)> diagonal = [&](double x) {
+			return m * x + t;
+		};
+
+		for (double x = p1.x + 1; x <= p2.x; x += .5) {
+			int y = diagonal(x);
+
+			if (std::end(walls) != std::find(std::begin(walls),
+				std::end(walls), get_tile(floor(x), 
+					std::floor(y))->get_terrain()))
+				return false;
+
+			/* If y is even check the diagonal adjacent tiles too, because if 
+			they are both a wall it is a non see-throught corner*/
+			if (y == std::floor(y)) {
+				if (std::end(walls) != std::find(std::begin(walls),
+					std::end(walls), 
+					get_tile(std::floor(x), std::floor(y) - 1)->get_terrain()))
+					return false;
+				if (std::end(walls) != std::find(std::begin(walls),
+					std::end(walls), get_tile(std::floor(x) - 1, 
+						std::floor(y))->get_terrain()))
+					return false;
+			}
+		}
+	}
+	else {
+		/* Diagonale, solved for x */
+		std::function<double(double)> diagonal = [&](double y) {
+			return (y - t) / m;
+		};
+
+		for (double y = p1.y + 1; y <= p2.y; y += .5) {
+			int x = diagonal(y);
+
+			if (std::end(walls) != std::find(std::begin(walls),
+				std::end(walls), get_tile(std::floor(x), 
+					std::floor(y))->get_terrain()))
+				return false;
+			
+			/* If y is even check the diagonal adjacent tiles too, because if
+			they are both a wall it is a non see-throught corner */
+			if (x == std::floor(x)) {
+				if (std::end(walls) != std::find(std::begin(walls),
+					std::end(walls), get_tile(std::floor(x), 
+						std::floor(y) - 1)->get_terrain()))
+					return false;
+				if (std::end(walls) != std::find(std::begin(walls),
+					std::end(walls), get_tile(std::floor(x) - 1, 
+						std::floor(y))->get_terrain()))
+					return false;
+			}
+		}
+	}
+	return true;
+}
+
 //Setter
 void tile_map::set_height(int h) {
 	/* Setting height by either appending
@@ -358,78 +481,3 @@ void tile_map::reset_all_tile_nodes()
 	coords pb_pos = robots.get_robots_location(robot_type::PATCHBOT);
 	get_tile(pb_pos.x, pb_pos.y)->predecessor = direction::SOURCE;
 }
-
-//void tile_map::run_path_finding()
-//{
-//	/* Priotity queue  with custom comparator implemented like a min_heap
-//	Adjacent nodes get pushed here */
-//	std::priority_queue<int_pair, std::vector<int_pair>, int_pair_comparator> pq;
-//
-//	/* Vector of distences (local, beacaus we dont need these values later) */
-//	std::vector<int> dist(i_map.size(), INT_MAX);
-//
-//	/* Initialize source (patchbot)
-//	One may notice that I calculate with the values in the vector not with
-//	(x,y) values */
-//	coords pb_pos = robots.get_robots_location(robot_type::PATCHBOT);
-//	pq.push(std::make_pair(0, pb_pos.y * width + pb_pos.x));
-//
-//	while (!pq.empty()) {
-//		/* Get node/vertex with smallest dist and remove from "heap" */
-//		int v_dist = pq.top().first;
-//		int u = pq.top().second;
-//		pq.pop();
-//
-//
-//		/* Normally one would iterate through all adjacent edges, but this
-//		is a 2d map and we have 4 edges at max. Hence we go through them
-//		one by one, so that we dont need to save references to the adjacend
-//		nodes in each tile, but just calculate the coordinates.
-//			--> If an edge has value 0, that means it does not exist, e.g. edge 
-//			to a wall */
-//
-//		/* Skip checking the adjacent edges if a smaller distance already exists */
-//		if (v_dist > dist[u]) continue;
-//
-//		/* NORTH */
-//		if (i_map[u - width]->get_weight() != -1
-//			&& i_map[u]->predecessor != direction::NORTH) {
-//			if (dist[u - width] > dist[u] + i_map[u - width]->get_weight()) {
-//				dist[u - width] = dist[u] + i_map[u - width]->get_weight();
-//				pq.push(std::make_pair(dist[u - width], u - width));
-//				i_map[u - width]->predecessor = direction::SOUTH;
-//			}
-//		};
-//
-//		/* EAST */
-//		if (i_map[u + 1]->get_weight() != -1
-//			&& i_map[u]->predecessor != direction::EAST) {
-//			if (dist[u + 1] > dist[u] + i_map[u + 1]->get_weight()) {
-//				dist[u + 1] = dist[u] + i_map[u + 1]->get_weight();
-//				pq.push(std::make_pair(dist[u + 1], u + 1));
-//				i_map[u + 1]->predecessor = direction::WEST;
-//			}
-//		};
-//
-//		/* SOUTH */
-//		if (i_map[u + width]->get_weight() != -1
-//			&& i_map[u]->predecessor != direction::SOUTH) {
-//			if (dist[u + width] > dist[u] + i_map[u + width]->get_weight()) {
-//				dist[u + width] = dist[u] + i_map[u + width]->get_weight();
-//				pq.push(std::make_pair(dist[u + width], u + width));
-//				i_map[u + width]->predecessor = direction::NORTH;
-//			}
-//		};
-//
-//		/* WEST */
-//		if (i_map[u - 1]->get_weight() != -1
-//			&& i_map[u]->predecessor != direction::WEST) {
-//			if (dist[u - 1] > dist[u] + i_map[u - 1]->get_weight()) {
-//				dist[u - 1] = dist[u] + i_map[u - 1]->get_weight();
-//				pq.push(std::make_pair(dist[u - 1], u - 1));
-//				i_map[u - 1]->predecessor = direction::EAST;
-//			}
-//		};
-//		
-//	}
-//}
