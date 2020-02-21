@@ -16,11 +16,16 @@ protected:
 	int height;
 	int width;
 	bool has_pb;
+	unsigned int pb_id;
 	std::vector<robot> robots;
-	std::unordered_map<int, bool> graves;
-	std::unordered_map<robot_type, coords> robots_locations;
+	std::unordered_map<int, int> graves;
+	std::unordered_map<unsigned int, coords> robots_locations;
 
 public:
+	/* Robots can push doors, that they've opened, in here to be processed
+	and managed by the game_logic class */
+	std::vector<coords> opened_doors;
+
 	robot_map(int width_ = 1, int height_ = 1);
 
 	// Getter
@@ -28,8 +33,10 @@ public:
 	int get_height() const;
 	int get_width() const;
 	robot get_robot(int x, int y) const;
+	robot get_robot(coords c) const;
 	bool is_grave(int x, int y) const;
-	coords get_robots_location(robot_type type);
+	coords get_patchbots_location() const;
+	coords get_robots_location(unsigned int id) const;
 
 	// Setter
 	void set_height(int height_);
@@ -37,6 +44,9 @@ public:
 	void set_robot(const robot& robot_, int x, int y);
 	void set_robots_grave(int x, int y);
 	void move_robot(int x, int y, int new_x, int new_y);
+	void move_robot(unsigned int id, int new_x, int new_y);
+	void kill_robot(unsigned int id);
+	void update_graves();
 };
 
 /*

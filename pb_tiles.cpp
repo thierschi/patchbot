@@ -46,10 +46,17 @@ coords::coords(int x_, int y_) :
 	Class robot
 */
 
+unsigned int robot::id_counter = 1;
+
 robot::robot(robot_type type_, bool is_dead_) :
 	type(type_),
+	id(0),
 	is_dead(is_dead_)
-{}
+{
+	if (type_ != robot_type::NONE) {
+		id = id_counter++;
+	}
+}
 
 
 

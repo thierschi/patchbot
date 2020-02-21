@@ -56,7 +56,14 @@ public:
 	int x, y;
 
 	coords(int x = 0, int y = 0);
+
+	friend inline bool operator==(const coords& lvalue, const coords& rvalue);
 };
+
+inline bool operator==(const coords& lvalue, const coords& rvalue)
+{
+	return lvalue.x == rvalue.x && lvalue.y == rvalue.y;
+}
 
 /*
 	Class robot exists so that one can save a alive state (is_dad) for each
@@ -65,9 +72,13 @@ public:
 class robot {
 public:
 	robot_type type;
+	unsigned int id;
 	bool is_dead;
 
 	robot(robot_type type_ = robot_type::NONE, bool is_dead_ = false);
+
+private:
+	static unsigned int id_counter;
 };
 
 /*

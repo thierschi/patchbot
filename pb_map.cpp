@@ -43,6 +43,11 @@ robot robot_map::get_robot(int x, int y) const {
 	return robots[y * width + x];
 }
 
+robot robot_map::get_robot(coords c) const
+{
+	return get_robot(c.x, c.y);
+}
+
 bool robot_map::is_grave(int x, int y) const
 {
 	if (graves.find(y * width + x) == graves.end())
@@ -50,12 +55,17 @@ bool robot_map::is_grave(int x, int y) const
 	return true;
 }
 
-coords robot_map::get_robots_location(robot_type type)
+coords robot_map::get_patchbots_location() const
 {
-	if(robots_locations.find(type) == robots_locations.end())
+	return robots_locations.at(pb_id);
+}
+
+coords robot_map::get_robots_location(unsigned int id) const
+{
+	if(robots_locations.find(id) == robots_locations.end())
 		throw std::invalid_argument("Invalid argument passed to robot_map: "
 			"Passed robot does not exist.");
-	return robots_locations.at(type);
+	return robots_locations.at(id);
 }
 
 void robot_map::set_height(int height_) {
@@ -115,8 +125,11 @@ void robot_map::set_robot(const robot& robot_, int x, int y) {
 			"Invalid argument passed to robot_map: "
 			"This robot_map already has a patchbot.");
 	robots[y * width + x] = robot_;
-	has_pb = (robot_.type == robot_type::PATCHBOT) ? true : has_pb;
-	robots_locations[robot_.type] = coords(x, y);
+	if (robot_.type == robot_type::PATCHBOT) {
+		has_pb = true;
+		pb_id = robot_.id;
+	}
+	robots_locations[robot_.id] = coords(x, y);
 }
 
 void robot_map::set_robots_grave(int x, int y)
@@ -133,7 +146,6 @@ void robot_map::set_robots_grave(int x, int y)
 
 void robot_map::move_robot(int x, int y, int new_x, int new_y)
 {
-
 	if (x >= width || y >= height)
 		throw std::invalid_argument("Invalid argument passed to to robot_map: "
 			"Coordinates out of range.");
@@ -145,9 +157,38 @@ void robot_map::move_robot(int x, int y, int new_x, int new_y)
 		return;
 	if (robots[new_y * width + new_x].type != robot_type::NONE)
 		return;
-	robots[new_y * width + new_x] = robots[y * width + x];
+	robots[new_y * width + new_x] = std::move(robots[y * width + x]);
 	robots[y * width + x] = robot();
-	robots_locations[robots[new_y * width + new_x].type] = coords(new_x, new_y);
+	robots_locations[robots[new_y * width + new_x].id] = coords(new_x, new_y);
+}
+
+void robot_map::move_robot(unsigned int id, int new_x, int new_y)
+{
+	coords old = robots_locations.at(id);
+	move_robot(old.x, old.y, new_x, new_y);
+}
+
+void robot_map::kill_robot(unsigned int id)
+{
+	coords r = robots_locations.at(id);
+	robots_locations.erase(id);
+	robots[r.y * width + r.x] = robot();
+
+	if (graves.find(r.y * width + r.x) == graves.end())
+		graves.insert(std::pair<int, int>(r.y * width + r.x, 5));
+	else
+		graves[r.y * width + r.x] = 5;
+}
+
+void robot_map::update_graves()
+{
+	for (std::pair<int, int> pos : graves) {
+		if (pos.second == 0) {
+			graves.erase(pos.first);
+			continue;
+		}
+		graves[pos.first] = pos.second--;
+	}
 }
 
 
@@ -469,7 +510,7 @@ void tile_map::set_tile(char c, int x, int y) {
 
 void tile_map::init_map_graph_struct()
 {
-	coords pb_pos = robots.get_robots_location(robot_type::PATCHBOT);
+	coords pb_pos = robots.get_patchbots_location();
 	get_tile(pb_pos.x, pb_pos.y)->predecessor = direction::SOURCE;
 }
 
@@ -478,6 +519,6 @@ void tile_map::reset_all_tile_nodes()
 	for (int i = 0; i < i_map.size(); i++) {
 			i_map[i]->predecessor = direction::UNDEFINED;
 	}
-	coords pb_pos = robots.get_robots_location(robot_type::PATCHBOT);
+	coords pb_pos = robots.get_patchbots_location();
 	get_tile(pb_pos.x, pb_pos.y)->predecessor = direction::SOURCE;
 }

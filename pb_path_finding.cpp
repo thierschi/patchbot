@@ -30,7 +30,7 @@ void dijkstra::run_path_finding(tile_map& map)
 	/* Initialize source (patchbot)
 	One may notice that I calculate with the values in the vector not with
 	(x,y) values */
-	coords pb_pos = map.robots.get_robots_location(robot_type::PATCHBOT);
+	coords pb_pos = map.robots.get_patchbots_location();
 	pq.push(std::make_pair(0, pb_pos.y * map.get_width() + pb_pos.x));
 
 	while (!pq.empty()) {

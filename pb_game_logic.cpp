@@ -65,7 +65,7 @@ void game_logic::move_patchbot()
 
 	// Create old and new coords
 	coords old_pos = parent->
-		map.robots.get_robots_location(robot_type::PATCHBOT);
+		map.robots.get_patchbots_location( );
 	coords new_pos = coords();
 
 	action patchbot_action;
@@ -209,6 +209,12 @@ void game_logic::add_open_door(int x, int y)
 
 void game_logic::update_doors()
 {
+	/* Pull opened doors, opened by enemies*/
+	for (coords c : parent->map.robots.opened_doors) {
+		add_open_door(c.x, c.y);
+	}
+	parent->map.robots.opened_doors.clear();
+
 	while (!open_doors.empty()) {
 
 		/* When there are open doors, check if it's time to close them */
