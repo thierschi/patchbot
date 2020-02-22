@@ -1,11 +1,12 @@
 #include "pb_state_machine.h"
+
 #include <algorithm>
 
 /*
-	class abstract_state_machine
+	class state_machine
 */
 
-const terrain abstract_state_machine::free_tiles[] = {
+const terrain state_machine::free_tiles[] = {
 	terrain::ALIEN_GRASS,
 	terrain::ENEMY_START,
 	terrain::GRAVEL,
@@ -17,6 +18,27 @@ const terrain abstract_state_machine::free_tiles[] = {
 	terrain::WATER
 };
 
+const terrain state_machine::walls[] = { 
+	terrain::CONCRETE_WALL,
+	terrain::ROCK_WALL,
+	terrain::SECRET_PASSAGE,
+	terrain::MAIN_SERVER
+};
+
+state_machine::state_machine(tile_map* map_, robot* self_) :
+	map(map_),
+	self(self_)
+{
+}
+
+void state_machine::process()
+{
+}
+
+void state_machine::initialize_machine()
+{
+}
+
 
 
 
@@ -24,26 +46,13 @@ const terrain abstract_state_machine::free_tiles[] = {
 	class bugger_ki
 */
 
-const terrain abstract_state_machine::walls[] = { 
-	terrain::CONCRETE_WALL,
-	terrain::ROCK_WALL,
-	terrain::SECRET_PASSAGE,
-	terrain::MAIN_SERVER
-};
-
-abstract_state_machine::abstract_state_machine(tile_map* map_, robot* self_) :
-	map(map_),
-	self(self_)
-{
-}
-
 bugger_ki::bugger_ki(tile_map* map_, robot* self_)
 {
 	map = map_;
 	self = self_;
 	machines_state = state::FW;
 	start_tile = NULL;
-	faw_direction = direction::UNDEFINED;
+	target_direction = direction::UNDEFINED;
 	initialize_machine();
 }
 
@@ -54,8 +63,9 @@ void bugger_ki::process()
 		state_func s_f = transitions[state_event_pair(
 			machines_state, (this->*c_f)())];
 		(this->*s_f)();
-	}
-	wait = false;
+	} 
+	else
+		wait = false;
 }
 
 void bugger_ki::set_target_tile_FW()
@@ -186,7 +196,7 @@ bugger_ki::event bugger_ki::get_event_at_FW()
 	return event::zb_u_ns;
 }
 
-bugger_ki::event bugger_ki::get_event_at_W() 
+bugger_ki::event bugger_ki::get_event_at_W()
 {
 	if (std::find(std::begin(free_tiles), std::end(free_tiles),
 		map->get_tile(target_tile.x, target_tile.y)->get_terrain())
@@ -297,7 +307,8 @@ pushing_robot_ki::pushing_robot_ki(tile_map* map_, robot* self_)
 	map = map_;
 	self = self_;
 	machines_state = state::HB;
-	pushing_robot_ki::initialize_machine();
+	target_direction = direction::UNDEFINED;
+	initialize_machine();
 }
 
 void pushing_robot_ki::process() 
@@ -308,7 +319,8 @@ void pushing_robot_ki::process()
 			machines_state, (this->*c_f)())];
 		(this->*s_f)();
 	}
-	wait = false;
+	else
+		wait = false;
 }
 
 void pushing_robot_ki::set_target_tile_HB()
@@ -535,4 +547,187 @@ void pushing_robot_ki::initialize_machine()
 
 	transitions[state_event_pair(state::VB, event::zf)] = &pushing_robot_ki::to_state_VB;
 	transitions[state_event_pair(state::VB, event::zw_o_pbh)] = &pushing_robot_ki::to_state_HB;
+}
+
+
+
+
+/*
+	class aware_robot_ki
+*/
+
+aware_robot_ki::aware_robot_ki(tile_map* map_, robot* self_)
+{
+	map = map_;
+	self = self_;
+	machines_state = state::W;
+	initialize_machine();
+}
+
+void aware_robot_ki::process()
+{
+	if (!wait) {
+		state_func s_f;
+
+		switch (self->type) {
+		case (robot_type::HUNTER):
+			s_f = transitions_hunter[state_event_pair(machines_state, get_event())];
+			break;
+
+		default:
+			s_f = transitions[state_event_pair(machines_state, get_event())];
+			break;
+		}
+
+		(this->*s_f)();
+	}
+	else
+		wait = false;
+}
+
+aware_robot_ki::event aware_robot_ki::get_event() const
+{
+	coords current_pos = map->robots.get_robots_location(self->id);
+	if (map->is_in_line_of_sight(map->robots.get_patchbots_location(),
+		current_pos)
+		&& map->get_tile(current_pos.x, current_pos.y)->predecessor
+		!= direction::UNDEFINED) {
+		return event::pe;
+	}
+	return event::pne;
+}
+
+void aware_robot_ki::to_state_V()
+{
+	machines_state = state::V;
+	
+	coords current_pos = map->robots.get_robots_location(self->id);
+	move_self(map->get_tile(current_pos.x, current_pos.y)->predecessor);
+
+	if (self->type == robot_type::HUNTER) {
+		if (!wait)
+			move_self(map->get_tile(current_pos.x, current_pos.y)->predecessor);
+		else
+			wait = false;
+		save_path();
+	}
+
+}
+
+void aware_robot_ki::to_state_W()
+{
+	machines_state = state::W;
+}
+
+void aware_robot_ki::to_state_J()
+{
+	machines_state = state::J;
+
+	for (int i = 0; i < 2 && last_known_path.front() != direction::SOURCE; i++) {
+		if (!wait) {
+			move_self(last_known_path.front());
+			last_known_path.pop();
+		}
+		else 
+			wait = false;
+	}
+}
+
+void aware_robot_ki::move_self(direction to)
+{
+	target_tile = map->robots.get_robots_location(self->id);
+
+	switch (to) {
+	case(direction::NORTH):
+		target_tile.y--;
+		break;
+
+	case(direction::EAST):
+		target_tile.x++;
+		break;
+
+	case(direction::SOUTH):
+		target_tile.y++;
+		break;
+
+	case(direction::WEST):
+		target_tile.x--;
+		break;
+	}
+
+	action target_tiles_action = map->get_tile(target_tile.x, target_tile.y)
+		->interact(map->robots.get_robot(
+			map->robots.get_robots_location(self->id)).type);
+
+	switch (target_tiles_action) {
+	case(action::DIE):
+		map->robots.move_robot(self->id, target_tile.x, target_tile.y);
+		map->robots.kill_robot(self->id);
+		break;
+
+	case(action::OPEN_DOOR):
+		map->robots.opened_doors.push_back(target_tile);
+		break;
+
+	case(action::WALK_AND_WAIT):
+		wait = true;
+
+	default:
+		map->robots.move_robot(self->id, target_tile.x, target_tile.y);
+		break;
+	}
+}
+
+void aware_robot_ki::save_path()
+{
+	last_known_path = std::queue<direction>();
+	coords current_pos = map->robots.get_robots_location(self->id);
+
+	bool is_end = false;
+	while (!is_end) {
+		direction predecessor =
+			map->get_tile(current_pos.x, current_pos.y)->predecessor;
+		
+		last_known_path.push(predecessor);
+		
+		switch (predecessor) {
+		case(direction::NORTH):
+			current_pos.y--;
+			break;
+
+		case(direction::EAST):
+			current_pos.x++;
+			break;
+
+		case(direction::SOUTH):
+			current_pos.y++;
+			break;
+
+		case(direction::WEST):
+			current_pos.x--;
+			break;
+
+		case (direction::SOURCE):
+		default:
+			is_end = true;
+			break;
+		}
+	}
+} 
+
+void aware_robot_ki::initialize_machine()
+{
+	transitions[state_event_pair(state::W, event::pe)] = &aware_robot_ki::to_state_V;
+	transitions[state_event_pair(state::W, event::pne)] = &aware_robot_ki::to_state_W;
+
+	transitions[state_event_pair(state::V, event::pe)] = &aware_robot_ki::to_state_V;
+	transitions[state_event_pair(state::V, event::pne)] = &aware_robot_ki::to_state_W;
+
+	transitions_hunter[state_event_pair(state::W, event::pe)] = &aware_robot_ki::to_state_V;
+
+	transitions_hunter[state_event_pair(state::V, event::pe)] = &aware_robot_ki::to_state_V;
+	transitions_hunter[state_event_pair(state::V, event::pne)] = &aware_robot_ki::to_state_J;
+
+	transitions_hunter[state_event_pair(state::J, event::pe)] = &aware_robot_ki::to_state_V;
+	transitions_hunter[state_event_pair(state::J, event::pne)] = &aware_robot_ki::to_state_J;
 }

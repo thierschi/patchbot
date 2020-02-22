@@ -2,15 +2,15 @@
 #include "pb_map.h"
 
 #include <map>
-#include <functional>
+#include <queue>
 
-class abstract_state_machine
+class state_machine
 {
 public:
-	abstract_state_machine(tile_map* map_ = nullptr, robot* self_ = nullptr);
-	virtual ~abstract_state_machine() = default;
+	state_machine(tile_map* map_ = nullptr, robot* self_ = nullptr);
+	virtual ~state_machine() = default;
 
-	virtual void process() = 0;
+	virtual void process();
 
 protected:
 	tile_map* map;
@@ -23,10 +23,10 @@ protected:
 	static const terrain free_tiles[];
 	static const terrain walls[];
 
-	virtual void initialize_machine() = 0;
+	virtual void initialize_machine();
 };
 
-class bugger_ki : public abstract_state_machine {
+class bugger_ki : public state_machine {
 public:
 	bugger_ki(tile_map* map_, robot* self_);
 	~bugger_ki() override = default;
@@ -39,7 +39,6 @@ private:
 
 	state machines_state;
 	coords start_tile;
-	direction faw_direction;
 
 	typedef void (bugger_ki::* state_func)();
 	typedef bugger_ki::event(bugger_ki::* check_func)();
@@ -63,12 +62,12 @@ private:
 	void initialize_machine() override;
 };
 
-class pushing_robot_ki : public abstract_state_machine {
+class pushing_robot_ki : public state_machine {
 public:
 	pushing_robot_ki(tile_map* map_, robot* self_);
 	~pushing_robot_ki() override = default;
 
-	void process();
+	void process() override;
 
 private:
 	const enum class state { HB, VB, Z };
@@ -100,3 +99,34 @@ private:
 	void initialize_machine() override;
 };
 
+class aware_robot_ki : public state_machine {
+public:
+	aware_robot_ki(tile_map* map_, robot* self_);
+	~aware_robot_ki() override = default;
+
+	void process() override;
+
+private:
+	const enum class state { W, V, J };
+	const enum class event { pe, pne };
+
+	state machines_state;
+	std::queue<direction> last_known_path;
+
+	typedef void (aware_robot_ki::* state_func)();
+	typedef std::pair<state, event> state_event_pair;
+
+	std::map<state_event_pair, state_func> transitions;
+	std::map<state_event_pair, state_func> transitions_hunter;
+
+	event get_event() const;
+	
+	void to_state_V();
+	void to_state_W();
+	void to_state_J();
+
+	void move_self(direction to);
+	void save_path();
+
+	void initialize_machine() override;
+};
