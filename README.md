@@ -7,5 +7,4 @@ Look at the amazing UI:
 
 ![Image](pb_win_img.jpg "UI")
 
-AMAZING <3
-----------
+**AMAZING <3**
