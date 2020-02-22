@@ -33,7 +33,7 @@ public:
 	int get_height() const;
 	int get_width() const;
 	robot get_robot(int x, int y) const;
-	robot get_robot(coords c) const;
+	robot get_robot(const coords& c) const;
 	bool is_grave(int x, int y) const;
 	coords get_patchbots_location() const;
 	coords get_robots_location(unsigned int id) const;

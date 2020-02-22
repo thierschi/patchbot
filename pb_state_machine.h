@@ -17,6 +17,8 @@ protected:
 	robot* self;
 
 	coords target_tile;
+	direction target_direction;
+	bool wait;
 
 	static const terrain free_tiles[];
 	static const terrain walls[];
@@ -24,10 +26,10 @@ protected:
 	virtual void initialize_machine() = 0;
 };
 
-class pushing_robot_ki : public abstract_state_machine {
+class bugger_ki : public abstract_state_machine {
 public:
-	pushing_robot_ki(tile_map* map_, robot* self_);
-	~pushing_robot_ki() override = default;
+	bugger_ki(tile_map* map_, robot* self_);
+	~bugger_ki() override = default;
 
 	void process() override;
 
@@ -38,10 +40,9 @@ private:
 	state machines_state;
 	coords start_tile;
 	direction faw_direction;
-	bool wait;
 
-	typedef void (pushing_robot_ki::* state_func)();
-	typedef pushing_robot_ki::event(pushing_robot_ki::* check_func)();
+	typedef void (bugger_ki::* state_func)();
+	typedef bugger_ki::event(bugger_ki::* check_func)();
 	typedef std::pair<state, event> state_event_pair;
 	typedef std::pair<state, check_func> state_check_pair;
 
@@ -62,10 +63,10 @@ private:
 	void initialize_machine() override;
 };
 
-class pusher_ki : public abstract_state_machine {
+class pushing_robot_ki : public abstract_state_machine {
 public:
-	pusher_ki(tile_map* map_, robot* self_);
-	~pusher_ki() override = default;
+	pushing_robot_ki(tile_map* map_, robot* self_);
+	~pushing_robot_ki() override = default;
 
 	void process();
 
@@ -75,20 +76,26 @@ private:
 
 	state machines_state;
 
-	typedef void (pusher_ki::* state_func)();
-	typedef pusher_ki::event (pusher_ki::* check_func)();
+	typedef void (pushing_robot_ki::* state_func)();
+	typedef pushing_robot_ki::event (pushing_robot_ki::* check_func)();
 	typedef std::pair<state, event> state_event_pair;
 	typedef std::pair<state, check_func> state_check_pair;
 
 	std::map<state, check_func> event_getter;
 	std::map<state_event_pair, state_func> transitions;
 
+	void set_target_tile_HB();
+	void set_target_tile_VB();
+
 	event get_event_at_HB();
 	event get_event_at_VB();
 
 	void to_state_HB();
 	void to_state_VB();
-	void to_state_Z();
+
+	void move_self();
+	void push_robot();
+	bool is_robot_blocked(const coords& pos, direction in_dir) const;
 
 	void initialize_machine() override;
 };

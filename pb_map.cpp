@@ -43,7 +43,7 @@ robot robot_map::get_robot(int x, int y) const {
 	return robots[y * width + x];
 }
 
-robot robot_map::get_robot(coords c) const
+robot robot_map::get_robot(const coords& c) const
 {
 	return get_robot(c.x, c.y);
 }
