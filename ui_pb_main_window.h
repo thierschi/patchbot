@@ -83,6 +83,7 @@ public:
         sizePolicy.setHeightForWidth(main_window->sizePolicy().hasHeightForWidth());
         main_window->setSizePolicy(sizePolicy);
         main_window->setContextMenuPolicy(Qt::NoContextMenu);
+        main_window->setStyleSheet(QString::fromUtf8(""));
         centralwidget = new QWidget(main_window);
         centralwidget->setObjectName(QString::fromUtf8("centralwidget"));
         gridLayout_2 = new QGridLayout(centralwidget);
@@ -373,7 +374,7 @@ public:
         controls_box->setTitle(QString());
         change_colonie_button->setText(QApplication::translate("main_window", "Andere Kolonie...", nullptr));
         program->setTitle(QString());
-        program_label->setText(QApplication::translate("main_window", "Programmieren", nullptr));
+        program_label->setText(QApplication::translate("main_window", "/// Programmieren ///", nullptr));
         instruction_control_dropdown->setItemText(0, QApplication::translate("main_window", "Bis Hindernis", nullptr));
         instruction_control_dropdown->setItemText(1, QApplication::translate("main_window", "1x", nullptr));
         instruction_control_dropdown->setItemText(2, QApplication::translate("main_window", "2x", nullptr));
@@ -394,7 +395,7 @@ public:
         instruction_arrow_back_btn->setText(QApplication::translate("main_window", "\342\257\207", nullptr));
         instruction_arrow_up_btn->setText(QApplication::translate("main_window", "\342\206\221", nullptr));
         mission_control->setTitle(QString());
-        m_c_label->setText(QApplication::translate("main_window", "Missionsablauf", nullptr));
+        m_c_label->setText(QApplication::translate("main_window", "/// Missionsablauf ///", nullptr));
         m_c_start_btn->setText(QApplication::translate("main_window", "Start", nullptr));
         m_c_auto_btn->setText(QApplication::translate("main_window", "Automatik", nullptr));
         m_c_step_btn->setText(QApplication::translate("main_window", "Einzelschritt", nullptr));

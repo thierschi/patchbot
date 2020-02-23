@@ -22,6 +22,9 @@
   <property name="windowTitle">
    <string> Patchbot - The game</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true"/>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout_2">
     <item row="0" column="0">
@@ -258,7 +261,7 @@
          </rect>
         </property>
         <property name="text">
-         <string>Programmieren</string>
+         <string>/// Programmieren ///</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignCenter</set>
@@ -609,7 +612,7 @@
          </rect>
         </property>
         <property name="text">
-         <string>Missionsablauf</string>
+         <string>/// Missionsablauf ///</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignCenter</set>

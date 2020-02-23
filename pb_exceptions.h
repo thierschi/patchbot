@@ -9,5 +9,4 @@ private:
 public:
 	explicit map_format_exception(const char* message_);
 	virtual const char* what() const throw();
-
 };

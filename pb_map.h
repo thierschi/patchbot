@@ -15,28 +15,49 @@ class robot_map {
 protected:
 	int height;
 	int width;
-	bool has_pb;
-	std::vector<robot> robots;
-	std::unordered_map<int, bool> graves;
-	std::unordered_map<robot_type, coords> robots_locations;
+	unsigned int pb_id;
+
+	std::vector<std::shared_ptr<robot>> robots;
+
+	/* Saves the grave and the time when it won't be displayerd anymore */
+	std::unordered_map<int, int> graves;
 
 public:
+	/* Robots can push doors, that they've opened, in here to be processed
+	and managed by the game_logic class */
+	std::vector<coords> opened_doors;
+	std::unordered_map<unsigned int, coords> robots_locations;
+
+	bool has_pb;
+
 	robot_map(int width_ = 1, int height_ = 1);
 
 	// Getter
 	int get_size() const;
 	int get_height() const;
 	int get_width() const;
-	robot get_robot(int x, int y) const;
+
+	std::shared_ptr<robot> get_robot(int x, int y) const;
+	std::shared_ptr<robot> get_robot(const coords& c) const;
+	coords get_patchbots_location() const;
+	coords get_robots_location(unsigned int id) const;
+
 	bool is_grave(int x, int y) const;
-	coords get_robots_location(robot_type type);
 
 	// Setter
 	void set_height(int height_);
 	void set_width(int width_);
+
 	void set_robot(const robot& robot_, int x, int y);
-	void set_robots_grave(int x, int y);
+
 	void move_robot(int x, int y, int new_x, int new_y);
+	void move_robot(unsigned int id, int new_x, int new_y);
+
+	/* Remove robot and add his position to graves */
+	void kill_robot(unsigned int id);
+
+	/* Decrement time values and remove grave if time is up */
+	void update_graves();
 };
 
 /*
@@ -61,12 +82,18 @@ public:
 	int get_size() const;
 	int get_height() const;
 	int get_width() const;
+
 	terrain get_tile_terrain(int x, int y) const;
 	std::shared_ptr<tile> get_tile(int x, int y) const;
+
+	/* If a robot stands on tile p1(x, y), can he see a robot standing
+	on p2(x, y) and vice verca */
+	bool is_in_line_of_sight(coords p1, coords p2) const;
 
 	//Setter :
 	void set_height(int h);
 	void set_width(int w);
+
 	void set_tile(const tile& t, int x, int y);
 	void set_tile(const startingpoint& t, int x, int y);
 	void set_tile(char c, int x, int y);

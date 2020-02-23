@@ -46,10 +46,17 @@ coords::coords(int x_, int y_) :
 	Class robot
 */
 
+unsigned int robot::id_counter = 1;
+
 robot::robot(robot_type type_, bool is_dead_) :
 	type(type_),
+	id(0),
 	is_dead(is_dead_)
-{}
+{
+	if (type_ != robot_type::NONE) {
+		id = id_counter++;
+	}
+}
 
 
 
@@ -263,7 +270,7 @@ wall::wall(terrain t) {
 }
 
 action wall::interact(robot_type r) {
-	if (r != robot_type::DIGGER)
+	if (r != robot_type::DIGGER || tile_terrain != terrain::ROCK_WALL)
 		return action::OBSTRUCTED;
 	return action::DIG;
 }

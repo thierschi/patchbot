@@ -162,7 +162,7 @@ void pb_output::print_map(const tile_map& t_map) {
 		for (int j = 0; j < w; j++) {
 			std::cout << ((char)t_map.get_tile_terrain(j, i) == 'e') ? 
 				(char)t_map.get_tile_terrain(j, i) : 
-				(char)t_map.robots.get_robot(i, j).type;
+				(char)t_map.robots.get_robot(i, j)->type;
 		}
 		std::cout << std::endl;
 	}
@@ -176,7 +176,7 @@ void pb_output::print_map(const robot_map& r_map)
 
 	for (int i = 0; i < h; i++) {
 		for (int j = 0; j < w; j++) {
-			std::cout << (char)r_map.get_robot(j, i).type;
+			std::cout << (char)r_map.get_robot(j, i)->type;
 		}
 		std::cout << std::endl;
 	}

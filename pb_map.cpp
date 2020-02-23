@@ -7,6 +7,7 @@
 #include <stdexcept>
 #include <math.h>
 #include <queue>
+#include <functional>
 
 /*
 	Class robot_map
@@ -20,7 +21,7 @@ robot_map::robot_map(int width_, int height_) :
 	/*
 		A new robot_map is always filled with robot_type NONE.
 	*/
-	robots.insert(robots.begin(), width * height, robot());
+	robots.insert(robots.begin(), width * height, std::make_shared<robot>());
 }
 
 int robot_map::get_size() const {
@@ -35,11 +36,28 @@ int robot_map::get_width() const {
 	return width;
 }
 
-robot robot_map::get_robot(int x, int y) const {
+std::shared_ptr<robot> robot_map::get_robot(int x, int y) const {
 	if (x >= width || y >= height)
 		throw std::invalid_argument("Invalid argument passed to to robot_map: "
 			"Coordinates out of range.");
 	return robots[y * width + x];
+}
+
+std::shared_ptr<robot> robot_map::get_robot(const coords& c) const
+{
+	return get_robot(c.x, c.y);
+}
+
+coords robot_map::get_patchbots_location() const
+{
+	return robots_locations.at(pb_id);
+}
+
+coords robot_map::get_robots_location(unsigned int id) const
+{
+	if (robots_locations.find(id) == robots_locations.end())
+		return NULL;
+	return robots_locations.at(id);
 }
 
 bool robot_map::is_grave(int x, int y) const
@@ -49,13 +67,6 @@ bool robot_map::is_grave(int x, int y) const
 	return true;
 }
 
-coords robot_map::get_robots_location(robot_type type)
-{
-	if(robots_locations.find(type) == robots_locations.end())
-		throw std::invalid_argument("Invalid argument passed to robot_map: "
-			"Passed robot does not exist.");
-	return robots_locations.at(type);
-}
 
 void robot_map::set_height(int height_) {
 	/* Setting height by either appending
@@ -72,7 +83,7 @@ void robot_map::set_height(int height_) {
 	}
 	else if (height_ > height) {
 		robots.insert(robots.end(), (height_ - height) * width, 
-			robot());
+			std::make_shared<robot>());
 		height = height_;
 	}
 }
@@ -96,10 +107,10 @@ void robot_map::set_width(int width_) {
 		width = width_;
 	}
 	else if (width_ > width) {
-		robots.push_back(robot());
+		robots.push_back(std::make_shared<robot>());
 		for (int i = height; i > 0; i--)
 			robots.insert(robots.begin() + i * width, width_ - width, 
-				robot());
+				std::make_shared<robot>());
 		robots.pop_back();
 		width = width_;
 	}
@@ -113,26 +124,16 @@ void robot_map::set_robot(const robot& robot_, int x, int y) {
 		throw std::invalid_argument(
 			"Invalid argument passed to robot_map: "
 			"This robot_map already has a patchbot.");
-	robots[y * width + x] = robot_;
-	has_pb = (robot_.type == robot_type::PATCHBOT) ? true : has_pb;
-	robots_locations[robot_.type] = coords(x, y);
-}
-
-void robot_map::set_robots_grave(int x, int y)
-{
-	if (x >= width || y >= height)
-		throw std::invalid_argument("Invalid argument passed to to robot_map: "
-			"Coordinates out of range.");
-	if (robots[y * width + x].type == robot_type::NONE)
-		throw std::invalid_argument("Invalid argument passed to to robot_map: "
-			"Can't mark non existing robot as dead.");
-	robots[y * width + x].is_dead = true;
-	graves.insert(std::pair<int, bool>(y * width + x, true));
+	robots[y * width + x] = std::make_shared<robot>(robot_);
+	if (robot_.type == robot_type::PATCHBOT) {
+		has_pb = true;
+		pb_id = robot_.id;
+	}
+	robots_locations[robot_.id] = coords(x, y);
 }
 
 void robot_map::move_robot(int x, int y, int new_x, int new_y)
 {
-
 	if (x >= width || y >= height)
 		throw std::invalid_argument("Invalid argument passed to to robot_map: "
 			"Coordinates out of range.");
@@ -140,13 +141,48 @@ void robot_map::move_robot(int x, int y, int new_x, int new_y)
 	if (new_x >= width || new_y >= height)
 		throw std::invalid_argument("Invalid argument passed to to robot_map: "
 			"Coordinates out of range.");
-	if (robots[y * width + x].type == robot_type::NONE)
+	if (robots[y * width + x]->type == robot_type::NONE)
 		return;
-	if (robots[new_y * width + new_x].type != robot_type::NONE)
+	if (robots[new_y * width + new_x]->type != robot_type::NONE)
 		return;
-	robots[new_y * width + new_x] = robots[y * width + x];
-	robots[y * width + x] = robot();
-	robots_locations[robots[new_y * width + new_x].type] = coords(new_x, new_y);
+	robots[new_y * width + new_x] = std::move(robots[y * width + x]);
+	robots[y * width + x] = std::make_shared<robot>();
+	robots_locations[robots[new_y * width + new_x]->id] = coords(new_x, new_y);
+}
+
+void robot_map::move_robot(unsigned int id, int new_x, int new_y)
+{
+	coords old = robots_locations.at(id);
+	move_robot(old.x, old.y, new_x, new_y);
+}
+
+void robot_map::kill_robot(unsigned int id)
+{
+	coords r = robots_locations.at(id);
+	robots_locations.erase(id);
+	robots[r.y * width + r.x] = std::make_shared<robot>();
+
+	if (graves.find(r.y * width + r.x) == graves.end())
+		graves.insert(std::pair<int, int>(r.y * width + r.x, 5));
+	else
+		graves[r.y * width + r.x] = 5;
+}
+
+void robot_map::update_graves()
+{
+	std::vector<int> expired_graves;
+
+	for (std::pair<int, int> pos : graves) {
+		if (pos.second == 0) {
+			expired_graves.push_back(pos.first);
+			continue;
+		} else
+			graves[pos.first]--;
+	}
+
+	for (int grave : expired_graves) {
+		graves.erase(grave);
+	}
 }
 
 
@@ -195,6 +231,128 @@ std::shared_ptr<tile> tile_map::get_tile(int x, int y) const {
 			"Invalid argument passed to Tile_map: "
 			"Coordinates out of range.");
 	return i_map[y * width + x];
+}
+
+bool tile_map::is_in_line_of_sight(coords p1, coords p2) const
+{
+	/* Return False if either one of the coordinates is out of bounds of the map */
+	if (p1.x < 0 || p1.y < 0 || p2.x < 0 || p2.y < 0) return false;
+	if (p1.x >= width || p1.y >= width 
+		|| p2.x >= width || p2.y >= width) return false;
+	/* Return true if the coordinates are the same */
+	if (p1.x == p2.x && p1.y == p2.y) return true;
+
+	// What is a wall?
+	terrain walls[] = {
+		terrain::CONCRETE_WALL,
+		terrain::ROCK_WALL,
+		terrain::MANUAL_DOOR,
+		terrain::AUTOMATIC_DOOR,
+		terrain::SECRET_PASSAGE
+	};
+
+	/* If start- or -endcoordinate is in a wall, return false */
+	if (std::end(walls) != std::find(std::begin(walls), std::end(walls), 
+		get_tile(p1.x, p1.y)->get_terrain())) return false;
+	if (std::end(walls) != std::find(std::begin(walls), std::end(walls),
+		get_tile(p2.x, p2.y)->get_terrain())) return false;
+
+	/*   -------- dx --------   --------- dy -------- */
+	if (std::abs(p2.x - p1.x) > std::abs(p2.y - p1.y)) {
+		if (p2.x < p1.x) {
+			coords temp = p2;
+			p2 = p1;
+			p1 = temp;
+		}
+
+		/* Simple check, performed when p1 an p2 are on one line horizontally */
+		if (p1.y == p2.y) {
+			for (int i = p1.x + 1; i < p2.x; i++)
+				if (std::end(walls) != std::find(
+					std::begin(walls),
+					std::end(walls), get_tile(i, p1.y)->get_terrain()))
+					return false;
+			return true;
+		}
+	}
+	else {
+		if (p2.y < p1.y) {
+			coords temp = p2;
+			p2 = p1;
+			p1 = temp;
+		}
+
+		/* Simple check, performed when p1 an p2 are on one line vertiacally */
+		if (p1.x == p2.x) {
+			for (int i = p1.y + 1; i < p2.y; i++)
+				if (std::end(walls) != std::find(
+					std::begin(walls),
+					std::end(walls), get_tile(p1.x, i)->get_terrain()))
+					return false;
+			return true;
+		}
+	}
+	/* Diagonal is y = mx + t*/
+	double m = (double)(p2.y - p1.y) / (double)(p2.x - p1.x);
+	double t = p2.y - m * p2.x;
+
+	if (std::abs(p2.x - p1.x) >= std::abs(p2.y - p1.y)) {
+		/* Diagonale, solved for y */
+		std::function<double(double)> diagonal = [&](double x) {
+			return m * x + t;
+		};
+
+		for (double x = p1.x + 1; x <= p2.x; x += .5) {
+			double y = diagonal(x);
+
+			if (std::end(walls) != std::find(std::begin(walls),
+				std::end(walls), get_tile(floor(x), 
+					std::floor(y))->get_terrain()))
+				return false;
+
+			/* If y is even check the diagonal adjacent tiles too, because if 
+			they are both a wall it is a non see-throught corner*/
+			if (y == std::floor(y)) {
+				if (std::end(walls) != std::find(std::begin(walls),
+					std::end(walls), 
+					get_tile(std::floor(x), std::floor(y) - 1)->get_terrain()))
+					return false;
+				if (std::end(walls) != std::find(std::begin(walls),
+					std::end(walls), get_tile(std::floor(x) - 1, 
+						std::floor(y))->get_terrain()))
+					return false;
+			}
+		}
+	}
+	else {
+		/* Diagonale, solved for x */
+		std::function<double(double)> diagonal = [&](double y) {
+			return (y - t) / m;
+		};
+
+		for (double y = p1.y + 1; y <= p2.y; y += .5) {
+			double x = diagonal(y);
+
+			if (std::end(walls) != std::find(std::begin(walls),
+				std::end(walls), get_tile(std::floor(x), 
+					std::floor(y))->get_terrain()))
+				return false;
+			
+			/* If y is even check the diagonal adjacent tiles too, because if
+			they are both a wall it is a non see-throught corner */
+			if (x == std::floor(x)) {
+				if (std::end(walls) != std::find(std::begin(walls),
+					std::end(walls), get_tile(std::floor(x), 
+						std::floor(y) - 1)->get_terrain()))
+					return false;
+				if (std::end(walls) != std::find(std::begin(walls),
+					std::end(walls), get_tile(std::floor(x) - 1, 
+						std::floor(y))->get_terrain()))
+					return false;
+			}
+		}
+	}
+	return true;
 }
 
 //Setter
@@ -346,7 +504,7 @@ void tile_map::set_tile(char c, int x, int y) {
 
 void tile_map::init_map_graph_struct()
 {
-	coords pb_pos = robots.get_robots_location(robot_type::PATCHBOT);
+	coords pb_pos = robots.get_patchbots_location();
 	get_tile(pb_pos.x, pb_pos.y)->predecessor = direction::SOURCE;
 }
 
@@ -355,81 +513,6 @@ void tile_map::reset_all_tile_nodes()
 	for (int i = 0; i < i_map.size(); i++) {
 			i_map[i]->predecessor = direction::UNDEFINED;
 	}
-	coords pb_pos = robots.get_robots_location(robot_type::PATCHBOT);
+	coords pb_pos = robots.get_patchbots_location();
 	get_tile(pb_pos.x, pb_pos.y)->predecessor = direction::SOURCE;
 }
-
-//void tile_map::run_path_finding()
-//{
-//	/* Priotity queue  with custom comparator implemented like a min_heap
-//	Adjacent nodes get pushed here */
-//	std::priority_queue<int_pair, std::vector<int_pair>, int_pair_comparator> pq;
-//
-//	/* Vector of distences (local, beacaus we dont need these values later) */
-//	std::vector<int> dist(i_map.size(), INT_MAX);
-//
-//	/* Initialize source (patchbot)
-//	One may notice that I calculate with the values in the vector not with
-//	(x,y) values */
-//	coords pb_pos = robots.get_robots_location(robot_type::PATCHBOT);
-//	pq.push(std::make_pair(0, pb_pos.y * width + pb_pos.x));
-//
-//	while (!pq.empty()) {
-//		/* Get node/vertex with smallest dist and remove from "heap" */
-//		int v_dist = pq.top().first;
-//		int u = pq.top().second;
-//		pq.pop();
-//
-//
-//		/* Normally one would iterate through all adjacent edges, but this
-//		is a 2d map and we have 4 edges at max. Hence we go through them
-//		one by one, so that we dont need to save references to the adjacend
-//		nodes in each tile, but just calculate the coordinates.
-//			--> If an edge has value 0, that means it does not exist, e.g. edge 
-//			to a wall */
-//
-//		/* Skip checking the adjacent edges if a smaller distance already exists */
-//		if (v_dist > dist[u]) continue;
-//
-//		/* NORTH */
-//		if (i_map[u - width]->get_weight() != -1
-//			&& i_map[u]->predecessor != direction::NORTH) {
-//			if (dist[u - width] > dist[u] + i_map[u - width]->get_weight()) {
-//				dist[u - width] = dist[u] + i_map[u - width]->get_weight();
-//				pq.push(std::make_pair(dist[u - width], u - width));
-//				i_map[u - width]->predecessor = direction::SOUTH;
-//			}
-//		};
-//
-//		/* EAST */
-//		if (i_map[u + 1]->get_weight() != -1
-//			&& i_map[u]->predecessor != direction::EAST) {
-//			if (dist[u + 1] > dist[u] + i_map[u + 1]->get_weight()) {
-//				dist[u + 1] = dist[u] + i_map[u + 1]->get_weight();
-//				pq.push(std::make_pair(dist[u + 1], u + 1));
-//				i_map[u + 1]->predecessor = direction::WEST;
-//			}
-//		};
-//
-//		/* SOUTH */
-//		if (i_map[u + width]->get_weight() != -1
-//			&& i_map[u]->predecessor != direction::SOUTH) {
-//			if (dist[u + width] > dist[u] + i_map[u + width]->get_weight()) {
-//				dist[u + width] = dist[u] + i_map[u + width]->get_weight();
-//				pq.push(std::make_pair(dist[u + width], u + width));
-//				i_map[u + width]->predecessor = direction::NORTH;
-//			}
-//		};
-//
-//		/* WEST */
-//		if (i_map[u - 1]->get_weight() != -1
-//			&& i_map[u]->predecessor != direction::WEST) {
-//			if (dist[u - 1] > dist[u] + i_map[u - 1]->get_weight()) {
-//				dist[u - 1] = dist[u] + i_map[u - 1]->get_weight();
-//				pq.push(std::make_pair(dist[u - 1], u - 1));
-//				i_map[u - 1]->predecessor = direction::EAST;
-//			}
-//		};
-//		
-//	}
-//}

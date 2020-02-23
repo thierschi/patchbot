@@ -57,9 +57,9 @@ void rendering_engine::draw_tile(int x, int y)
             painter.drawPixmap(x, y, resources.get_robot_img.at(robot_type::DEAD));
 
         /* Draw robot on top of background if present on this field */
-        if (parent->map.robots.get_robot(map_x, map_y).type != robot_type::NONE)
+        if (parent->map.robots.get_robot(map_x, map_y)->type != robot_type::NONE)
             painter.drawPixmap(x, y, resources.get_robot_img.at(
-                parent->map.robots.get_robot(map_x, map_y).type));
+                parent->map.robots.get_robot(map_x, map_y)->type));
 
         /* If we want to see the arrows for checking that the implemented
         dijkstra algortihmn is working, draw those on top */
