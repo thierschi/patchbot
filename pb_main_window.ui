@@ -23,7 +23,157 @@
    <string> Patchbot - The game</string>
   </property>
   <property name="styleSheet">
-   <string notr="true"/>
+   <string notr="true">QWidget#centralwidget {
+	background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0.428949, y2:0.511, stop:0 rgba(0, 17, 207, 255), stop:1 rgba(191, 136, 255, 255));
+}
+
+#colonie_label {
+	font: 87 8pt &quot;Source Code Pro Black&quot;;
+color:white;
+}
+
+#program, #mission_control {
+	background-color: qlineargradient(spread:reflect, x1:0.379, y1:0, x2:0.401, y2:0.499545, stop:0 rgba(169, 169, 169, 255), stop:1 rgba(192, 192, 192, 255));
+border: 1px solid black;
+}
+
+#program_label, #m_c_label {
+color: yellow;
+	font: 87 10pt &quot;Source Code Pro Black&quot;;
+}
+
+#m_c_start_btn, #m_c_auto_btn {
+background-color: #A9FF86;
+color: black;
+border: 1px solid black;
+border-radius: 5;
+}
+
+#m_c_start_btn:hover, #m_c_auto_btn:hover {
+background-color: #06A428;
+color: #F0F0F0;
+border: 1px solid black;
+border-radius: 5;
+}
+
+#m_c_cancel_btn, #m_c_stop_btn {
+background-color: #e68383;
+border: 1px solid black;
+border-radius: 5;
+}
+
+#m_c_cancel_btn:hover, #m_c_stop_btn:hover {
+background-color: #F12121;
+color: #F0F0F0;
+border: 1px solid black;
+border-radius: 5;
+}
+
+#m_c_step_btn {
+background-color: #98CFFF;
+border: 1px solid black;
+border-radius: 5;
+}
+
+#m_c_step_btn:hover {
+background-color: #1290FF;
+color: #F0F0F0;
+border: 1px solid black;
+border-radius: 5;
+}
+
+#m_c_start_btn:disabled,
+#m_c_stop_btn:disabled,
+#m_c_step_btn:disabled,
+#m_c_auto_btn:disabled,
+#m_c_cancel_btn:disabled {
+color: grey;
+background-color: #d7dade;
+}
+
+#map_h_scrollbar, #map_v_scrollbar, #instruction_control_h_scroll {
+border: 1px solid black;
+background-color: rgb(147, 23, 255);
+}
+
+#instruction_control_h_scroll {
+background-color:yellow;
+}
+
+#instruction_control_dropdown {
+color: black;
+background-color: yellow;
+}
+
+#instruction_edit {
+	color: yellow;
+	background-color: black;
+	font: 63 8pt &quot;Source Code Pro Semibold&quot;;
+}
+
+#instruction_arrow_up_btn, #instruction_arrow_right_btn, #instruction_arrow_left_btn, #instruction_arrow_down_btn {
+background-color: white;
+border: 2px solid black;
+border-radius: 15;
+	font: 15pt &quot;Baloo&quot;;
+}
+
+#instruction_arrow_up_btn:hover, 
+#instruction_arrow_right_btn:hover, 
+#instruction_arrow_left_btn:hover, 
+#instruction_arrow_down_btn:hover {
+background-color: #E5E5E5;
+border: 2px solid black;
+border-radius: 15;
+	font: 15pt &quot;Baloo&quot;;
+}
+
+#instruction_arrow_center_btn {
+background-color: #FFFB00;
+border: 2px solid black;
+border-radius: 10;
+	font: 15pt &quot;Baloo&quot;;
+}
+
+#instruction_arrow_center_btn:hover {
+background-color: #FFE000;
+border: 2px solid black;
+border-radius: 10;
+	font: 15pt &quot;Baloo&quot;;
+}
+
+#instruction_arrow_back_btn {
+background-color: #FF6F6F;
+border: 2px solid black;
+border-radius: 10;
+	font: 15pt &quot;Baloo&quot;;
+}
+
+#instruction_arrow_back_btn:hover {
+background-color: #FF0000;
+border: 2px solid black;
+border-radius: 10;
+	font: 15pt &quot;Baloo&quot;;
+}
+
+#change_colonie_button {
+	background-color: qlineargradient(spread:reflect, x1:0.379, y1:0, x2:0.401, y2:0.499545, stop:0 rgba(169, 169, 169, 255), stop:1 rgba(192, 192, 192, 255));
+border: 1px solid black;
+color:black;
+border-radius: 8;
+	font: 87 8pt &quot;Source Code Pro Semibold&quot;;
+padding-left: 5px;
+padding-right: 5px;
+}
+
+#change_colonie_button:hover {
+	background-color: #6D6D6D;
+color:white;
+}
+
+#map_scrollAreaWidgetContents {
+	background-color: #7E7E7E;
+}</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout_2">
@@ -97,7 +247,7 @@
               <x>0</x>
               <y>0</y>
               <width>501</width>
-              <height>421</height>
+              <height>420</height>
              </rect>
             </property>
             <property name="focusPolicy">
@@ -427,7 +577,11 @@
            </property>
            <property name="font">
             <font>
-             <pointsize>11</pointsize>
+             <family>Baloo</family>
+             <pointsize>15</pointsize>
+             <weight>50</weight>
+             <italic>false</italic>
+             <bold>false</bold>
             </font>
            </property>
            <property name="text">
@@ -457,7 +611,11 @@
            </property>
            <property name="font">
             <font>
-             <pointsize>11</pointsize>
+             <family>Baloo</family>
+             <pointsize>15</pointsize>
+             <weight>50</weight>
+             <italic>false</italic>
+             <bold>false</bold>
             </font>
            </property>
            <property name="text">
@@ -487,7 +645,11 @@
            </property>
            <property name="font">
             <font>
-             <pointsize>11</pointsize>
+             <family>Baloo</family>
+             <pointsize>15</pointsize>
+             <weight>50</weight>
+             <italic>false</italic>
+             <bold>false</bold>
             </font>
            </property>
            <property name="text">
@@ -517,8 +679,10 @@
            </property>
            <property name="font">
             <font>
-             <pointsize>20</pointsize>
+             <family>Baloo</family>
+             <pointsize>15</pointsize>
              <weight>50</weight>
+             <italic>false</italic>
              <bold>false</bold>
             </font>
            </property>
@@ -549,7 +713,11 @@
            </property>
            <property name="font">
             <font>
-             <pointsize>11</pointsize>
+             <family>Baloo</family>
+             <pointsize>15</pointsize>
+             <weight>50</weight>
+             <italic>false</italic>
+             <bold>false</bold>
             </font>
            </property>
            <property name="text">
@@ -579,7 +747,11 @@
            </property>
            <property name="font">
             <font>
-             <pointsize>11</pointsize>
+             <family>Baloo</family>
+             <pointsize>15</pointsize>
+             <weight>50</weight>
+             <italic>false</italic>
+             <bold>false</bold>
             </font>
            </property>
            <property name="text">
