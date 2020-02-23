@@ -1,4 +1,5 @@
 #pragma once
+
 /* Enumerations fpr Terrain - types, Robot - types and Action - types */
 enum class terrain {
 	STEEL_PLANKS = ' ',
@@ -65,10 +66,6 @@ inline bool operator==(const coords& lvalue, const coords& rvalue)
 	return lvalue.x == rvalue.x && lvalue.y == rvalue.y;
 }
 
-/*
-	Class robot exists so that one can save a alive state (is_dad) for each
-	robot.
-*/
 class robot {
 public:
 	robot_type type;
@@ -178,5 +175,3 @@ public:
 
 	int get_weight() override;
 };
-
-

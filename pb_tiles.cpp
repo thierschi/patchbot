@@ -270,7 +270,7 @@ wall::wall(terrain t) {
 }
 
 action wall::interact(robot_type r) {
-	if (r != robot_type::DIGGER)
+	if (r != robot_type::DIGGER || tile_terrain != terrain::ROCK_WALL)
 		return action::OBSTRUCTED;
 	return action::DIG;
 }

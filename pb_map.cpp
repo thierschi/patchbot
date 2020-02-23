@@ -21,7 +21,7 @@ robot_map::robot_map(int width_, int height_) :
 	/*
 		A new robot_map is always filled with robot_type NONE.
 	*/
-	robots.insert(robots.begin(), width * height, robot());
+	robots.insert(robots.begin(), width * height, std::make_shared<robot>());
 }
 
 int robot_map::get_size() const {
@@ -36,14 +36,14 @@ int robot_map::get_width() const {
 	return width;
 }
 
-robot robot_map::get_robot(int x, int y) const {
+std::shared_ptr<robot> robot_map::get_robot(int x, int y) const {
 	if (x >= width || y >= height)
 		throw std::invalid_argument("Invalid argument passed to to robot_map: "
 			"Coordinates out of range.");
 	return robots[y * width + x];
 }
 
-robot robot_map::get_robot(const coords& c) const
+std::shared_ptr<robot> robot_map::get_robot(const coords& c) const
 {
 	return get_robot(c.x, c.y);
 }
@@ -62,9 +62,8 @@ coords robot_map::get_patchbots_location() const
 
 coords robot_map::get_robots_location(unsigned int id) const
 {
-	if(robots_locations.find(id) == robots_locations.end())
-		throw std::invalid_argument("Invalid argument passed to robot_map: "
-			"Passed robot does not exist.");
+	if (robots_locations.find(id) == robots_locations.end())
+		return NULL;
 	return robots_locations.at(id);
 }
 
@@ -83,7 +82,7 @@ void robot_map::set_height(int height_) {
 	}
 	else if (height_ > height) {
 		robots.insert(robots.end(), (height_ - height) * width, 
-			robot());
+			std::make_shared<robot>());
 		height = height_;
 	}
 }
@@ -107,10 +106,10 @@ void robot_map::set_width(int width_) {
 		width = width_;
 	}
 	else if (width_ > width) {
-		robots.push_back(robot());
+		robots.push_back(std::make_shared<robot>());
 		for (int i = height; i > 0; i--)
 			robots.insert(robots.begin() + i * width, width_ - width, 
-				robot());
+				std::make_shared<robot>());
 		robots.pop_back();
 		width = width_;
 	}
@@ -124,7 +123,7 @@ void robot_map::set_robot(const robot& robot_, int x, int y) {
 		throw std::invalid_argument(
 			"Invalid argument passed to robot_map: "
 			"This robot_map already has a patchbot.");
-	robots[y * width + x] = robot_;
+	robots[y * width + x] = std::make_shared<robot>(robot_);
 	if (robot_.type == robot_type::PATCHBOT) {
 		has_pb = true;
 		pb_id = robot_.id;
@@ -137,10 +136,10 @@ void robot_map::set_robots_grave(int x, int y)
 	if (x >= width || y >= height)
 		throw std::invalid_argument("Invalid argument passed to to robot_map: "
 			"Coordinates out of range.");
-	if (robots[y * width + x].type == robot_type::NONE)
+	if (robots[y * width + x]->type == robot_type::NONE)
 		throw std::invalid_argument("Invalid argument passed to to robot_map: "
 			"Can't mark non existing robot as dead.");
-	robots[y * width + x].is_dead = true;
+	robots[y * width + x]->is_dead = true;
 	graves.insert(std::pair<int, bool>(y * width + x, true));
 }
 
@@ -153,13 +152,13 @@ void robot_map::move_robot(int x, int y, int new_x, int new_y)
 	if (new_x >= width || new_y >= height)
 		throw std::invalid_argument("Invalid argument passed to to robot_map: "
 			"Coordinates out of range.");
-	if (robots[y * width + x].type == robot_type::NONE)
+	if (robots[y * width + x]->type == robot_type::NONE)
 		return;
-	if (robots[new_y * width + new_x].type != robot_type::NONE)
+	if (robots[new_y * width + new_x]->type != robot_type::NONE)
 		return;
 	robots[new_y * width + new_x] = std::move(robots[y * width + x]);
-	robots[y * width + x] = robot();
-	robots_locations[robots[new_y * width + new_x].id] = coords(new_x, new_y);
+	robots[y * width + x] = std::make_shared<robot>();
+	robots_locations[robots[new_y * width + new_x]->id] = coords(new_x, new_y);
 }
 
 void robot_map::move_robot(unsigned int id, int new_x, int new_y)
@@ -172,7 +171,7 @@ void robot_map::kill_robot(unsigned int id)
 {
 	coords r = robots_locations.at(id);
 	robots_locations.erase(id);
-	robots[r.y * width + r.x] = robot();
+	robots[r.y * width + r.x] = std::make_shared<robot>();
 
 	if (graves.find(r.y * width + r.x) == graves.end())
 		graves.insert(std::pair<int, int>(r.y * width + r.x, 5));

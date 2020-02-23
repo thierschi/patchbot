@@ -5,6 +5,7 @@
 #include <chrono>
 #include <thread>
 #include <QMessageBox>
+#include <stack>
 
 open_door::open_door(int x_, int y_, int open_since_) :
 	x(x_),
@@ -42,6 +43,33 @@ void game_logic::connect_to_parent()
 		this, &game_logic::stop_automatic_stepping);
 	QObject::connect(parent, &main_window::cancel_game,
 		this, &game_logic::cancel_game);
+}
+
+void game_logic::initialize_enemy_kis()
+{
+	enemy_kis.clear();
+
+	for (std::pair<unsigned int, coords> r : parent->map.robots.robots_locations) {
+		std::shared_ptr<robot> robot_ = parent->map.robots.get_robot(r.second);
+
+		switch (robot_->type) {
+		case(robot_type::BUGGER):
+			enemy_kis.push_back(std::make_unique<bugger_ki>(&parent->map, robot_));
+			break;
+
+		case(robot_type::PUSHER):
+		case(robot_type::DIGGER):
+		case(robot_type::SWIMMER):
+			enemy_kis.push_back(std::make_unique<pushing_robot_ki>(&parent->map, robot_));
+			break;
+
+		case(robot_type::FOLLOWER):
+		case(robot_type::HUNTER):
+		case(robot_type::SNIFFER):
+			enemy_kis.push_back(std::make_unique<aware_robot_ki>(&parent->map, robot_));
+			break;
+		}
+	}
 }
 
 void game_logic::move_patchbot()
@@ -145,7 +173,8 @@ void game_logic::move_patchbot()
 	}
 
 	// Interact with tile
-	if (patchbot_action == action::WALK) {
+	if (patchbot_action == action::WALK 
+		&& !is_robot_blocked(new_pos.x, new_pos.y, current_instruction)) {
 		
 		// See what happens if patchbit walks on the next tile
 		switch (parent->map.get_tile(new_pos.x, new_pos.y)
@@ -187,10 +216,11 @@ void game_logic::move_patchbot()
 		}
 	}
 
-	if (patchbot_action == action::WALK)
+	if (patchbot_action == action::WALK) {
 		// Patchbot actually walk
-		parent->map.robots.move_robot(old_pos.x, old_pos.y,
-			new_pos.x, new_pos.y);
+		push_robot(new_pos.x, new_pos.y, current_instruction);
+		parent->map.robots.move_robot(old_pos.x, old_pos.y, new_pos.x, new_pos.y);
+	}
 	else if (patchbot_action == action::OBSTRUCTED) {
 		// End "step until obstructed" here
 		if (p_controls->instruction_queue.size() > 0)
@@ -198,6 +228,26 @@ void game_logic::move_patchbot()
 				p_controls->instruction_queue.erase(
 					p_controls->instruction_queue.begin());
 		move_patchbot();
+	}
+}
+
+void game_logic::process_enemys()
+{
+	std::stack<std::vector<std::unique_ptr<state_machine>>::iterator> dead_robots;
+
+	for (std::vector<std::unique_ptr<state_machine>>::iterator i = enemy_kis.begin();
+		i != enemy_kis.end(); ++i) {
+		unsigned int current_id = (*i)->get_id();
+		(*i)->process();
+
+		if (parent->map.robots.get_robots_location(current_id) == NULL) {
+			dead_robots.push(i);
+		}
+	}
+
+	while (!dead_robots.empty()) {
+		enemy_kis.erase(dead_robots.top());
+		dead_robots.pop();
 	}
 }
 
@@ -223,7 +273,7 @@ void game_logic::update_doors()
 			/* When there are doors that are shedueld for closing, 
 			check if tile is not occupied by a robot */
 			if (parent->map.robots.get_robot(
-				open_doors.back().x, open_doors.back().y).type 
+				open_doors.back().x, open_doors.back().y)->type 
 				== robot_type::NONE) {
 				/* Close door again*/
 				parent->map.get_tile(open_doors.back().x, open_doors.back().y)
@@ -249,7 +299,7 @@ void game_logic::update_doors()
 	for (open_door o : blocked_doors) {
 		// Check if previously blocked doors are now ready to be closed
 		if (parent->map.robots.get_robot(
-			blocked_doors.back().x, blocked_doors.back().y).type
+			blocked_doors.back().x, blocked_doors.back().y)->type
 			== robot_type::NONE) {
 			/* If so: close door*/
 			parent->map.get_tile(blocked_doors.back().x, blocked_doors.back().y)
@@ -264,6 +314,88 @@ void game_logic::update_doors()
 			blocked_doors.pop_back();
 		}
 	}
+}
+
+bool game_logic::is_robot_blocked(int x, int y, instruction_type in_dir) const
+{
+	if (parent->map.robots.get_robot(x, y)->type == robot_type::NONE)
+		return false;
+
+	switch (in_dir) {
+	case(instruction_type::UP):
+		y--;
+		break;
+
+	case(instruction_type::RIGHT):
+		x++;
+		break;
+
+	case(instruction_type::DOWN):
+		y++;
+		break;
+
+	case(instruction_type::LEFT):
+		x--;
+		break;
+	default:
+		return true;
+	}
+
+	if (parent->map.robots.get_robot(x, y)->type
+		!= robot_type::NONE) return true;
+
+	action tile_to_check = parent->map.get_tile(x, y)
+		->interact(parent->map.robots.get_robot(x, y)->type);
+
+	if (tile_to_check == action::OBSTRUCTED || tile_to_check == action::DIG)
+		return true;
+
+	if (tile_to_check == action::OPEN_DOOR) {
+		parent->map.get_tile(x, y)->interact(robot_type::NONE);
+		return true;
+	}
+
+	return false;
+}
+
+void game_logic::push_robot(int x, int y, instruction_type in_dir) 
+{
+	robot_type type = parent->map.robots.get_robot(x, y)->type;
+
+	if (type == robot_type::NONE) return;
+
+	coords robots_new_coords = coords(x, y);
+	switch (in_dir) {
+	case(instruction_type::UP):
+		robots_new_coords.y--;
+		break;
+
+	case(instruction_type::RIGHT):
+		robots_new_coords.x++;
+		break;
+
+	case(instruction_type::DOWN):
+		robots_new_coords.y++;
+		break;
+
+	case(instruction_type::LEFT):
+		robots_new_coords.x--;
+		break;
+
+	default:
+		return;
+	}
+
+	if (parent->map.robots.get_robot(robots_new_coords.x, robots_new_coords.y)->type
+		!= robot_type::NONE) return;
+
+	action robots_fate = parent->map.get_tile(robots_new_coords.x, robots_new_coords.y)
+		->interact(type);
+
+	parent->map.robots.move_robot(x, y, robots_new_coords.x, robots_new_coords.y);
+
+	if (robots_fate == action::DIE)
+		parent->map.robots.kill_robot(parent->map.robots.get_robot(x, y)->id);
 }
 
 void game_logic::win_game()
@@ -316,7 +448,7 @@ void game_logic::start_game()
 
 	parent->map.init_map_graph_struct();
 	dijkstra::run_path_finding(parent->map);
-	//parent->map.run_path_finding();
+	initialize_enemy_kis();
 
 	p_rendering_engine->do_refresh_render();
 }
@@ -334,17 +466,19 @@ void game_logic::single_step()
 	// Patchbots turn
 	move_patchbot();
 
+	if (!p_rendering_engine->game_is_on) return;
+
 	// Find shortest way to patchbot
 	dijkstra::run_path_finding(parent->map);
 
-	/*
-		TODO: Gegner sind am Zug
-	*/
+	process_enemys();
 
 	update_doors();
 	time_steps++;
 
 	p_rendering_engine->do_refresh_render();
+
+	if (!parent->map.robots.has_pb) loose_game();
 }
 
 void game_logic::automatic_stepping()

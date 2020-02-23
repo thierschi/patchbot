@@ -25,10 +25,17 @@ const terrain state_machine::walls[] = {
 	terrain::MAIN_SERVER
 };
 
-state_machine::state_machine(tile_map* map_, robot* self_) :
+state_machine::state_machine(tile_map* map_, std::shared_ptr<robot> self_) :
 	map(map_),
-	self(self_)
+	self(self_),
+	target_direction(direction::UNDEFINED),
+	wait(false)
 {
+}
+
+unsigned int state_machine::get_id() const
+{
+	return self->id;
 }
 
 void state_machine::process()
@@ -46,7 +53,7 @@ void state_machine::initialize_machine()
 	class bugger_ki
 */
 
-bugger_ki::bugger_ki(tile_map* map_, robot* self_)
+bugger_ki::bugger_ki(tile_map* map_, std::shared_ptr<robot> self_)
 {
 	map = map_;
 	self = self_;
@@ -75,6 +82,11 @@ void bugger_ki::set_target_tile_FW()
 		start_tile = map->robots.get_robots_location(self->id);
 	}
 
+	int kx = map->robots.get_robots_location(self->id).x;
+	int ky = map->robots.get_robots_location(self->id).y;
+	int k = ky * 40 + kx;
+	unsigned int id = self->id;
+
 	coords around_self[] = {
 		map->robots.get_robots_location(self->id),
 		map->robots.get_robots_location(self->id),
@@ -99,6 +111,9 @@ void bugger_ki::set_target_tile_FW()
 		else
 			t = map->get_tile(around_self[i].x, around_self[i].y)->get_terrain();
 
+		if (t == terrain::AUTOMATIC_DOOR || t == terrain::MANUAL_DOOR)
+			t = terrain::CONCRETE_WALL;
+
 		if (std::find(std::begin(walls), std::end(walls), t) != std::end(walls)) {
 			if (!(around_self[(i + 1) % 4] == map->robots.get_robots_location(self->id)
 				|| std::find(std::begin(walls), std::end(walls),
@@ -109,8 +124,8 @@ void bugger_ki::set_target_tile_FW()
 				break;
 			}
 		}
-		else if (i - 1 == 3) {
-			target_tile = around_self[self->id % 4];
+		else if (i == 3) {
+			target_tile = around_self[std::rand() % 4];
 		}
 	}
 }
@@ -143,9 +158,6 @@ void bugger_ki::set_target_tile_FaW()
 				t = terrain::CONCRETE_WALL;
 			else
 				t = map->get_tile(around_self[i].x, around_self[i].y)->get_terrain();
-
-			if (t == terrain::AUTOMATIC_DOOR || t == terrain::MANUAL_DOOR)
-				t = terrain::CONCRETE_WALL;
 
 			if (std::find(std::begin(walls), std::end(walls), t) != std::end(walls)) {
 				target_tile = around_self[(i + 2) % 4];
@@ -189,7 +201,7 @@ bugger_ki::event bugger_ki::get_event_at_FW()
 	if (std::find(std::begin(free_tiles), std::end(free_tiles),
 		map->get_tile(target_tile.x, target_tile.y)->get_terrain())
 		!= std::end(free_tiles))
-		if (map->robots.get_robot(target_tile.x, target_tile.y).type
+		if (map->robots.get_robot(target_tile.x, target_tile.y)->type
 			== robot_type::NONE)
 			return event::zf_u_ns;
 
@@ -201,20 +213,20 @@ bugger_ki::event bugger_ki::get_event_at_W()
 	if (std::find(std::begin(free_tiles), std::end(free_tiles),
 		map->get_tile(target_tile.x, target_tile.y)->get_terrain())
 		!= std::end(free_tiles))
-		if (map->robots.get_robot(target_tile.x, target_tile.y).type
+		if (map->robots.get_robot(target_tile.x, target_tile.y)->type
 			== robot_type::NONE)
 			return event::zf;
 
 	return event::zb;
 }
 
-bugger_ki::event bugger_ki::get_event_at_FAW() 
+bugger_ki::event bugger_ki::get_event_at_FaW() 
 {
 	set_target_tile_FaW();
 
 	if (std::end(walls) != std::find(std::begin(walls), std::end(walls),
 		map->get_tile(target_tile.x, target_tile.y)->get_terrain()))
-		if (map->robots.get_robot(target_tile.x, target_tile.y).type
+		if (map->robots.get_robot(target_tile.x, target_tile.y)->type
 			== robot_type::NONE)
 		return event::zw;
 	return event::znw;
@@ -227,7 +239,7 @@ void bugger_ki::to_state_FW()
 	
 	action target_tiles_action = map->get_tile(target_tile.x, target_tile.y)
 		->interact(map->robots.get_robot(
-			map->robots.get_robots_location(self->id)).type);
+			map->robots.get_robots_location(self->id))->type);
 
 	map->robots.move_robot(self->id, target_tile.x, target_tile.y);
 
@@ -256,7 +268,7 @@ void bugger_ki::to_state_FAW()
 
 	action target_tiles_action = map->get_tile(target_tile.x, target_tile.y)
 		->interact(map->robots.get_robot(
-			map->robots.get_robots_location(self->id)).type);
+			map->robots.get_robots_location(self->id))->type);
 
 
 	switch (target_tiles_action) {
@@ -282,7 +294,7 @@ void bugger_ki::initialize_machine()
 {
 	event_getter[state::FW] = &bugger_ki::get_event_at_FW;
 	event_getter[state::W] = &bugger_ki::get_event_at_W;
-	event_getter[state::FaW] = &bugger_ki::get_event_at_FAW;
+	event_getter[state::FaW] = &bugger_ki::get_event_at_FaW;
 
 	transitions[state_event_pair(state::FW, event::zb_u_ns)] = &bugger_ki::to_state_W;
 	transitions[state_event_pair(state::FW, event::zf_u_ns)] = &bugger_ki::to_state_FW;
@@ -302,7 +314,7 @@ void bugger_ki::initialize_machine()
 	class pushing_robot_ki
 */
 
-pushing_robot_ki::pushing_robot_ki(tile_map* map_, robot* self_)
+pushing_robot_ki::pushing_robot_ki(tile_map* map_, std::shared_ptr<robot> self_)
 {
 	map = map_;
 	self = self_;
@@ -378,7 +390,7 @@ pushing_robot_ki::event pushing_robot_ki::get_event_at_VB()
 	int pb_y = map->robots.get_patchbots_location().x;
 
 	if (pb_y == map->robots.get_robots_location(self->id).y)
-		return event::zw_o_pbb;
+		return event::zw_o_pbh;
 
 	set_target_tile_VB();
 
@@ -392,10 +404,10 @@ pushing_robot_ki::event pushing_robot_ki::get_event_at_VB()
 
 	if (std::end(walls) != std::find(std::begin(walls), std::end(walls),
 		map->get_tile(target_tile.x, target_tile.y)->get_terrain()))
-		return event::zw_o_pbb;
+		return event::zw_o_pbh;
 
 	if (is_robot_blocked(target_tile, target_direction))
-		return event::zw_o_pbb;
+		return event::zw_o_pbh;
 
 	return event::zf;
 }
@@ -426,7 +438,7 @@ void pushing_robot_ki::move_self()
 {
 	action target_tiles_action = map->get_tile(target_tile.x, target_tile.y)
 		->interact(map->robots.get_robot(
-			map->robots.get_robots_location(self->id)).type);
+			map->robots.get_robots_location(self->id))->type);
 
 	switch (target_tiles_action) {
 	case(action::DIE):
@@ -443,6 +455,9 @@ void pushing_robot_ki::move_self()
 		map->robots.move_robot(self->id, target_tile.x, target_tile.y);
 		break;
 
+	case(action::OBSTRUCTED):
+		break;
+
 	case(action::WALK_AND_WAIT):
 		wait = true;
 
@@ -454,7 +469,7 @@ void pushing_robot_ki::move_self()
 
 void pushing_robot_ki::push_robot()
 {
-	robot_type type = map->robots.get_robot(target_tile.x, target_tile.y).type;
+	robot_type type = map->robots.get_robot(target_tile.x, target_tile.y)->type;
 	
 	if (type == robot_type::NONE) return;
 
@@ -480,7 +495,7 @@ void pushing_robot_ki::push_robot()
 		return;
 	}
 
-	if (map->robots.get_robot(robots_new_coords.x, robots_new_coords.y).type
+	if (map->robots.get_robot(robots_new_coords.x, robots_new_coords.y)->type
 		!= robot_type::NONE) return;
 
 	action robots_fate = map->get_tile(robots_new_coords.x, robots_new_coords.y)
@@ -491,12 +506,12 @@ void pushing_robot_ki::push_robot()
 
 	if (robots_fate == action::DIE)
 		map->robots.kill_robot(
-			map->robots.get_robot(target_tile.x, target_tile.y).id);
+			map->robots.get_robot(target_tile.x, target_tile.y)->id);
 }
 
 bool pushing_robot_ki::is_robot_blocked(const coords& pos, direction in_dir) const
 {
-	if (map->robots.get_robot(pos.x, pos.y).type == robot_type::NONE)
+	if (map->robots.get_robot(pos.x, pos.y)->type == robot_type::NONE)
 		return false;
 
 	coords tile_to_check = pos;
@@ -520,7 +535,7 @@ bool pushing_robot_ki::is_robot_blocked(const coords& pos, direction in_dir) con
 		return true;
 	}
 
-	if (map->robots.get_robot(tile_to_check.x, tile_to_check.y).type
+	if (map->robots.get_robot(tile_to_check.x, tile_to_check.y)->type
 		!= robot_type::NONE) return true;
 
 	terrain tile_to_check_terrain =
@@ -556,7 +571,7 @@ void pushing_robot_ki::initialize_machine()
 	class aware_robot_ki
 */
 
-aware_robot_ki::aware_robot_ki(tile_map* map_, robot* self_)
+aware_robot_ki::aware_robot_ki(tile_map* map_, std::shared_ptr<robot> self_)
 {
 	map = map_;
 	self = self_;
@@ -605,8 +620,10 @@ void aware_robot_ki::to_state_V()
 	move_self(map->get_tile(current_pos.x, current_pos.y)->predecessor);
 
 	if (self->type == robot_type::HUNTER) {
-		if (!wait)
+		if (!wait) {
+			current_pos = map->robots.get_robots_location(self->id);
 			move_self(map->get_tile(current_pos.x, current_pos.y)->predecessor);
+		}
 		else
 			wait = false;
 		save_path();
@@ -655,26 +672,37 @@ void aware_robot_ki::move_self(direction to)
 		break;
 	}
 
-	action target_tiles_action = map->get_tile(target_tile.x, target_tile.y)
-		->interact(map->robots.get_robot(
-			map->robots.get_robots_location(self->id)).type);
+	robot_type on_target_tile = 
+		map->robots.get_robot(target_tile.x, target_tile.y)->type;
 
-	switch (target_tiles_action) {
-	case(action::DIE):
-		map->robots.move_robot(self->id, target_tile.x, target_tile.y);
-		map->robots.kill_robot(self->id);
-		break;
+	if (on_target_tile != robot_type::NONE) {
+		if (on_target_tile == robot_type::PATCHBOT) {
+			map->robots.has_pb = false;
+			wait = true;
+		}
+	}
+	else {
+		action target_tiles_action = map->get_tile(target_tile.x, target_tile.y)
+			->interact(map->robots.get_robot(
+				map->robots.get_robots_location(self->id))->type);
 
-	case(action::OPEN_DOOR):
-		map->robots.opened_doors.push_back(target_tile);
-		break;
+		switch (target_tiles_action) {
+		case(action::DIE):
+			map->robots.move_robot(self->id, target_tile.x, target_tile.y);
+			map->robots.kill_robot(self->id);
+			break;
 
-	case(action::WALK_AND_WAIT):
-		wait = true;
+		case(action::OPEN_DOOR):
+			map->robots.opened_doors.push_back(target_tile);
+			break;
 
-	default:
-		map->robots.move_robot(self->id, target_tile.x, target_tile.y);
-		break;
+		case(action::WALK_AND_WAIT):
+			wait = true;
+
+		default:
+			map->robots.move_robot(self->id, target_tile.x, target_tile.y);
+			break;
+		}
 	}
 }
 
@@ -724,6 +752,7 @@ void aware_robot_ki::initialize_machine()
 	transitions[state_event_pair(state::V, event::pne)] = &aware_robot_ki::to_state_W;
 
 	transitions_hunter[state_event_pair(state::W, event::pe)] = &aware_robot_ki::to_state_V;
+	transitions_hunter[state_event_pair(state::W, event::pne)] = &aware_robot_ki::to_state_W;
 
 	transitions_hunter[state_event_pair(state::V, event::pe)] = &aware_robot_ki::to_state_V;
 	transitions_hunter[state_event_pair(state::V, event::pne)] = &aware_robot_ki::to_state_J;

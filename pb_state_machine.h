@@ -3,18 +3,21 @@
 
 #include <map>
 #include <queue>
+#include <memory>
 
 class state_machine
 {
 public:
-	state_machine(tile_map* map_ = nullptr, robot* self_ = nullptr);
+	state_machine(tile_map* map_ = nullptr, std::shared_ptr<robot> self_ = nullptr);
 	virtual ~state_machine() = default;
+
+	unsigned int get_id() const;
 
 	virtual void process();
 
 protected:
 	tile_map* map;
-	robot* self;
+	std::shared_ptr<robot> self;
 
 	coords target_tile;
 	direction target_direction;
@@ -28,7 +31,7 @@ protected:
 
 class bugger_ki : public state_machine {
 public:
-	bugger_ki(tile_map* map_, robot* self_);
+	bugger_ki(tile_map* map_, std::shared_ptr<robot> self_);
 	~bugger_ki() override = default;
 
 	void process() override;
@@ -53,7 +56,7 @@ private:
 
 	event get_event_at_FW();
 	event get_event_at_W();
-	event get_event_at_FAW();
+	event get_event_at_FaW();
 
 	void to_state_FW();
 	void to_state_W();
@@ -64,7 +67,7 @@ private:
 
 class pushing_robot_ki : public state_machine {
 public:
-	pushing_robot_ki(tile_map* map_, robot* self_);
+	pushing_robot_ki(tile_map* map_, std::shared_ptr<robot> self_);
 	~pushing_robot_ki() override = default;
 
 	void process() override;
@@ -101,7 +104,7 @@ private:
 
 class aware_robot_ki : public state_machine {
 public:
-	aware_robot_ki(tile_map* map_, robot* self_);
+	aware_robot_ki(tile_map* map_, std::shared_ptr<robot> self_);
 	~aware_robot_ki() override = default;
 
 	void process() override;

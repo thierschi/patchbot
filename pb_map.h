@@ -15,16 +15,16 @@ class robot_map {
 protected:
 	int height;
 	int width;
-	bool has_pb;
 	unsigned int pb_id;
-	std::vector<robot> robots;
+	std::vector<std::shared_ptr<robot>> robots;
 	std::unordered_map<int, int> graves;
-	std::unordered_map<unsigned int, coords> robots_locations;
 
 public:
 	/* Robots can push doors, that they've opened, in here to be processed
 	and managed by the game_logic class */
 	std::vector<coords> opened_doors;
+	bool has_pb;
+	std::unordered_map<unsigned int, coords> robots_locations;
 
 	robot_map(int width_ = 1, int height_ = 1);
 
@@ -32,8 +32,8 @@ public:
 	int get_size() const;
 	int get_height() const;
 	int get_width() const;
-	robot get_robot(int x, int y) const;
-	robot get_robot(const coords& c) const;
+	std::shared_ptr<robot> get_robot(int x, int y) const;
+	std::shared_ptr<robot> get_robot(const coords& c) const;
 	bool is_grave(int x, int y) const;
 	coords get_patchbots_location() const;
 	coords get_robots_location(unsigned int id) const;
