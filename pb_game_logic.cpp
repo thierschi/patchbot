@@ -172,9 +172,11 @@ void game_logic::move_patchbot()
 		break;
 	}
 
+	if (is_robot_blocked(new_pos.x, new_pos.y, current_instruction))
+		patchbot_action = action::OBSTRUCTED;
+
 	// Interact with tile
-	if (patchbot_action == action::WALK 
-		&& !is_robot_blocked(new_pos.x, new_pos.y, current_instruction)) {
+	if (patchbot_action == action::WALK) {
 		
 		// See what happens if patchbit walks on the next tile
 		switch (parent->map.get_tile(new_pos.x, new_pos.y)
@@ -338,7 +340,7 @@ bool game_logic::is_robot_blocked(int x, int y, instruction_type in_dir) const
 		x--;
 		break;
 	default:
-		return true;
+		return false;
 	}
 
 	if (parent->map.robots.get_robot(x, y)->type
@@ -440,6 +442,7 @@ void game_logic::reset()
 
 void game_logic::start_game() 
 {
+	time_steps = 0;
 	p_rendering_engine->game_is_on = true;
 
 	p_controls->make_instruction_backup();
@@ -474,6 +477,7 @@ void game_logic::single_step()
 	process_enemys();
 
 	update_doors();
+	parent->map.robots.update_graves();
 	time_steps++;
 
 	p_rendering_engine->do_refresh_render();

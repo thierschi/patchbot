@@ -72,6 +72,7 @@ void bugger_ki::process()
 		(this->*s_f)();
 	} 
 	else
+		/* Don't do anything when robot should wait */
 		wait = false;
 }
 
@@ -82,11 +83,8 @@ void bugger_ki::set_target_tile_FW()
 		start_tile = map->robots.get_robots_location(self->id);
 	}
 
-	int kx = map->robots.get_robots_location(self->id).x;
-	int ky = map->robots.get_robots_location(self->id).y;
-	int k = ky * 40 + kx;
-	unsigned int id = self->id;
-
+	/* Get the four adjacent tiles, by getting own position 4 times and then
+	manipulating them */
 	coords around_self[] = {
 		map->robots.get_robots_location(self->id),
 		map->robots.get_robots_location(self->id),
@@ -94,6 +92,8 @@ void bugger_ki::set_target_tile_FW()
 		map->robots.get_robots_location(self->id)
 	};
 
+	/* If a tile is out of bounds of the map, it get's set to own tile and later
+	treated as a wall, see *1 */
 	around_self[0] = coords(around_self[0].x,
 		std::max(around_self[0].y - 1, 0));
 	around_self[1] = coords(std::min(around_self[1].x + 1, map->get_width() - 1),
@@ -103,10 +103,12 @@ void bugger_ki::set_target_tile_FW()
 	around_self[3] = coords(std::max(around_self[3].x - 1, 0),
 		around_self[3].y);
 
+	/* Get next tile clockwise after wall */
 	for (int i = 0; i < 4; i++) {
 		terrain t;
 
 		if (map->robots.get_robots_location(self->id) == around_self[i])
+			/* *1 */
 			t = terrain::CONCRETE_WALL;
 		else
 			t = map->get_tile(around_self[i].x, around_self[i].y)->get_terrain();
@@ -115,16 +117,19 @@ void bugger_ki::set_target_tile_FW()
 			t = terrain::CONCRETE_WALL;
 
 		if (std::find(std::begin(walls), std::end(walls), t) != std::end(walls)) {
+			// If t is a wall
 			if (!(around_self[(i + 1) % 4] == map->robots.get_robots_location(self->id)
 				|| std::find(std::begin(walls), std::end(walls),
 					map->get_tile(
 						around_self[(i + 1) % 4].x, around_self[(i + 1) % 4].y)
 					->get_terrain()) != std::end(walls))) {
+				// If the next tile clockwise is not a wall too
 				target_tile = around_self[(i + 1) % 4];
 				break;
 			}
 		}
 		else if (i == 3) {
+			// If there is no wall around robot, choose a tile randomly
 			target_tile = around_self[std::rand() % 4];
 		}
 	}
@@ -135,6 +140,7 @@ void bugger_ki::set_target_tile_FaW()
 	start_tile = NULL;
 
 	if (target_direction == direction::UNDEFINED) {
+		/* If a direction is not yet determined (robot just entered state FaW) */
 		coords around_self[] = {
 		map->robots.get_robots_location(self->id),
 		map->robots.get_robots_location(self->id),
@@ -159,7 +165,11 @@ void bugger_ki::set_target_tile_FaW()
 			else
 				t = map->get_tile(around_self[i].x, around_self[i].y)->get_terrain();
 
+			/* Until here same as set_target_tile_FW */
+
 			if (std::find(std::begin(walls), std::end(walls), t) != std::end(walls)) {
+				/* If t is a wall, the target tile should be the tile on the
+				opposite tile */
 				target_tile = around_self[(i + 2) % 4];
 				target_direction = (direction)((i + 2) % 4);
 				break;
@@ -167,6 +177,9 @@ void bugger_ki::set_target_tile_FaW()
 		}
 	}
 	else {
+		/* If a direction is deterrmined */
+
+		// Get next tile in that direction
 		coords current_position = map->robots.get_robots_location(self->id);
 		switch (target_direction) {
 		case(direction::NORTH):
@@ -201,10 +214,13 @@ bugger_ki::event bugger_ki::get_event_at_FW()
 	if (std::find(std::begin(free_tiles), std::end(free_tiles),
 		map->get_tile(target_tile.x, target_tile.y)->get_terrain())
 		!= std::end(free_tiles))
+		// If target_tile is a free tile
 		if (map->robots.get_robot(target_tile.x, target_tile.y)->type
 			== robot_type::NONE)
+			// And there is no robot occupying the tile
 			return event::zf_u_ns;
 
+	// Else the tile is blocked
 	return event::zb_u_ns;
 }
 
@@ -213,10 +229,13 @@ bugger_ki::event bugger_ki::get_event_at_W()
 	if (std::find(std::begin(free_tiles), std::end(free_tiles),
 		map->get_tile(target_tile.x, target_tile.y)->get_terrain())
 		!= std::end(free_tiles))
+		// If target_tile is a free tile
 		if (map->robots.get_robot(target_tile.x, target_tile.y)->type
 			== robot_type::NONE)
+			// And the tile is not occupied by a robot
 			return event::zf;
 
+	// Else the tile is blocked
 	return event::zb;
 }
 
@@ -226,23 +245,27 @@ bugger_ki::event bugger_ki::get_event_at_FaW()
 
 	if (std::end(walls) != std::find(std::begin(walls), std::end(walls),
 		map->get_tile(target_tile.x, target_tile.y)->get_terrain()))
-		if (map->robots.get_robot(target_tile.x, target_tile.y)->type
-			== robot_type::NONE)
+		// If target tile is a wall
 		return event::zw;
+
 	return event::znw;
 }
 
 void bugger_ki::to_state_FW()
 {
 	machines_state = state::FW;
+	/* Set target_tile again (for when state was switched) */
 	set_target_tile_FW();
 	
+	// Interact with target_tile
 	action target_tiles_action = map->get_tile(target_tile.x, target_tile.y)
 		->interact(map->robots.get_robot(
 			map->robots.get_robots_location(self->id))->type);
 
+	// Move robot
 	map->robots.move_robot(self->id, target_tile.x, target_tile.y);
 
+	// Kill robot or set wait if necesarry 
 	switch (target_tiles_action) {
 	case(action::DIE):
 		map->robots.kill_robot(self->id);
@@ -254,23 +277,29 @@ void bugger_ki::to_state_FW()
 	default:
 		break;
 	}
+
+	/* Note that bugger does not open doors in this state */
 }
 
 void bugger_ki::to_state_W()
 {
 	machines_state = state::W;
+
+	// Do nothing
 }
 
 void bugger_ki::to_state_FAW()
 {
 	machines_state = state::FaW;
+	/* Set target_tile again (for when state was switched) */
 	set_target_tile_FaW();
 
+	// Interact with target_tile
 	action target_tiles_action = map->get_tile(target_tile.x, target_tile.y)
 		->interact(map->robots.get_robot(
 			map->robots.get_robots_location(self->id))->type);
 
-
+	// Move, kill set wait accordingly 
 	switch (target_tiles_action) {
 	case(action::DIE):
 		map->robots.move_robot(self->id, target_tile.x, target_tile.y);
@@ -332,6 +361,7 @@ void pushing_robot_ki::process()
 		(this->*s_f)();
 	}
 	else
+		/* Don't do anything when robot should wait */
 		wait = false;
 }
 
@@ -360,6 +390,7 @@ void pushing_robot_ki::set_target_tile_VB()
 
 pushing_robot_ki::event pushing_robot_ki::get_event_at_HB() 
 {
+	/* Get x position of patchbot to  check if patchbot's width is reached */
 	int pb_x = map->robots.get_patchbots_location().x;
 
 	if (pb_x == map->robots.get_robots_location(self->id).x)
@@ -369,17 +400,21 @@ pushing_robot_ki::event pushing_robot_ki::get_event_at_HB()
 
 	if (self->type == robot_type::SWIMMER && map->
 		get_tile(target_tile.x, target_tile.y)->get_terrain() == terrain::WATER)
+		// Check for water because the swimmer can, ..., well, swim
 		return event::zf;
 
 	if (self->type == robot_type::DIGGER && map->
 		get_tile(target_tile.x, target_tile.y)->get_terrain() == terrain::ROCK_WALL)
+		// Check for rock_walls, because the digger can dig
 		return event::zf;
 
 	if (std::end(walls) != std::find(std::begin(walls), std::end(walls),
 		map->get_tile(target_tile.x, target_tile.y)->get_terrain()))
+		// If target tile is wall
 		return event::zw_o_pbb;
 
 	if (is_robot_blocked(target_tile, target_direction))
+		// Traget_tile is not wall, but there is a robot that is blocked
 		return event::zw_o_pbb;
 
 	return event::zf;
@@ -387,6 +422,7 @@ pushing_robot_ki::event pushing_robot_ki::get_event_at_HB()
 
 pushing_robot_ki::event pushing_robot_ki::get_event_at_VB()
 {
+	/* Get y position of patchbot to  check if patchbot's width is reached */
 	int pb_y = map->robots.get_patchbots_location().x;
 
 	if (pb_y == map->robots.get_robots_location(self->id).y)
@@ -396,17 +432,21 @@ pushing_robot_ki::event pushing_robot_ki::get_event_at_VB()
 
 	if (self->type == robot_type::SWIMMER && map->
 		get_tile(target_tile.x, target_tile.y)->get_terrain() == terrain::WATER)
+		// Check for water because the swimmer can, ..., well, swim
 		return event::zf;
 
 	if (self->type == robot_type::DIGGER && map->
 		get_tile(target_tile.x, target_tile.y)->get_terrain() == terrain::ROCK_WALL)
+		// Check for rock_walls, because the digger can dig
 		return event::zf;
 
 	if (std::end(walls) != std::find(std::begin(walls), std::end(walls),
 		map->get_tile(target_tile.x, target_tile.y)->get_terrain()))
+		// If target tile is wall
 		return event::zw_o_pbh;
 
 	if (is_robot_blocked(target_tile, target_direction))
+		// Traget_tile is not wall, but there is a robot that is blocked
 		return event::zw_o_pbh;
 
 	return event::zf;
@@ -419,6 +459,7 @@ void pushing_robot_ki::to_state_HB()
 		set_target_tile_HB();
 	}
 
+	// These actions are the same in HB and VB
 	push_robot();
 	move_self();
 }
@@ -430,16 +471,19 @@ void pushing_robot_ki::to_state_VB()
 		set_target_tile_VB();
 	}
 
+	// These actions are the same in HB and VB
 	push_robot();
 	move_self();
 }
 
 void pushing_robot_ki::move_self()
 {
+	// Interct with target_tile
 	action target_tiles_action = map->get_tile(target_tile.x, target_tile.y)
 		->interact(map->robots.get_robot(
 			map->robots.get_robots_location(self->id))->type);
 
+	// Move, Die, Dig, etc. accordingly
 	switch (target_tiles_action) {
 	case(action::DIE):
 		map->robots.move_robot(self->id, target_tile.x, target_tile.y);
@@ -470,9 +514,11 @@ void pushing_robot_ki::move_self()
 void pushing_robot_ki::push_robot()
 {
 	robot_type type = map->robots.get_robot(target_tile.x, target_tile.y)->type;
-	
+
+	// If there is no robot, return
 	if (type == robot_type::NONE) return;
 
+	// Determine pushed robot new position
 	coords robots_new_coords = target_tile;
 	switch (target_direction) {
 	case(direction::NORTH):
@@ -495,15 +541,19 @@ void pushing_robot_ki::push_robot()
 		return;
 	}
 
+	// Tile where robot gets pushed to may not be occupied
 	if (map->robots.get_robot(robots_new_coords.x, robots_new_coords.y)->type
 		!= robot_type::NONE) return;
 
+	// Interact
 	action robots_fate = map->get_tile(robots_new_coords.x, robots_new_coords.y)
 		->interact(type);
 
+	// Move the robot
 	map->robots.move_robot(target_tile.x, target_tile.y,
 		robots_new_coords.x, robots_new_coords.y);
 
+	// Kill him if pushed into lethal tile
 	if (robots_fate == action::DIE)
 		map->robots.kill_robot(
 			map->robots.get_robot(target_tile.x, target_tile.y)->id);
@@ -511,9 +561,11 @@ void pushing_robot_ki::push_robot()
 
 bool pushing_robot_ki::is_robot_blocked(const coords& pos, direction in_dir) const
 {
+	// If there is no robot on tile pos, it can't be blocked
 	if (map->robots.get_robot(pos.x, pos.y)->type == robot_type::NONE)
 		return false;
 
+	// Get tile to check (next tile to robot in direction in_dir
 	coords tile_to_check = pos;
 	switch (in_dir) {
 	case(direction::NORTH):
@@ -535,16 +587,19 @@ bool pushing_robot_ki::is_robot_blocked(const coords& pos, direction in_dir) con
 		return true;
 	}
 
+	// If there is another robot, the checked robot cant be moved
 	if (map->robots.get_robot(tile_to_check.x, tile_to_check.y)->type
 		!= robot_type::NONE) return true;
 
 	terrain tile_to_check_terrain =
 		map->get_tile(tile_to_check.x, tile_to_check.y)->get_terrain();
 	
+	// If the robot is in front of a wall it is blocked
 	if (std::end(walls) != std::find(std::begin(walls), std::end(walls),
 		tile_to_check_terrain))
 		return true;
 	
+	// A robot cannot be pushed though closed doors and they will not open
 	if (tile_to_check_terrain == terrain::AUTOMATIC_DOOR
 		|| tile_to_check_terrain == terrain::MANUAL_DOOR)
 		return true;
@@ -584,6 +639,7 @@ void aware_robot_ki::process()
 	if (!wait) {
 		state_func s_f;
 
+		// Use different fsm_table for hunter
 		switch (self->type) {
 		case (robot_type::HUNTER):
 			s_f = transitions_hunter[state_event_pair(machines_state, get_event())];
@@ -597,17 +653,26 @@ void aware_robot_ki::process()
 		(this->*s_f)();
 	}
 	else
+		/* Don't do anything when robot should wait */
 		wait = false;
 }
 
 aware_robot_ki::event aware_robot_ki::get_event() const
 {
 	coords current_pos = map->robots.get_robots_location(self->id);
-	if (map->is_in_line_of_sight(map->robots.get_patchbots_location(),
-		current_pos)
-		&& map->get_tile(current_pos.x, current_pos.y)->predecessor
-		!= direction::UNDEFINED) {
-		return event::pe;
+	if (self->type != robot_type::SNIFFER) {
+		if (map->is_in_line_of_sight(map->robots.get_patchbots_location(),
+			current_pos)
+			&& map->get_tile(current_pos.x, current_pos.y)->predecessor
+			!= direction::UNDEFINED) {
+			return event::pe;
+		}
+	}
+	else {
+		// Sniffer doesn't care if he sees pathcbot
+		if (map->get_tile(current_pos.x, current_pos.y)->predecessor
+			!= direction::UNDEFINED)
+			return event::pe;
 	}
 	return event::pne;
 }
@@ -616,10 +681,12 @@ void aware_robot_ki::to_state_V()
 {
 	machines_state = state::V;
 	
+	// Move on fastest path to patchbit (in direction that is saved in tile)
 	coords current_pos = map->robots.get_robots_location(self->id);
 	move_self(map->get_tile(current_pos.x, current_pos.y)->predecessor);
 
 	if (self->type == robot_type::HUNTER) {
+		// Hunter moves twice
 		if (!wait) {
 			current_pos = map->robots.get_robots_location(self->id);
 			move_self(map->get_tile(current_pos.x, current_pos.y)->predecessor);
@@ -634,6 +701,7 @@ void aware_robot_ki::to_state_V()
 void aware_robot_ki::to_state_W()
 {
 	machines_state = state::W;
+	// Do nothing (wait)
 }
 
 void aware_robot_ki::to_state_J()
@@ -641,6 +709,7 @@ void aware_robot_ki::to_state_J()
 	machines_state = state::J;
 
 	for (int i = 0; i < 2 && last_known_path.front() != direction::SOURCE; i++) {
+		// Move twice on saved path to patchbot
 		if (!wait) {
 			move_self(last_known_path.front());
 			last_known_path.pop();
@@ -652,8 +721,8 @@ void aware_robot_ki::to_state_J()
 
 void aware_robot_ki::move_self(direction to)
 {
+	// Determine target tile based on given directoin "to"
 	target_tile = map->robots.get_robots_location(self->id);
-
 	switch (to) {
 	case(direction::NORTH):
 		target_tile.y--;
@@ -672,6 +741,8 @@ void aware_robot_ki::move_self(direction to)
 		break;
 	}
 
+	/* Get robot_type on target tile, to determine if blocked or the game is lost
+	because patchbot is there */
 	robot_type on_target_tile = 
 		map->robots.get_robot(target_tile.x, target_tile.y)->type;
 
@@ -682,10 +753,12 @@ void aware_robot_ki::move_self(direction to)
 		}
 	}
 	else {
+		// Interact with target tile
 		action target_tiles_action = map->get_tile(target_tile.x, target_tile.y)
 			->interact(map->robots.get_robot(
 				map->robots.get_robots_location(self->id))->type);
 
+		// Move, Die, Open door accordingly
 		switch (target_tiles_action) {
 		case(action::DIE):
 			map->robots.move_robot(self->id, target_tile.x, target_tile.y);
@@ -708,11 +781,15 @@ void aware_robot_ki::move_self(direction to)
 
 void aware_robot_ki::save_path()
 {
+	// Reset queue
 	last_known_path = std::queue<direction>();
+
 	coords current_pos = map->robots.get_robots_location(self->id);
 
 	bool is_end = false;
 	while (!is_end) {
+		/* Save predecessor of current tile an move to the next until reaching
+		patchbot (direction::SOURCE) */
 		direction predecessor =
 			map->get_tile(current_pos.x, current_pos.y)->predecessor;
 		

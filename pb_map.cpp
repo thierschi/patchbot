@@ -48,13 +48,6 @@ std::shared_ptr<robot> robot_map::get_robot(const coords& c) const
 	return get_robot(c.x, c.y);
 }
 
-bool robot_map::is_grave(int x, int y) const
-{
-	if (graves.find(y * width + x) == graves.end())
-		return false;
-	return true;
-}
-
 coords robot_map::get_patchbots_location() const
 {
 	return robots_locations.at(pb_id);
@@ -66,6 +59,14 @@ coords robot_map::get_robots_location(unsigned int id) const
 		return NULL;
 	return robots_locations.at(id);
 }
+
+bool robot_map::is_grave(int x, int y) const
+{
+	if (graves.find(y * width + x) == graves.end())
+		return false;
+	return true;
+}
+
 
 void robot_map::set_height(int height_) {
 	/* Setting height by either appending
@@ -131,18 +132,6 @@ void robot_map::set_robot(const robot& robot_, int x, int y) {
 	robots_locations[robot_.id] = coords(x, y);
 }
 
-void robot_map::set_robots_grave(int x, int y)
-{
-	if (x >= width || y >= height)
-		throw std::invalid_argument("Invalid argument passed to to robot_map: "
-			"Coordinates out of range.");
-	if (robots[y * width + x]->type == robot_type::NONE)
-		throw std::invalid_argument("Invalid argument passed to to robot_map: "
-			"Can't mark non existing robot as dead.");
-	robots[y * width + x]->is_dead = true;
-	graves.insert(std::pair<int, bool>(y * width + x, true));
-}
-
 void robot_map::move_robot(int x, int y, int new_x, int new_y)
 {
 	if (x >= width || y >= height)
@@ -181,12 +170,18 @@ void robot_map::kill_robot(unsigned int id)
 
 void robot_map::update_graves()
 {
+	std::vector<int> expired_graves;
+
 	for (std::pair<int, int> pos : graves) {
 		if (pos.second == 0) {
-			graves.erase(pos.first);
+			expired_graves.push_back(pos.first);
 			continue;
-		}
-		graves[pos.first] = pos.second--;
+		} else
+			graves[pos.first]--;
+	}
+
+	for (int grave : expired_graves) {
+		graves.erase(grave);
 	}
 }
 
@@ -256,7 +251,7 @@ bool tile_map::is_in_line_of_sight(coords p1, coords p2) const
 		terrain::SECRET_PASSAGE
 	};
 
-	/* If start- or -endcoordinate is in the wall, return false */
+	/* If start- or -endcoordinate is in a wall, return false */
 	if (std::end(walls) != std::find(std::begin(walls), std::end(walls), 
 		get_tile(p1.x, p1.y)->get_terrain())) return false;
 	if (std::end(walls) != std::find(std::begin(walls), std::end(walls),
@@ -298,7 +293,7 @@ bool tile_map::is_in_line_of_sight(coords p1, coords p2) const
 		}
 	}
 	/* Diagonal is y = mx + t*/
-	double m = (p2.y - p1.y) / (p2.x - p1.x);
+	double m = (double)(p2.y - p1.y) / (double)(p2.x - p1.x);
 	double t = p2.y - m * p2.x;
 
 	if (std::abs(p2.x - p1.x) >= std::abs(p2.y - p1.y)) {
@@ -308,7 +303,7 @@ bool tile_map::is_in_line_of_sight(coords p1, coords p2) const
 		};
 
 		for (double x = p1.x + 1; x <= p2.x; x += .5) {
-			int y = diagonal(x);
+			double y = diagonal(x);
 
 			if (std::end(walls) != std::find(std::begin(walls),
 				std::end(walls), get_tile(floor(x), 
@@ -336,7 +331,7 @@ bool tile_map::is_in_line_of_sight(coords p1, coords p2) const
 		};
 
 		for (double y = p1.y + 1; y <= p2.y; y += .5) {
-			int x = diagonal(y);
+			double x = diagonal(y);
 
 			if (std::end(walls) != std::find(std::begin(walls),
 				std::end(walls), get_tile(std::floor(x), 

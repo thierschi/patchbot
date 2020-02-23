@@ -24,8 +24,10 @@ class game_logic : public QObject {
 	Q_OBJECT
 
 public:
-	game_logic(main_window* parent_,
-		rendering_engine* rendering_engine_, controls* controls_);
+	game_logic(
+		main_window* parent_,
+		rendering_engine* rendering_engine_, 
+		controls* controls_);
 	game_logic(const game_logic&) = default;
 	~game_logic();
 
