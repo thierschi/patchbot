@@ -423,7 +423,7 @@ pushing_robot_ki::event pushing_robot_ki::get_event_at_HB()
 pushing_robot_ki::event pushing_robot_ki::get_event_at_VB()
 {
 	/* Get y position of patchbot to  check if patchbot's width is reached */
-	int pb_y = map->robots.get_patchbots_location().x;
+	int pb_y = map->robots.get_patchbots_location().y;
 
 	if (pb_y == map->robots.get_robots_location(self->id).y)
 		return event::zw_o_pbh;
