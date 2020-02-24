@@ -184,16 +184,18 @@ void main_window::on_change_colonie_button_clicked()
     // Open file Dialoge
     QString file_name = QFileDialog::getOpenFileName(this,
         tr("Karten-Textdatei öffnen..."), ".\\txt", tr("Text Files (*.txt)"));
-    map_path = file_name.toStdString();
+    std::string temp_map_path = file_name.toStdString();
 
     // Load map again
     try {
-        map = pb_input::read_map_txt(map_path);
+        map = pb_input::read_map_txt(temp_map_path);
     }
     catch (std::exception & e) {
         QMessageBox::about(this, "Fehler", e.what());
         return;
     }
+
+    map_path = temp_map_path;
 
     //Reset instruction_edit
     ui->instruction_edit->clear();

@@ -226,7 +226,7 @@ terrain tile_map::get_tile_terrain(int x, int y) const {
 }
 
 std::shared_ptr<tile> tile_map::get_tile(int x, int y) const {
-	if (x >= width || y >= height)
+	if (x >= width || y >= height || x < 0 || y < 0)
 		throw std::invalid_argument(
 			"Invalid argument passed to Tile_map: "
 			"Coordinates out of range.");
@@ -237,8 +237,8 @@ bool tile_map::is_in_line_of_sight(coords p1, coords p2) const
 {
 	/* Return False if either one of the coordinates is out of bounds of the map */
 	if (p1.x < 0 || p1.y < 0 || p2.x < 0 || p2.y < 0) return false;
-	if (p1.x >= width || p1.y >= width 
-		|| p2.x >= width || p2.y >= width) return false;
+	if (p1.x >= width || p1.y >= height 
+		|| p2.x >= width || p2.y >= height) return false;
 	/* Return true if the coordinates are the same */
 	if (p1.x == p2.x && p1.y == p2.y) return true;
 

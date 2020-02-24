@@ -517,6 +517,7 @@ void pushing_robot_ki::push_robot()
 
 	// If there is no robot, return
 	if (type == robot_type::NONE) return;
+	if (is_robot_blocked(target_tile, target_direction)) return;
 
 	// Determine pushed robot new position
 	coords robots_new_coords = target_tile;
@@ -556,7 +557,7 @@ void pushing_robot_ki::push_robot()
 	// Kill him if pushed into lethal tile
 	if (robots_fate == action::DIE)
 		map->robots.kill_robot(
-			map->robots.get_robot(target_tile.x, target_tile.y)->id);
+			map->robots.get_robot(robots_new_coords.x, robots_new_coords.y)->id);
 }
 
 bool pushing_robot_ki::is_robot_blocked(const coords& pos, direction in_dir) const

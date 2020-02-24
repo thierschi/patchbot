@@ -1,9 +1,8 @@
 .vs/
-txt/
 x64/
 debug/
 release/ 
-umgebungen/
+logfile.txt
 roboter/
 pfeile/
-logfile.txt
+umgebungen/

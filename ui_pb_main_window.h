@@ -83,7 +83,180 @@ public:
         sizePolicy.setHeightForWidth(main_window->sizePolicy().hasHeightForWidth());
         main_window->setSizePolicy(sizePolicy);
         main_window->setContextMenuPolicy(Qt::NoContextMenu);
-        main_window->setStyleSheet(QString::fromUtf8(""));
+        main_window->setStyleSheet(QString::fromUtf8("QWidget#centralwidget {\n"
+"	background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0.428949, y2:0.511, stop:0 rgba(0, 17, 207, 255), stop:1 rgba(191, 136, 255, 255));\n"
+"}\n"
+"\n"
+"#colonie_label {\n"
+"	font: 87 8pt \"Source Code Pro Black\";\n"
+"color:white;\n"
+"}\n"
+"\n"
+"#program, #mission_control {\n"
+"	background-color: qlineargradient(spread:reflect, x1:0.379, y1:0, x2:0.401, y2:0.499545, stop:0 rgba(169, 169, 169, 255), stop:1 rgba(192, 192, 192, 255));\n"
+"border: 1px solid black;\n"
+"}\n"
+"\n"
+"#program_label, #m_c_label {\n"
+"color: yellow;\n"
+"	font: 87 10pt \"Source Code Pro Black\";\n"
+"}\n"
+"\n"
+"#m_c_start_btn, #m_c_auto_btn {\n"
+"background-color: #A9FF86;\n"
+"color: black;\n"
+"border: 1px solid black;\n"
+"border-radius: 5;\n"
+"}\n"
+"\n"
+"#m_c_start_btn:hover, #m_c_auto_btn:hover {\n"
+"background-color: #06A428;\n"
+"color: #F0F0F0;\n"
+"border: 1px solid black;\n"
+"border-radius: 5;\n"
+"}\n"
+"\n"
+"#m_c_cancel_btn, #m_c_stop_btn {\n"
+"background-color: #e68383;\n"
+"border: 1px solid black"
+                        ";\n"
+"border-radius: 5;\n"
+"}\n"
+"\n"
+"#m_c_cancel_btn:hover, #m_c_stop_btn:hover {\n"
+"background-color: #F12121;\n"
+"color: #F0F0F0;\n"
+"border: 1px solid black;\n"
+"border-radius: 5;\n"
+"}\n"
+"\n"
+"#m_c_step_btn {\n"
+"background-color: #98CFFF;\n"
+"border: 1px solid black;\n"
+"border-radius: 5;\n"
+"}\n"
+"\n"
+"#m_c_step_btn:hover {\n"
+"background-color: #1290FF;\n"
+"color: #F0F0F0;\n"
+"border: 1px solid black;\n"
+"border-radius: 5;\n"
+"}\n"
+"\n"
+"#m_c_start_btn:disabled,\n"
+"#m_c_stop_btn:disabled,\n"
+"#m_c_step_btn:disabled,\n"
+"#m_c_auto_btn:disabled,\n"
+"#m_c_cancel_btn:disabled {\n"
+"color: grey;\n"
+"background-color: #d7dade;\n"
+"}\n"
+"\n"
+"#map_h_scrollbar, #map_v_scrollbar, #instruction_control_h_scroll {\n"
+"border: 1px solid black;\n"
+"background-color: rgb(147, 23, 255);\n"
+"}\n"
+"\n"
+"#instruction_control_h_scroll {\n"
+"background-color:yellow;\n"
+"}\n"
+"\n"
+"#instruction_control_dropdown {\n"
+"color: black;\n"
+"background-color: yellow;\n"
+"}\n"
+"\n"
+"#instruction_edit {\n"
+"	color: yellow;\n"
+"	"
+                        "background-color: black;\n"
+"	font: 63 8pt \"Source Code Pro Semibold\";\n"
+"}\n"
+"\n"
+"#instruction_arrow_up_btn, #instruction_arrow_right_btn, #instruction_arrow_left_btn, #instruction_arrow_down_btn {\n"
+"background-color: white;\n"
+"border: 2px solid black;\n"
+"border-radius: 15;\n"
+"	font: 15pt \"Baloo\";\n"
+"color: black;\n"
+"}\n"
+"\n"
+"#instruction_arrow_up_btn:hover, \n"
+"#instruction_arrow_right_btn:hover, \n"
+"#instruction_arrow_left_btn:hover, \n"
+"#instruction_arrow_down_btn:hover {\n"
+"background-color: #E5E5E5;\n"
+"border: 2px solid black;\n"
+"border-radius: 15;\n"
+"	font: 15pt \"Baloo\";\n"
+"color: black;\n"
+"}\n"
+"\n"
+"#instruction_arrow_center_btn {\n"
+"background-color: #FFFB00;\n"
+"border: 2px solid black;\n"
+"border-radius: 10;\n"
+"	font: 15pt \"Baloo\";\n"
+"color: black;\n"
+"}\n"
+"\n"
+"#instruction_arrow_center_btn:hover {\n"
+"background-color: #FFE000;\n"
+"border: 2px solid black;\n"
+"border-radius: 10;\n"
+"	font: 15pt \"Baloo\";\n"
+"color: black;\n"
+"}\n"
+"\n"
+"#instruction_arrow_back_bt"
+                        "n {\n"
+"background-color: #FF6F6F;\n"
+"border: 2px solid black;\n"
+"border-radius: 10;\n"
+"	font: 15pt \"Baloo\";\n"
+"color: black;\n"
+"}\n"
+"\n"
+"#instruction_arrow_back_btn:hover {\n"
+"background-color: #FF0000;\n"
+"border: 2px solid black;\n"
+"border-radius: 10;\n"
+"	font: 15pt \"Baloo\";\n"
+"color: black;\n"
+"}\n"
+"\n"
+"#instruction_arrow_up_btn:disabled, \n"
+"#instruction_arrow_right_btn:disabled, \n"
+"#instruction_arrow_left_btn:disabled, \n"
+"#instruction_arrow_down_btn:disabled,\n"
+"#instruction_control_dropdown:disabled,\n"
+"#instruction_arrow_center_btn:disabled,\n"
+"#instruction_arrow_back_btn:disabled,\n"
+"#change_colonie_button:disabled\n"
+" {\n"
+"background-color: #d7dade;\n"
+"color: grey;\n"
+"}\n"
+"\n"
+"#change_colonie_button {\n"
+"	background-color: qlineargradient(spread:reflect, x1:0.379, y1:0, x2:0.401, y2:0.499545, stop:0 rgba(169, 169, 169, 255), stop:1 rgba(192, 192, 192, 255));\n"
+"border: 1px solid black;\n"
+"color:black;\n"
+"border-radius: 8;\n"
+"	font: 87 8pt \"Source Code Pro Semibol"
+                        "d\";\n"
+"padding-left: 5px;\n"
+"padding-right: 5px;\n"
+"}\n"
+"\n"
+"#change_colonie_button:hover {\n"
+"	background-color: #6D6D6D;\n"
+"color:white;\n"
+"}\n"
+"\n"
+"#map_scrollAreaWidgetContents {\n"
+"	background-color: #7E7E7E;\n"
+"}"));
         centralwidget = new QWidget(main_window);
         centralwidget->setObjectName(QString::fromUtf8("centralwidget"));
         gridLayout_2 = new QGridLayout(centralwidget);
@@ -120,7 +293,7 @@ public:
         map_scrollArea->setWidgetResizable(true);
         map_scrollAreaWidgetContents = new QWidget();
         map_scrollAreaWidgetContents->setObjectName(QString::fromUtf8("map_scrollAreaWidgetContents"));
-        map_scrollAreaWidgetContents->setGeometry(QRect(0, 0, 501, 421));
+        map_scrollAreaWidgetContents->setGeometry(QRect(0, 0, 501, 420));
         map_scrollAreaWidgetContents->setFocusPolicy(Qt::NoFocus);
         map_placeholder = new QLabel(map_scrollAreaWidgetContents);
         map_placeholder->setObjectName(QString::fromUtf8("map_placeholder"));
@@ -186,6 +359,7 @@ public:
 
         change_colonie_button = new QPushButton(horizontalLayoutWidget);
         change_colonie_button->setObjectName(QString::fromUtf8("change_colonie_button"));
+        change_colonie_button->setEnabled(true);
 
         change_colonie->addWidget(change_colonie_button);
 
@@ -217,6 +391,7 @@ public:
         instruction_control_dropdown->addItem(QString());
         instruction_control_dropdown->addItem(QString());
         instruction_control_dropdown->setObjectName(QString::fromUtf8("instruction_control_dropdown"));
+        instruction_control_dropdown->setEnabled(true);
         instruction_control_dropdown->setMinimumSize(QSize(0, 27));
         instruction_control_dropdown->setEditable(false);
 
@@ -254,7 +429,11 @@ public:
         instruction_arrow_left_btn->setMinimumSize(QSize(30, 30));
         instruction_arrow_left_btn->setMaximumSize(QSize(30, 30));
         QFont font;
-        font.setPointSize(11);
+        font.setFamily(QString::fromUtf8("Baloo"));
+        font.setPointSize(15);
+        font.setBold(false);
+        font.setItalic(false);
+        font.setWeight(50);
         instruction_arrow_left_btn->setFont(font);
 
         prg_arrow_btns->addWidget(instruction_arrow_left_btn, 1, 0, 1, 1);
@@ -281,20 +460,18 @@ public:
 
         instruction_arrow_center_btn = new QPushButton(gridLayoutWidget_2);
         instruction_arrow_center_btn->setObjectName(QString::fromUtf8("instruction_arrow_center_btn"));
+        instruction_arrow_center_btn->setEnabled(true);
         sizePolicy.setHeightForWidth(instruction_arrow_center_btn->sizePolicy().hasHeightForWidth());
         instruction_arrow_center_btn->setSizePolicy(sizePolicy);
         instruction_arrow_center_btn->setMinimumSize(QSize(30, 30));
         instruction_arrow_center_btn->setMaximumSize(QSize(30, 30));
-        QFont font1;
-        font1.setPointSize(20);
-        font1.setBold(false);
-        font1.setWeight(50);
-        instruction_arrow_center_btn->setFont(font1);
+        instruction_arrow_center_btn->setFont(font);
 
         prg_arrow_btns->addWidget(instruction_arrow_center_btn, 1, 1, 1, 1);
 
         instruction_arrow_back_btn = new QPushButton(gridLayoutWidget_2);
         instruction_arrow_back_btn->setObjectName(QString::fromUtf8("instruction_arrow_back_btn"));
+        instruction_arrow_back_btn->setEnabled(true);
         sizePolicy.setHeightForWidth(instruction_arrow_back_btn->sizePolicy().hasHeightForWidth());
         instruction_arrow_back_btn->setSizePolicy(sizePolicy);
         instruction_arrow_back_btn->setMinimumSize(QSize(30, 30));

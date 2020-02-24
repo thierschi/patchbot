@@ -239,11 +239,13 @@ void game_logic::process_enemys()
 
 	for (std::vector<std::unique_ptr<state_machine>>::iterator i = enemy_kis.begin();
 		i != enemy_kis.end(); ++i) {
-		unsigned int current_id = (*i)->get_id();
-		(*i)->process();
 
+		unsigned int current_id = (*i)->get_id();
 		if (parent->map.robots.get_robots_location(current_id) == NULL) {
 			dead_robots.push(i);
+		}
+		else {
+			(*i)->process();
 		}
 	}
 
@@ -298,7 +300,7 @@ void game_logic::update_doors()
 		}
 	}
 
-	for (open_door o : blocked_doors) {
+	for (int i = 0; i < blocked_doors.size(); i++) {
 		// Check if previously blocked doors are now ready to be closed
 		if (parent->map.robots.get_robot(
 			blocked_doors.back().x, blocked_doors.back().y)->type
