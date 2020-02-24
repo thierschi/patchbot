@@ -9,6 +9,7 @@ patchbot.zip is everything you need: Just extract the archive into a folder and 
 
 Note: Maps are saved in the folder /txt.
 
+[Download zip](https://github.com/thierschi/patchbot/blob/master/patchbot.zip?raw=true)
 
 Look at the amazing UI (LSD warning):
 
