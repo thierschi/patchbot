@@ -1,0 +1,9 @@
+tga dead;
+tga patchbot;
+tga typ1_bugger;
+tga typ2_pusher;
+tga typ3_digger;
+tga typ4_swimmer;
+tga typ5_follower;
+tga typ6_hunter;
+tga typ7_sniffer;

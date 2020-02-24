@@ -25,7 +25,7 @@ const terrain state_machine::walls[] = {
 	terrain::MAIN_SERVER
 };
 
-state_machine::state_machine(tile_map* map_, std::shared_ptr<robot> self_) :
+state_machine::state_machine(tile_map* map_, const std::shared_ptr<robot>& self_) :
 	map(map_),
 	self(self_),
 	target_direction(direction::UNDEFINED),
@@ -53,12 +53,11 @@ void state_machine::initialize_machine()
 	class bugger_ki
 */
 
-bugger_ki::bugger_ki(tile_map* map_, std::shared_ptr<robot> self_)
+bugger_ki::bugger_ki(tile_map* map_, const std::shared_ptr<robot>& self_) :
+	state_machine(map_, self_),
+	machines_state(state::FW),
+	start_tile(NULL)
 {
-	map = map_;
-	self = self_;
-	machines_state = state::FW;
-	start_tile = NULL;
 	target_direction = direction::UNDEFINED;
 	initialize_machine();
 }
@@ -343,11 +342,11 @@ void bugger_ki::initialize_machine()
 	class pushing_robot_ki
 */
 
-pushing_robot_ki::pushing_robot_ki(tile_map* map_, std::shared_ptr<robot> self_)
+pushing_robot_ki::pushing_robot_ki(tile_map* map_, 
+	const std::shared_ptr<robot>& self_) :
+	state_machine(std::move(map_), self_),
+	machines_state(state::HB)
 {
-	map = map_;
-	self = self_;
-	machines_state = state::HB;
 	target_direction = direction::UNDEFINED;
 	initialize_machine();
 }
@@ -627,11 +626,11 @@ void pushing_robot_ki::initialize_machine()
 	class aware_robot_ki
 */
 
-aware_robot_ki::aware_robot_ki(tile_map* map_, std::shared_ptr<robot> self_)
+aware_robot_ki::aware_robot_ki(tile_map* map_,
+	const std::shared_ptr<robot>& self_) :
+	state_machine(map_, self_),
+	machines_state(state::W)
 {
-	map = map_;
-	self = self_;
-	machines_state = state::W;
 	initialize_machine();
 }
 

@@ -12,7 +12,8 @@
 class state_machine
 {
 public:
-	state_machine(tile_map* map_ = nullptr, std::shared_ptr<robot> self_ = nullptr);
+	state_machine(tile_map* map_ = nullptr, 
+		const std::shared_ptr<robot>& self_ = nullptr);
 	virtual ~state_machine() = default;
 
 	/* Get id of robot that this fsm belonges to */
@@ -41,7 +42,7 @@ protected:
 
 class bugger_ki : public state_machine {
 public:
-	bugger_ki(tile_map* map_, std::shared_ptr<robot> self_);
+	bugger_ki(tile_map* map_, const std::shared_ptr<robot>& self_);
 	~bugger_ki() override = default;
 
 	void process() override;
@@ -91,7 +92,7 @@ private:
 
 class pushing_robot_ki : public state_machine {
 public:
-	pushing_robot_ki(tile_map* map_, std::shared_ptr<robot> self_);
+	pushing_robot_ki(tile_map* map_, const std::shared_ptr<robot>& self_);
 	~pushing_robot_ki() override = default;
 
 	void process() override;
@@ -140,7 +141,7 @@ private:
 
 class aware_robot_ki : public state_machine {
 public:
-	aware_robot_ki(tile_map* map_, std::shared_ptr<robot> self_);
+	aware_robot_ki(tile_map* map_, const std::shared_ptr<robot>& self_);
 	~aware_robot_ki() override = default;
 
 	void process() override;

@@ -1,0 +1,17 @@
+total 480
+-rw-r--r-- 1 lukas 197609    0 Jan 16  2020 all.txt
+-rw-r--r-- 1 lukas 197609 4140 Oct 16  2017 boden.tga
+-rw-r--r-- 1 lukas 197609 4140 Oct 16  2017 boden_start_gegner.tga
+-rw-r--r-- 1 lukas 197609 4140 Oct 16  2017 boden_start_patchbot.tga
+-rw-r--r-- 1 lukas 197609 4140 Oct 16  2017 gefahr_abgrund.tga
+-rw-r--r-- 1 lukas 197609 4140 Dec 29  2017 gefahr_wasser.tga
+-rw-r--r-- 1 lukas 197609 4140 Oct 16  2017 hauptserver.tga
+-rw-r--r-- 1 lukas 197609 4140 Oct 16  2017 hindernis_aliengras.tga
+-rw-r--r-- 1 lukas 197609 4140 Oct 16  2017 hindernis_geheimgang.tga
+-rw-r--r-- 1 lukas 197609 4140 Oct 16  2017 hindernis_schotter.tga
+-rw-r--r-- 1 lukas 197609 4140 Oct 16  2017 tuer_automatisch_geschlossen.tga
+-rw-r--r-- 1 lukas 197609 4140 Oct 16  2017 tuer_automatisch_offen.tga
+-rw-r--r-- 1 lukas 197609 4140 Oct 16  2017 tuer_manuell_geschlossen.tga
+-rw-r--r-- 1 lukas 197609 4140 Oct 16  2017 tuer_manuell_offen.tga
+-rw-r--r-- 1 lukas 197609 4140 Oct 16  2017 wand_beton.tga
+-rw-r--r-- 1 lukas 197609 4140 Oct 16  2017 wand_fels.tga

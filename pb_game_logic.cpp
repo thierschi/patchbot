@@ -235,23 +235,16 @@ void game_logic::move_patchbot()
 
 void game_logic::process_enemys()
 {
-	std::stack<std::vector<std::unique_ptr<state_machine>>::iterator> dead_robots;
+	for (auto it = enemy_kis.begin(); it != enemy_kis.end();) {
+		unsigned int current_id = (*it)->get_id();
 
-	for (std::vector<std::unique_ptr<state_machine>>::iterator i = enemy_kis.begin();
-		i != enemy_kis.end(); ++i) {
-
-		unsigned int current_id = (*i)->get_id();
 		if (parent->map.robots.get_robots_location(current_id) == NULL) {
-			dead_robots.push(i);
+			it = enemy_kis.erase(it);
 		}
 		else {
-			(*i)->process();
+			(*it)->process();
+			++it;
 		}
-	}
-
-	while (!dead_robots.empty()) {
-		enemy_kis.erase(dead_robots.top());
-		dead_robots.pop();
 	}
 }
 
